@@ -4,7 +4,7 @@ This plugin replaces many of the existing Modal Dialog-based Teleport UIs with p
 
 ![Screenshot](dist/screenshots/screenshot.png)
 
-- [mod.io Page]()
+- [mod.io Page](https://mod.io/g/runescape/m/better-teleport-uis)
 
 ## Currently supported UIs
 
@@ -15,4 +15,3 @@ This plugin replaces many of the existing Modal Dialog-based Teleport UIs with p
 - Crystal teleport seed and PoH Crystal Seed
 - Passing bracelet
 - Underworld Grimoire 2, 3 and 4
-- 
