@@ -1,0 +1,276 @@
+local backgrounds = require("definitions/backgrounds")
+local teleportIcons = require("definitions/teleport_icons")
+local utils = require("impl/utils")
+
+function resize(icon, newSize)
+    local result = utils.deepcopy(icon)
+    result.size = newSize
+
+    return result
+end
+
+return {
+    wilderness = {
+        title = "Wilderness Obelisks",
+        background = backgrounds.wilderness,
+        icons = teleportIcons.obelisk,
+        entries = {
+            ["1. Level 13 Wilderness"] = {
+                nameOverride = "Wilderness Lodestone",
+                point = {x = 382, y = 708},
+            },
+            ["2. Level 18 Wilderness"] = {
+                nameOverride = "Graveyard of Shadows",
+                point = {x = 492, y = 646},
+            },
+            ["3. Level 27 Wilderness"] = {
+                nameOverride = "Chaos Ridge",
+                point = {x = 171, y = 512},
+            },
+            ["4. Level 35 Wilderness"] = {
+                nameOverride = "Lava Maze",
+                point = {x = 294, y = 405},
+            },
+            ["5. Level 44 Wilderness"] = {
+                nameOverride = "Frozen Waste Plateau",
+                point = {x = 75, y = 279},
+            },
+            ["6. Level 50 Wilderness"] = {
+                nameOverride = "Rogues' Castle",
+                point = {x = 645, y = 192},
+            },
+        },
+    },
+    drakansMedallion = {
+        title = "Drakan's Medallion",
+        background = backgrounds.morytania,
+        icons = teleportIcons.drakansMedallion,
+        entries = {
+            ["1. Barrows"] = {
+                point = {x = 408, y = 284}
+            },
+            ["2. Burgh de Rott"] = {
+                point = {x = 249, y = 566}
+            },
+            ["3. Meiyerditch"] = {
+                point = {x = 586, y = 445}
+            },
+            ["4. Darkmeyer"] = {
+                point = {x = 552, y = 168}
+            },
+            ["5. Meiyerditch Laboratories"] = {
+                point = {x = 595, y = 312}
+            },
+        },
+    },
+    ringOfDuelling = {
+        title = "Ring of Duelling",
+        background = backgrounds.runescape_surface_south,
+        entries = {
+            ["1. Het's Oasis"] = {
+                icons = teleportIcons.relicOfHet,
+                point = {x = 358, y = 210},
+            },
+            ["2. Castle Wars Arena"] = {
+                icons = teleportIcons.castleWarsCape,
+                point = {x = 117, y = 243},
+            },
+            ["3. The Warforge"] = {
+                icons = teleportIcons.warForgeShield,
+                point = {x = 131, y = 286},
+            },
+            ["4. Fist of Guthix"] = {
+                icons = teleportIcons.fistOfGuthixOrb,
+                point = {x = 282, y = 175},
+            },
+            ["5. Nowhere"] = {hidden = true},
+        },
+    },
+    gamesNecklace = {
+        title = "Games necklace",
+        background = backgrounds.runescape_surface,
+        icons = teleportIcons.medallion,
+        entries = {
+            ["1. Troll Invasion"] = {
+                point = { x = 246, y = 150 },
+                icons = teleportIcons.trollInvasion
+            },
+            ["2. Barbarian Outpost"] = {
+                point = { x = 151, y = 138 },
+                icons = teleportIcons.horn
+            },
+            ["3. Gamer's Grotto"] = {
+                point = {x = 282, y = 175},
+                icons = teleportIcons.dice
+            },
+            ["4. Agoroth"] = {
+                point = {x = 35, y = 262},
+                icons = teleportIcons.squid
+            },
+            ["5. Corporeal Beast"] = {
+                point = {x = 323, y = 89},
+                icons = teleportIcons.corporealBeast,
+            },
+            ["6. Burgh De Rott"] = {
+                point = {x = 411, y = 218},
+                icons = teleportIcons.sickle
+            },
+            ["7. Tears of Guthix"] = {
+                point = {x = 325, y = 225},
+                icons = teleportIcons.tearsOfGuthix
+            }
+        }
+    },
+    crystalTeleportSeed = {
+        title = "Tirannwn",
+        background = backgrounds.tirannwn,
+        entries = {
+            ["1. Lletya"] = { 
+                point = { x = 348, y = 207 },
+                icons = teleportIcons.elfcityTeleport[0]
+            },
+            ["2. Temple of Light"] = {
+                point = { x = 430, y = 125 },
+                icons = teleportIcons.elfcityTeleport[4]
+            },
+
+            -- Clan icons occupy the eight compass sectors around (272, 81), radius 46.
+            ["3. Amlodd (Prifddinas)"] = {
+                point = { x = 230, y = 63 },
+                icons = teleportIcons.elfClans.amlodd
+            },
+            ["4. Cadarn (Prifddinas)"] = {
+                point = { x = 314, y = 99 },
+                icons = teleportIcons.elfClans.cadarn
+            },
+            ["5. Crwys (Prifddinas)"] = {
+                point = { x = 314, y = 63 },
+                icons = teleportIcons.elfClans.crwys
+            },
+            ["6. Hefin (Prifddinas)"] = {
+                point = { x = 254, y = 39 },
+                icons = teleportIcons.elfClans.hefin
+            },
+            ["7. Iorwerth (Prifddinas)"] = {
+                point = { x = 230, y = 99 },
+                icons = teleportIcons.elfClans.iorwerth
+            },
+            ["8. Ithell (Prifddinas)"] = {
+                point = { x = 254, y = 123 },
+                icons = teleportIcons.elfClans.ithell
+            },
+            ["9. Meilyr (Prifddinas)"] = {
+                point = { x = 290, y = 39 },
+                icons = teleportIcons.elfClans.meilyr
+            },
+            ["0. Trahaearn (Prifddinas)"] = {
+                point = { x = 290, y = 123 },
+                icons = teleportIcons.elfClans.trahaearn
+            },
+        }
+    },
+    crystalTeleportSeedPrifddinas = {
+        title = "Prifddinas",
+        background = backgrounds.prifddinas,
+        entries = {
+            ["1. Amlodd (Prifddinas)"] = {
+                point = { x = 230, y = 63 },
+                icons = resize(teleportIcons.elfClans.amlodd, 64)
+            },
+            ["2. Cadarn (Prifddinas)"] = {
+                point = { x = 314, y = 99 },
+                icons = resize(teleportIcons.elfClans.cadarn, 64)
+            },
+            ["3. Crwys (Prifddinas)"] = {
+                point = { x = 314, y = 63 },
+                icons = resize(teleportIcons.elfClans.crwys, 64)
+            },
+            ["4. Hefin (Prifddinas)"] = {
+                point = { x = 254, y = 39 },
+                icons = resize(teleportIcons.elfClans.hefin, 64)
+            },
+            ["5. Iorwerth (Prifddinas)"] = {
+                point = { x = 230, y = 99 },
+                icons = resize(teleportIcons.elfClans.iorwerth, 64)
+            },
+            ["6. Ithell (Prifddinas)"] = {
+                point = { x = 254, y = 123 },
+                icons = resize(teleportIcons.elfClans.ithell, 64)
+            },
+            ["7. Meilyr (Prifddinas)"] = {
+                point = { x = 290, y = 39 },
+                icons = resize(teleportIcons.elfClans.meilyr, 64)
+            },
+            ["8. Trahaearn (Prifddinas)"] = {
+                point = { x = 290, y = 123 },
+                icons = resize(teleportIcons.elfClans.trahaearn, 64)
+            },
+        }
+    },
+    passingBracelet = {
+        title = "Underworld",
+        background = backgrounds.city_of_um,
+        icons = teleportIcons.underworldTeleport,
+        entries = {
+            ["1. City of Um: Hanging Gardens"] = {
+                nameOverride = "Hanging Gardens",
+                point = { x = 737, y = 464 }
+            },
+            ["2. City of Um: Haunt on the Hill"] = {
+                nameOverride = "Haunt on the Hill",
+                point = { x = 709, y = 223 }
+            },
+            ["3. City of Um: Reflection Pool"] = {
+                nameOverride = "Reflection Pool",
+                point = { x = 555, y = 800 }
+            },
+            ["4. Nowhere"] = {
+                hidden = true
+            }
+        }
+    },
+    underworldGrimoire23 = {
+        title = "Underworld",
+        background = backgrounds.city_of_um,
+        icons = teleportIcons.underworldTeleport,
+        entries = {
+            ["1. Teleport to Um Smithy"] = {
+                nameOverride = "Um Smithy",
+                point = { x = 616, y = 377 }
+            },
+            ["2. Teleport to Um Ritual Site"] = {
+                nameOverride = "Um Ritual Site",
+                point = { x = 96, y = 590 }
+            },
+            ["3. Teleport to Ungael Ritual Site"] = {
+                nameOverride = "Ungael Ritual Site",
+                point = { x = 170, y = 165 },
+                icons = teleportIcons.ungaelTeleport
+            }
+        }
+    },
+    underworldGrimoire4 = {
+        title = "Underworld",
+        background = backgrounds.city_of_um,
+        icons = teleportIcons.underworldTeleport,
+        entries = {
+            ["1. Teleport to Um Smithy"] = {
+                nameOverride = "Um Smithy",
+                point = { x = 616, y = 377 }
+            },
+            ["2. Teleport to Um Ritual Site"] = {
+                nameOverride = "Um Ritual Site",
+                point = { x = 96, y = 590 }
+            },
+            ["3. Teleport to Ungael Ritual Site"] = {
+                nameOverride = "Ungael Ritual Site",
+                point = { x = 170, y = 165 },
+                icons = teleportIcons.ungaelTeleport
+            },
+            ["4. Teleport to Lupe"] = {
+                nameOverride = "Lupe",
+                point = { x = 371, y = 417 }
+            }
+        }
+    }
+}
