@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "render": "node source/render-parchment.cjs",
+    "render:all": "node source/render-parchment.cjs all",
+    "render:wilderness": "node source/render-parchment.cjs wilderness",
+    "render:morytania": "node source/render-parchment.cjs morytania",
+    "render:city-of-um": "node source/render-parchment.cjs city_of_um",
+    "check": "node --check source/render-parchment.cjs && node --check source/map-profiles.cjs && node --check source/parchment-renderer.cjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}
