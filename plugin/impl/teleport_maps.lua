@@ -291,9 +291,13 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled, s
 
         local bounds = marker.bounds
         marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, {
-            x = bounds.x + offset, y = bounds.y + offset,
-            width = bounds.width, height = bounds.height, colour = color,
+            x = bounds.x + offset, 
+            y = bounds.y + offset,
+            width = bounds.width, 
+            height = bounds.height, 
+            colour = color,
         })
+
         marker.shadowImage, marker.shadowTint = image, color
         marker.shadowOffset = offset
     end
@@ -343,15 +347,17 @@ local function getMarker(name, icons, highlighted, disabled)
     local objectID = source.objectID
     local kind = objectID ~= nil and "item" or "sprite"
     local image
+
     if objectID == nil then
         image = source.sprite
         if image == nil then
             local resourceName = source.image or (highlighted and source.highlighted or source.dimmed)
-            image = findIconResource(Plugin.resources.icons, resourceName)
-                or findIconResource(Plugin.resources, resourceName)
+            image = findIconResource(Plugin.resources.icons, resourceName) or findIconResource(Plugin.resources, resourceName)
+
             if image ~= nil and not image.loaded then
                 image:Load()
             end
+            
             if image == nil or not image.loaded then
                 return nil
             end
@@ -361,15 +367,18 @@ local function getMarker(name, icons, highlighted, disabled)
     if marker ~= nil and marker.kind ~= kind then
         if marker.shadow ~= nil then marker.shadow:Destroy() end
         if marker.sprite ~= nil then marker.sprite:Destroy() end
+
         marker.layer:Destroy()
         markers[name] = nil
         marker = nil
     end
+
     if marker == nil then
         local layer = ui.Layer.new(imageHost)
         layer:SetSize(size, size)
         layer.clickthrough = true
         marker = {layer = layer, kind = kind}
+
         if objectID ~= nil then
             local sprite = ui.Sprite.new(layer)
             sprite:SetSize(size, size)
@@ -384,6 +393,7 @@ local function getMarker(name, icons, highlighted, disabled)
             marker.sprite = prettyui.Sprite.new(layer, image, marker.bounds)
             marker.image = image
         end
+
         markers[name] = marker
     end
 
@@ -408,9 +418,11 @@ local function getMarker(name, icons, highlighted, disabled)
         marker.sprite:SetSprite(image)
         marker.image = image
     end
+
     if marker.sprite ~= nil then
         updateSpriteShadow(marker, image, icons, highlighted, disabled, size)
     end
+
     if marker.disabled ~= disabled then
         if marker.itemSprite ~= nil then
             marker.itemSprite.colour = disabled
@@ -421,7 +433,9 @@ local function getMarker(name, icons, highlighted, disabled)
         end
         marker.disabled = disabled
     end
+
     updateHotkey(marker, name, size, disabled)
+
     return marker
 end
 
@@ -429,6 +443,7 @@ local function updateMarkers(rows)
     for _, marker in pairs(markers) do
         marker.layer.hidden = true
     end
+
     if preview == nil or preview.hidden then
         return
     end
@@ -438,8 +453,10 @@ local function updateMarkers(rows)
         local name = row.name
         local destination = activeDestinations[name]
         local icons, point = destination.icons, destination.point
+
         if not row.hidden and destination.background == background and icons ~= nil and point ~= nil
             and mapGeometry.Contains(background, point) then
+
             local marker = getMarker(name, icons, name == hoveredDestination, row.disabled)
             if marker ~= nil then
                 local size = icons.size or 48
@@ -452,6 +469,7 @@ local function updateMarkers(rows)
             end
         end
     end
+
     if hoveredDestination ~= nil and markers[hoveredDestination] ~= nil then
         markers[hoveredDestination].layer:MoveToFront()
     end
@@ -505,30 +523,37 @@ end
 local lastLayoutError
 
 local function draw()
-    local ok, message = pcall(function()
-        local menu = modalMap.ReadRows(collectLabels, destinations)
-        if menu == nil then
-            releaseModal()
-            selectedDestination, hoveredDestination = nil, nil
-            return
+    local ok, message = pcall(
+        function()
+            local menu = modalMap.ReadRows(collectLabels, destinations)
+            if menu == nil then
+                releaseModal()
+                selectedDestination, hoveredDestination = nil, nil
+                return
+            end
+
+            if not modalMap.Matches(menu) then
+                releaseModal()
+                modalMap.Begin(menu)
+                selectedDestination = menu.defaultDestination
+            end
+
+            activeDestinations = menu.destinations
+            hoveredDestination = modalMap.Hovered(menu)
+            selectedDestination = hoveredDestination or selectedDestination
+
+            if not showPreview(selectedDestination, menu.content) then
+                releaseModal()
+                return
+            end
+
+            modalMap.Layout(previewWidth, previewHeight, imageHost, activeDestinations)
+            updateMarkers(menu.rows)
+            modalMap.UpdateTooltip(hoveredDestination)
+            lastLayoutError = nil
         end
-        if not modalMap.Matches(menu) then
-            releaseModal()
-            modalMap.Begin(menu)
-            selectedDestination = menu.defaultDestination
-        end
-        activeDestinations = menu.destinations
-        hoveredDestination = modalMap.Hovered(menu)
-        selectedDestination = hoveredDestination or selectedDestination
-        if not showPreview(selectedDestination, menu.content) then
-            releaseModal()
-            return
-        end
-        modalMap.Layout(previewWidth, previewHeight, imageHost, activeDestinations)
-        updateMarkers(menu.rows)
-        modalMap.UpdateTooltip(hoveredDestination)
-        lastLayoutError = nil
-    end)
+    )
+    
     if not ok then
         releaseModal()
         message = tostring(message)
