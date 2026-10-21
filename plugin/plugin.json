@@ -1,0 +1,9 @@
+{
+    "name": "Better Teleport UIs",
+    "version": "1.0.0",
+    "contactEmailAddress": "hey@werwolv.net",
+    "hasSettingsIcon": true,
+    "requiredDependencies": {
+        "prettyui": 6398181
+    }
+}
