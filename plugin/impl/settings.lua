@@ -66,9 +66,11 @@ local types = {
 for _, definition in ipairs(definitions) do
     assert(type(definition.key) == "string" and definition.key ~= "", "Setting requires a key")
     assert(byKey[definition.key] == nil, "Duplicate setting: " .. definition.key)
+
     local handler = types[definition.type]
     assert(handler ~= nil, "Unsupported setting type: " .. tostring(definition.type))
     assert(handler.valid(definition.default, definition), "Invalid default for setting: " .. definition.key)
+
     byKey[definition.key] = definition
     values[definition.key] = definition.default
 end
@@ -83,9 +85,14 @@ function settings.Set(key, value)
     assert(definition ~= nil, "Unknown setting: " .. tostring(key))
     local handler = types[definition.type]
     assert(handler.valid(value, definition), "Invalid value for setting: " .. key)
-    if values[key] == value then return end
+
+    if values[key] == value then 
+        return
+    end
+
     values[key] = value
     handler.write(key, value)
+
     -- Also update an open control when callers change a setting programmatically.
     -- The equality check above prevents loops from controls that emit on sync.
     if controls[key] ~= nil then controls[key](value) end
@@ -93,13 +100,16 @@ end
 
 local function clearView()
     controls = {}
+
     -- The client clears the settings layer before presenting it again.
     if parent ~= nil then
         pcall(function() parent:Unsubscribe(ui.Hook.ONRESIZE, eventID) end)
     end
+
     if view ~= nil then
         pcall(function() view:Destroy() end)
     end
+
     parent, view = nil, nil
 end
 
@@ -110,6 +120,7 @@ local function buildSettings(event)
         width = parent.width,
         height = parent.height,
     })
+
     for _, definition in ipairs(definitions) do
         controls[definition.key] = types[definition.type].create(view, definition)
         if hasDescription(definition) then
@@ -123,6 +134,7 @@ local function buildSettings(event)
             })
         end
     end
+
     parent:Subscribe(ui.Hook.ONRESIZE, eventID, function(control)
         if view ~= nil then view:SetSize(control.width, control.height) end
     end)
@@ -138,6 +150,7 @@ function settings.Start()
             values[definition.key] = definition.default
         end
     end
+    
     Event.SettingsLayerReady.Subscribe(eventID, buildSettings)
 end
 
