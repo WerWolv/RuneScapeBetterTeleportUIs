@@ -1,5 +1,5 @@
 // Requires Node.js and sharp.
-// From map_generator/: npm run render -- [wilderness|morytania|city_of_um|all]
+// From map_generator/: npm run render -- <profile-name|all>
 const profiles = require('./map-profiles.cjs');
 const { renderMap } = require('./parchment-renderer.cjs');
 

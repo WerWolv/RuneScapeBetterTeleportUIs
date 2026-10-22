@@ -8,6 +8,16 @@
 -- - crop (optional): x, y, width and height of the crop area
 
 return {
+    pirate_islands = {
+        image = "pirate_islands",
+        width = 805,
+        height = 785,
+    },
+    menaphos = {
+        image = "menaphos",
+        width = 1024,
+        height = 882,
+    },
     city_of_um = {
         image = "city_of_um",
         width = 888,
@@ -18,7 +28,13 @@ return {
         width = 1024,
         height = 872,
     },
-    morytania = {
+    wildernessWest = {
+        image = "wilderness",
+        width = 1024,
+        height = 872,
+        crop = { x = 0, y = 80, width = 512, height = 792 }
+    },
+    morytaniaSouth = {
         image = "southern_morytania",
         width = 851,
         height = 667,
