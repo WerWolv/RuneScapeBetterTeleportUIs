@@ -122,58 +122,57 @@ return {
     },
     ringOfDuelling = {
         title = "Ring of Duelling",
-        background = backgrounds.runescape_surface_south,
+        background = backgrounds.runescapeSurfaceSouth,
         entries = {
             ["1. Het's Oasis"] = {
                 icons = teleportIcons.relicOfHet,
-                point = {x = 358, y = 210},
+                point = {x = 369, y = 161},
             },
             ["2. Castle Wars Arena"] = {
                 icons = teleportIcons.castleWarsCape,
-                point = {x = 117, y = 243},
+                point = {x = 110, y = 199},
             },
             ["3. The Warforge"] = {
                 icons = teleportIcons.warForgeShield,
-                point = {x = 131, y = 286},
+                point = {x = 112, y = 276},
             },
             ["4. Fist of Guthix"] = {
                 icons = teleportIcons.fistOfGuthixOrb,
-                point = {x = 282, y = 175},
+                point = {x = 283, y = 111},
             },
             ["5. Nowhere"] = {hidden = true},
         },
     },
     gamesNecklace = {
         title = "Games necklace",
-        background = backgrounds.runescape_surface,
-        icons = teleportIcons.medallion,
+        background = backgrounds.runescapeSurfaceCenter,
         entries = {
             ["1. Troll Invasion"] = {
-                point = { x = 246, y = 150 },
+                point = { x = 247, y = 41 },
                 icons = teleportIcons.trollInvasion
             },
             ["2. Barbarian Outpost"] = {
-                point = { x = 141, y = 142 },
+                point = { x = 147, y = 69 },
                 icons = teleportIcons.horn
             },
             ["3. Gamer's Grotto"] = {
-                point = {x = 282, y = 175},
+                point = {x = 283, y = 111},
                 icons = teleportIcons.dice
             },
             ["4. Agoroth"] = {
-                point = {x = 35, y = 262},
+                point = {x = 110, y = 304},
                 icons = teleportIcons.squid
             },
             ["5. Corporeal Beast"] = {
-                point = {x = 323, y = 89},
+                point = {x = 326, y = 30},
                 icons = teleportIcons.corporealBeast,
             },
             ["6. Burgh De Rott"] = {
-                point = {x = 411, y = 218},
+                point = {x = 432, y = 165},
                 icons = teleportIcons.sickle
             },
             ["7. Tears of Guthix"] = {
-                point = {x = 325, y = 225},
+                point = {x = 341, y = 178},
                 icons = teleportIcons.tearsOfGuthix
             }
         }
