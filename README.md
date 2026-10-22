@@ -15,3 +15,13 @@ This plugin replaces many of the existing Modal Dialog-based Teleport UIs with p
 - Crystal teleport seed and PoH Crystal Seed
 - Passing bracelet
 - Underworld Grimoire 2, 3 and 4
+
+## License
+
+All source code in this repository is licensed under the terms of the GPLv2, with exemptions noted below.
+Assets are licensed by their respective owner.
+
+You can find a copy of the license in the LICENSE.md file.
+
+Exemptions:
+- Jagex is exempt from GPLv2 licensing and may (at their option) instead license any source code authored for this project under the Zero-Clause BSD license.
