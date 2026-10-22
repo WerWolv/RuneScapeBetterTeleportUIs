@@ -48,6 +48,6 @@ return {
         sprites = {{ id.Sprite.ELFCITY_TELEPORT_MAP}},
         width = 496,
         height = 294,
-        crop = { x = 210, y = 7, width = 121, height = 134 }
+        crop = { x = 210, y = 7, width = 123, height = 135 }
     }
 }
