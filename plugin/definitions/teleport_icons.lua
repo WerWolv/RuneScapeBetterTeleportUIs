@@ -242,6 +242,10 @@ local teleportIcons = {
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521CC
     },
+    combatBracelet = {
+        objectID = id.Obj.JEWL_BRACELET_OF_COMBAT,
+        size = 40
+    },
 
 
     nextArrow = {
