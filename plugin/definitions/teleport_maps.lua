@@ -10,7 +10,7 @@ function resize(icon, newSize)
 end
 
 return {
-    wilderness = {
+    wildernessObelisks = {
         title = "Wilderness Obelisks",
         background = backgrounds.wilderness,
         icons = teleportIcons.obelisk,
@@ -41,9 +41,66 @@ return {
             },
         },
     },
+    wildernessSword1 = {
+        title = "Wilderness",
+        background = backgrounds.wildernessWest,
+        icons = teleportIcons.obelisk,
+        entries = {
+            ["1. Teleport to Edgeville"] = {
+                nameOverride = "Edgeville",
+                point = {x = 263, y = 825},
+            },
+            ["2. Teleport to Herb patch"] = {
+                nameOverride = "Herb patch",
+                point = {x = 359, y = 355},
+            }
+        },
+    },
+    wildernessSword23 = {
+        title = "Wilderness",
+        background = backgrounds.wildernessWest,
+        icons = teleportIcons.obelisk,
+        entries = {
+            ["1. Teleport to Edgeville"] = {
+                nameOverride = "Edgeville",
+                point = {x = 263, y = 825},
+            },
+            ["2. Teleport to Herb patch"] = {
+                nameOverride = "Herb patch",
+                point = {x = 359, y = 355},
+            },
+            ["3. Teleport to Forinthry Dungeon"] = {
+                nameOverride = "Forinthry Dungeon",
+                point = {x = 237, y = 667},
+            }
+        },
+    },
+    wildernessSword4 = {
+        title = "Wilderness",
+        background = backgrounds.wildernessWest,
+        icons = teleportIcons.obelisk,
+        entries = {
+            ["1. Teleport to Edgeville"] = {
+                nameOverride = "Edgeville",
+                point = {x = 263, y = 825},
+            },
+            ["2. Teleport to Herb patch"] = {
+                nameOverride = "Herb patch",
+                point = {x = 359, y = 355},
+            },
+            ["3. Teleport to Forinthry Dungeon"] = {
+                nameOverride = "Forinthry Dungeon",
+                point = {x = 237, y = 667},
+            },
+            ["4. Teleport to Wilderness Agility course"] = {
+                nameOverride = "Wilderness Agility course",
+                point = {x = 106, y = 192},
+            }
+        },
+    },
     drakansMedallion = {
         title = "Drakan's Medallion",
-        background = backgrounds.morytania,
+        background = backgrounds.morytaniaSouth,
         icons = teleportIcons.drakansMedallion,
         entries = {
             ["1. Barrows"] = {
@@ -96,7 +153,7 @@ return {
                 icons = teleportIcons.trollInvasion
             },
             ["2. Barbarian Outpost"] = {
-                point = { x = 151, y = 138 },
+                point = { x = 141, y = 142 },
                 icons = teleportIcons.horn
             },
             ["3. Gamer's Grotto"] = {
@@ -270,6 +327,63 @@ return {
             ["4. Teleport to Lupe"] = {
                 nameOverride = "Lupe",
                 point = { x = 371, y = 417 }
+            }
+        }
+    },
+    leelasFavour = {
+        title = "Menaphos",
+        background = backgrounds.menaphos,
+        entries = {
+            ["1. Imperial District"] = {
+                point = { x = 402, y = 409 },
+                icons = teleportIcons.menaphosFactions.imperial
+            },
+            ["2. Merchant District"] = {
+                point = { x = 573, y = 213 },
+                icons = teleportIcons.menaphosFactions.merchant
+            },
+            ["3. Port District"] = {
+                point = { x = 544, y = 778 },
+                icons = teleportIcons.menaphosFactions.port
+            },
+            ["4. Worker District"] = {
+                point = { x = 336, y = 168 },
+                icons = teleportIcons.menaphosFactions.worker
+            },
+            ["5. Soul Obelisk"] = {
+                point = { x = 92, y = 770 },
+                hidden = true
+            },
+            ["6. Shifting Tombs"] = {
+                point = { x = 597, y = 409 },
+                icons = teleportIcons.shiftingTombs
+            },
+            ["7. Sophanem Slayer Dungeon"] = {
+                point = { x = 825, y = 494 },
+                icons = teleportIcons.sophanemSlayerDungeon
+            }
+        }
+    },
+    bigBookOPiracy = {
+        title = "Pirate Islands",
+        background = backgrounds.pirate_islands,
+        icons = teleportIcons.bigBookOPiracy,
+        entries = {
+            ["1. Mos Le'Harmless."] = {
+                nameOverride = "Mos Le'Harmless",
+                point = { x = 120, y = 426 }
+            },
+            ["2. Braindeath Island."] = {
+                nameOverride = "Braindeath Island",
+                point = { x = 710, y = 487 }
+            },
+            ["3. Dragontooth Isle."] = {
+                nameOverride = "Dragontooth Isle",
+                point = { x = 550, y = 58 }
+            },
+            ["4. Harmony Island."] = {
+                nameOverride = "Harmony Island",
+                point = { x = 377, y = 728 }
             }
         }
     }

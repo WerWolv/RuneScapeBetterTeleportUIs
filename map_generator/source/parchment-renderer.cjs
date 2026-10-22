@@ -291,6 +291,31 @@ async function renderMap(profile) {
 
     // Parchment painting ----------------------------------------------------------
 
+    async function createDistrictWashes() {
+        const washes = [];
+        for (const district of profile.districtWashes ?? []) {
+            const points = district.points.map(([x, y]) => `${x},${y}`).join(' ');
+            const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
+                <rect width="100%" height="100%" fill="black"/>
+                <polygon points="${points}" fill="white"/>
+            </svg>`);
+            const mask = await sharp(svg).flatten({ background: '#000000' })
+                .blur(district.feather ?? 12).greyscale().raw().toBuffer();
+            washes.push({ ...district, mask });
+        }
+        return washes;
+    }
+
+    function paintDistrictWashes(color, index, districts, textures) {
+        for (const district of districts) {
+            // Uneven pigment deposit and soft edges, with paper grain added later.
+            const pigment = 0.8 + textures.broad[index] / 255 * 0.3
+                + (textures.medium[index] - 128) / 128 * 0.1;
+            color = mixColors(color, district.color, district.mask[index] / 255 * district.opacity * pigment);
+        }
+        return color;
+    }
+
     function paintOcean(distance) {
         distance /= SHORELINE_SCALE;
         let color = mixColors(PALETTE.paper, PALETTE.oceanStain, 0.25 * Math.exp(-distance / 11));
@@ -323,7 +348,7 @@ async function renderMap(profile) {
         return mixColors(color, PALETTE.landmarkInk, coverage * profile.landmarkOpacity);
     }
 
-    function paintLand(index, source, smoothed, coastDistance, lava, ink, textures) {
+    function paintLand(index, source, smoothed, coastDistance, lava, ink, textures, districts) {
         const sourceColor = readRgb(source, index);
         const smoothColor = readRgb(smoothed, index);
         const [red, green, blue] = sourceColor;
@@ -337,6 +362,7 @@ async function renderMap(profile) {
         color = mixColors(color, PALETTE.snow, profile.snow ? snow * 0.88 : 0);
         const shade = Math.max(0, (localBrightness - brightness(sourceColor) - 9) / 90);
         color = mixColors(color, PALETTE.terrainShadow, shade * 0.65);
+        color = paintDistrictWashes(color, index, districts, textures);
 
         // Washed maps receive their linework after the terrain wash below.
         if (!(profile.inkWash > 0)) {
@@ -367,14 +393,14 @@ async function renderMap(profile) {
         return color;
     }
 
-    function paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures }) {
+    function paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts }) {
         const output = Buffer.alloc(PIXEL_COUNT * RGB_CHANNELS);
         for (let y = 0; y < HEIGHT; y++) {
             for (let x = 0; x < WIDTH; x++) {
                 const index = y * WIDTH + x;
                 let color = ocean[index]
                     ? paintOcean(coastDistance[index])
-                    : paintLand(index, source, smoothed, coastDistance, lava, ink, textures);
+                    : paintLand(index, source, smoothed, coastDistance, lava, ink, textures, districts);
 
                 // Thin pigment lets the paper supply the colour and texture beneath
                 // the drawing. Low-frequency variation avoids a uniform digital tint.
@@ -472,6 +498,7 @@ async function renderMap(profile) {
     const source = await sharp(INPUT_PATH).resize(WIDTH, HEIGHT).removeAlpha().raw().toBuffer();
     const smoothed = await rawImage(source, RGB_CHANNELS).median(3).blur(2).raw().toBuffer();
     const textures = await createTextures();
+    const districts = await createDistrictWashes();
 
     const ocean = findOcean(source);
     const coastDistance = measureCoastDistance(ocean);
@@ -479,7 +506,7 @@ async function renderMap(profile) {
     const landmarks = extractLandmarks(source, smoothed, ocean, coastDistance, lava);
     const ink = await drawLandmarkInk(landmarks, textures);
 
-    const parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures });
+    const parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts });
     let output = rawImage(parchment, RGB_CHANNELS);
     if (COMPASS !== null) {
         const compassPosition = findCompassPosition(ocean);
