@@ -39,25 +39,22 @@ return {
         width = 851,
         height = 667,
     },
-    runescape_surface_south = {
-        sprites = {
-            {id.Sprite.THAS_GIELINOR_MAP_0, id.Sprite.THAS_GIELINOR_MAP_1},
-            {id.Sprite.THAS_GIELINOR_MAP_2, id.Sprite.THAS_GIELINOR_MAP_3},
-            {id.Sprite.THAS_GIELINOR_MAP_4, id.Sprite.THAS_GIELINOR_MAP_5},
-        },
-        width = 512,
-        height = 384,
-        crop = { x = 97, y = 129, width = 293, height = 174 }
+    runescapeSurfaceSouth = {
+        sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
+        width = 560,
+        height = 320,
+        crop = { x = 93, y = 81, width = 314, height = 213 }
     },
-    runescape_surface = {
-        sprites = {
-            {id.Sprite.THAS_GIELINOR_MAP_0, id.Sprite.THAS_GIELINOR_MAP_1},
-            {id.Sprite.THAS_GIELINOR_MAP_2, id.Sprite.THAS_GIELINOR_MAP_3},
-            {id.Sprite.THAS_GIELINOR_MAP_4, id.Sprite.THAS_GIELINOR_MAP_5},
-        },
-        width = 512,
-        height = 384,
-        crop = { x = 10, y = 33, width = 491, height = 270 }
+    runescapeSurfaceCenter = {
+        sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
+        width = 560,
+        height = 320,
+        crop = { x = 85, y = 0, width = 377, height = 320 }
+    },
+    runescapeSurface = {
+        sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
+        width = 560,
+        height = 320,
     },
     tirannwn = {
         sprites = {{ id.Sprite.ELFCITY_TELEPORT_MAP}},
