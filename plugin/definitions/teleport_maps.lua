@@ -9,6 +9,13 @@ function resize(icon, newSize)
     return result
 end
 
+function cropped(background, crop)
+    local result = utils.deepcopy(background)
+    result.crop = crop
+
+    return result
+end
+
 return {
     wildernessObelisks = {
         title = "Wilderness Obelisks",
@@ -43,7 +50,10 @@ return {
     },
     wildernessSword1 = {
         title = "Wilderness",
-        background = backgrounds.wildernessWest,
+        background = cropped(
+            backgrounds.wilderness,
+            { x = 0, y = 80, width = 512, height = 792 }
+        ),
         icons = teleportIcons.obelisk,
         entries = {
             ["1. Teleport to Edgeville"] = {
@@ -58,8 +68,10 @@ return {
     },
     wildernessSword23 = {
         title = "Wilderness",
-        background = backgrounds.wildernessWest,
-        icons = teleportIcons.obelisk,
+        background = cropped(
+            backgrounds.wilderness,
+            { x = 0, y = 80, width = 512, height = 792 }
+        ),        icons = teleportIcons.obelisk,
         entries = {
             ["1. Teleport to Edgeville"] = {
                 nameOverride = "Edgeville",
@@ -77,8 +89,10 @@ return {
     },
     wildernessSword4 = {
         title = "Wilderness",
-        background = backgrounds.wildernessWest,
-        icons = teleportIcons.obelisk,
+        background = cropped(
+            backgrounds.wilderness,
+            { x = 0, y = 80, width = 512, height = 792 }
+        ),        icons = teleportIcons.obelisk,
         entries = {
             ["1. Teleport to Edgeville"] = {
                 nameOverride = "Edgeville",
@@ -122,7 +136,10 @@ return {
     },
     ringOfDuelling = {
         title = "Ring of Duelling",
-        background = backgrounds.runescapeSurfaceSouth,
+        background = cropped(
+            backgrounds.runescapeSurface,
+            { x = 93, y = 81, width = 314, height = 213 }
+        ),
         entries = {
             ["1. Het's Oasis"] = {
                 icons = teleportIcons.relicOfHet,
@@ -145,7 +162,10 @@ return {
     },
     gamesNecklace = {
         title = "Games necklace",
-        background = backgrounds.runescapeSurfaceCenter,
+        background = cropped(
+            backgrounds.runescapeSurface,
+            { x = 85, y = 0, width = 377, height = 320 }
+        ),
         entries = {
             ["1. Troll Invasion"] = {
                 point = { x = 247, y = 41 },
@@ -265,7 +285,7 @@ return {
     },
     passingBracelet = {
         title = "Underworld",
-        background = backgrounds.city_of_um,
+        background = backgrounds.cityOfUm,
         entries = {
             ["1. City of Um: Hanging Gardens"] = {
                 nameOverride = "Hanging Gardens",
@@ -289,7 +309,7 @@ return {
     },
     underworldGrimoire23 = {
         title = "Underworld",
-        background = backgrounds.city_of_um,
+        background = backgrounds.cityOfUm,
         icons = teleportIcons.underworldTeleport,
         entries = {
             ["1. Teleport to Um Smithy"] = {

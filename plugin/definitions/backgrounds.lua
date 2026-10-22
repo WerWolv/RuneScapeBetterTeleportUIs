@@ -18,7 +18,7 @@ return {
         width = 1024,
         height = 882,
     },
-    city_of_um = {
+    cityOfUm = {
         image = "city_of_um",
         width = 888,
         height = 852,
@@ -28,28 +28,10 @@ return {
         width = 1024,
         height = 872,
     },
-    wildernessWest = {
-        image = "wilderness",
-        width = 1024,
-        height = 872,
-        crop = { x = 0, y = 80, width = 512, height = 792 }
-    },
     morytaniaSouth = {
         image = "southern_morytania",
         width = 851,
         height = 667,
-    },
-    runescapeSurfaceSouth = {
-        sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
-        width = 560,
-        height = 320,
-        crop = { x = 93, y = 81, width = 314, height = 213 }
-    },
-    runescapeSurfaceCenter = {
-        sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
-        width = 560,
-        height = 320,
-        crop = { x = 85, y = 0, width = 377, height = 320 }
     },
     runescapeSurface = {
         sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
