@@ -152,11 +152,11 @@ return {
                 icons = teleportIcons.elfClans.hefin
             },
             ["7. Iorwerth (Prifddinas)"] = {
-                point = { x = 230, y = 99 },
+                point = { x = 254, y = 123 },
                 icons = teleportIcons.elfClans.iorwerth
             },
             ["8. Ithell (Prifddinas)"] = {
-                point = { x = 254, y = 123 },
+                point = { x = 230, y = 99 },
                 icons = teleportIcons.elfClans.ithell
             },
             ["9. Meilyr (Prifddinas)"] = {
@@ -190,11 +190,11 @@ return {
                 icons = resize(teleportIcons.elfClans.hefin, 64)
             },
             ["5. Iorwerth (Prifddinas)"] = {
-                point = { x = 230, y = 99 },
+                point = { x = 254, y = 123 },
                 icons = resize(teleportIcons.elfClans.iorwerth, 64)
             },
             ["6. Ithell (Prifddinas)"] = {
-                point = { x = 254, y = 123 },
+                point = { x = 230, y = 99 },
                 icons = resize(teleportIcons.elfClans.ithell, 64)
             },
             ["7. Meilyr (Prifddinas)"] = {
