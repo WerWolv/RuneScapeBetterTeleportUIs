@@ -1,4 +1,34 @@
 local teleportIcons = {
+    menaphosFactions = {
+        imperial = {
+            normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_0},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_1},
+            size = 32,
+            shadowColor = 0x00000099,
+            shadowColorHovered = 0x00000099
+        },
+        merchant = {
+            normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_0},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_1},
+            size = 32,
+            shadowColor = 0x00000099,
+            shadowColorHovered = 0x00000099
+        },
+        port = {
+            normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_0},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_1},
+            size = 32,
+            shadowColor = 0x00000099,
+            shadowColorHovered = 0x00000099
+        },
+        worker = {
+            normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_0},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_1},
+            size = 32,
+            shadowColor = 0x400000FF,
+            shadowColorHovered = 0x400000FF,
+        },
+    },
     elfClans = {
         amlodd = {
             image = "elfClans/amlodd", imageWidth = 47, imageHeight = 75,
@@ -115,32 +145,32 @@ local teleportIcons = {
     },
     corporealBeast = {
         objectID = id.Obj.SUM2_SPIRIT_SHIELD_ELYSIAN,
-        size = 40,
+        size = 32,
         shadowColorHovered = 0x376C83CC
     },
     tearsOfGuthix = {
-        objectID = id.Obj.WOF_DD_TOKEN_TEARS_OF_GUTHIX,
-        size = 40,
+        objectID = id.Obj.WILDY_EVENTS_GENERAL_SKILL_HUNTER_BUTTERFLY,
+        size = 32,
         shadowColorHovered = 0x4B5075CC
     },
     trollInvasion = {
-        objectID = id.Obj.WOF_DD_TOKEN_TROLL_INVASION,
+        objectID = id.Obj.SLAYERGUIDE_TROLL,
         size = 40,
         shadowColorHovered = 0x3C3737CC
     },
     dice = {
         objectID = id.Obj.PENG_POW_DICE,
-        size = 40,
+        size = 32,
         shadowColorHovered = 0xAAAAAACC
     },
     horn = {
-        objectID = id.Obj.BARBASSAULT_HORN,
+        objectID = id.Obj.BARBASSAULT_HORN_COLLECTOR,
         size = 40,
         shadowColorHovered = 0xAAAAAACC
     },
     sickle = {
         objectID = id.Obj.MYQ4_ENCHANT_BLESS_SILVER_SICKLE_EMERALD,
-        size = 40,
+        size = 32,
         shadowColorHovered = 0x8E8282CC
     },
     squid = {
@@ -148,14 +178,33 @@ local teleportIcons = {
         size = 40,
         shadowColorHovered = 0x8E8282CC
     },
+    shiftingTombs = {
+        sprite = id.Sprite.MENAPHOS_TOMBS_ICON_SARCOPHAGUS,
+        size = 32,
+        shadowColor = 0x000000FF,
+        shadowColorHovered = 0x9A4521CC
+    },
+    sophanemSlayerDungeon = {
+        normal = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_LOCKED},
+        hovered = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_ACTIVE},
+        size = 32,
+        shadowColor = 0x9A4521FF,
+        shadowColorHovered = 0x9A4521C
+    },
+    bigBookOPiracy = {
+        objectID = id.Obj.FEVER_PIRACY_BOOK,
+        size = 40
+    },
 
     nextArrow = {
         sprite = id.Sprite.RIGHTARROW,
-        size = 35
+        size = 35,
+        shadowColor = 0x00000099,
     },
     prevArrow = {
         sprite = id.Sprite.LEFTARROW,
-        size = 35
+        size = 35,
+        shadowColor = 0x00000099
     },
 
 
