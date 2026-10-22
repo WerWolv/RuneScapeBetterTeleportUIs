@@ -31,36 +31,52 @@ local teleportIcons = {
     },
     elfClans = {
         amlodd = {
-            image = "elfClans/amlodd", imageWidth = 47, imageHeight = 75,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_0,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         cadarn = {
-            image = "elfClans/cadarn", imageWidth = 62, imageHeight = 75,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_5,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         crwys = {
-            image = "elfClans/crwys", imageWidth = 56, imageHeight = 80,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_2,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         hefin = {
-            image = "elfClans/hefin", imageWidth = 51, imageHeight = 75,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_3,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         iorwerth = {
-            image = "elfClans/iorwerth", imageWidth = 75, imageHeight = 70,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_1,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         ithell = {
-            image = "elfClans/ithell", imageWidth = 69, imageHeight = 68,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_4,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         meilyr = {
-            image = "elfClans/meilyr", imageWidth = 45, imageHeight = 78,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_6,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         trahaearn = {
-            image = "elfClans/trahaearn", imageWidth = 48, imageHeight = 75,
-            size = 40, shadowColorHovered = 0x00000099,
+            sprite = id.Sprite.AIF_ELF_CITY_CLAN_ICONS_7,
+            size = 40,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
     },
     elfcityTeleport = {
