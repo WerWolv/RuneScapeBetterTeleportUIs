@@ -267,19 +267,21 @@ return {
     passingBracelet = {
         title = "Underworld",
         background = backgrounds.city_of_um,
-        icons = teleportIcons.underworldTeleport,
         entries = {
             ["1. City of Um: Hanging Gardens"] = {
                 nameOverride = "Hanging Gardens",
-                point = { x = 737, y = 464 }
+                point = { x = 737, y = 464 },
+                icons = teleportIcons.elfcityTeleport[1],
             },
             ["2. City of Um: Haunt on the Hill"] = {
                 nameOverride = "Haunt on the Hill",
-                point = { x = 709, y = 223 }
+                point = { x = 709, y = 223 },
+                icons = teleportIcons.elfcityTeleport[0],
             },
             ["3. City of Um: Reflection Pool"] = {
                 nameOverride = "Reflection Pool",
-                point = { x = 555, y = 800 }
+                point = { x = 555, y = 800 },
+                icons = teleportIcons.elfcityTeleport[3],
             },
             ["4. Nowhere"] = {
                 hidden = true
@@ -309,15 +311,16 @@ return {
     underworldGrimoire4 = {
         title = "Underworld",
         background = backgrounds.city_of_um,
-        icons = teleportIcons.underworldTeleport,
         entries = {
             ["1. Teleport to Um Smithy"] = {
                 nameOverride = "Um Smithy",
-                point = { x = 616, y = 377 }
+                point = { x = 616, y = 377 },
+                icons = teleportIcons.umSmithyTeleport
             },
             ["2. Teleport to Um Ritual Site"] = {
                 nameOverride = "Um Ritual Site",
-                point = { x = 96, y = 590 }
+                point = { x = 96, y = 590 },
+                icons = teleportIcons.underworldTeleport,
             },
             ["3. Teleport to Ungael Ritual Site"] = {
                 nameOverride = "Ungael Ritual Site",
@@ -326,7 +329,8 @@ return {
             },
             ["4. Teleport to Lupe"] = {
                 nameOverride = "Lupe",
-                point = { x = 371, y = 417 }
+                point = { x = 371, y = 417 },
+                icons = teleportIcons.lupeTeleport
             }
         }
     },
@@ -386,5 +390,7 @@ return {
                 point = { x = 377, y = 728 }
             }
         }
-    }
+    },
+
+    
 }

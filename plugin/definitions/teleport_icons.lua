@@ -225,6 +225,24 @@ local teleportIcons = {
         objectID = id.Obj.FEVER_PIRACY_BOOK,
         size = 40
     },
+    slayerMaster = {
+        normal = { sprite = id.Sprite.TRH56_ICON_SLAYER_XP_2 },
+        hovered = { sprite = id.Sprite.TRH56_ICON_SLAYER_XP_1 },
+        size = 40,
+    },
+    lupeTeleport = {
+        image = "lupe_teleport",
+        size = 40,
+        shadowColor = 0x9A4521FF,
+        shadowColorHovered = 0x9A4521CC
+    },
+    umSmithyTeleport = {
+        image = "um_smithy_teleport",
+        size = 40,
+        shadowColor = 0x9A4521FF,
+        shadowColorHovered = 0x9A4521CC
+    },
+
 
     nextArrow = {
         sprite = id.Sprite.RIGHTARROW,
