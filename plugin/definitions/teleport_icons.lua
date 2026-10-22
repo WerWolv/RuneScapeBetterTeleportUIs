@@ -84,36 +84,50 @@ local teleportIcons = {
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_0_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_0_1},
             size = 34,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [1] = { -- Turquoise 
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_1_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_1_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [2] = { -- Blue-Green
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_2_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_2_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [3] = { -- Light Purple
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_3_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_3_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [4] = { -- Yellow
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_4_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_4_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [5] = { -- Green
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_5_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_5_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
         [6] = { -- Magenta
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_6_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_6_1},
-            size = 34,
+            size = 34, 
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
         },
     },
     obelisk = {
