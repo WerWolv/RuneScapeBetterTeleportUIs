@@ -5,15 +5,18 @@ local values, byKey, controls = {}, {}, {}
 local view
 local parent
 
+-- Treat absent or whitespace-only descriptions as omitted.
 local function hasDescription(definition)
     return definition.description ~= nil and not definition.description:match("^%s*$")
 end
 
+-- Each setting type supplies typed persistence, validation, and a UI control builder.
 local types = {
     boolean = {
         read = function(key) return PersistentDB:GetBool(key) end,
         write = function(key, value) PersistentDB:SetBool(key, value) end,
         valid = function(value) return type(value) == "boolean" end,
+        -- Bind a checkbox to the setting and return its UI synchronization callback.
         create = function(host, definition)
             local control = host:AddCheckboxButton({
                 {text = definition.label, value = definition.key, selected = values[definition.key]},
@@ -29,10 +32,12 @@ local types = {
     number = {
         read = function(key) return PersistentDB:GetFloat(key) end,
         write = function(key, value) PersistentDB:SetFloat(key, value) end,
+        -- Accept only finite numbers within the slider's configured range.
         valid = function(value, definition)
             return type(value) == "number" and value == value and math.abs(value) < math.huge
                 and value >= (definition.min or 0) and value <= (definition.max or 100)
         end,
+        -- Bind a labelled slider to the setting without notifying during UI synchronization.
         create = function(host, definition)
             host:AddText(definition.label)
             local control = host:AddSlider({
@@ -50,6 +55,7 @@ local types = {
         read = function(key) return PersistentDB:GetString(key) end,
         write = function(key, value) PersistentDB:SetString(key, value) end,
         valid = function(value) return type(value) == "string" end,
+        -- Bind a labelled text field to the setting and save edits as they occur.
         create = function(host, definition)
             host:AddText(definition.label)
             local control = host:AddTextField({
@@ -63,6 +69,7 @@ local types = {
     },
 }
 
+-- Validate the schema once and initialize defaults before loading persistent values.
 for _, definition in ipairs(definitions) do
     assert(type(definition.key) == "string" and definition.key ~= "", "Setting requires a key")
     assert(byKey[definition.key] == nil, "Duplicate setting: " .. definition.key)
@@ -75,11 +82,13 @@ for _, definition in ipairs(definitions) do
     values[definition.key] = definition.default
 end
 
+-- Retrieve the current value of a declared setting.
 function settings.Get(key)
     assert(byKey[key] ~= nil, "Unknown setting: " .. tostring(key))
     return values[key]
 end
 
+-- Validate and persist a changed value, then synchronize its open control.
 function settings.Set(key, value)
     local definition = byKey[key]
     assert(definition ~= nil, "Unknown setting: " .. tostring(key))
@@ -93,11 +102,11 @@ function settings.Set(key, value)
     values[key] = value
     handler.write(key, value)
 
-    -- Also update an open control when callers change a setting programmatically.
-    -- The equality check above prevents loops from controls that emit on sync.
+    -- The equality check above prevents feedback loops when synchronizing an open control.
     if controls[key] ~= nil then controls[key](value) end
 end
 
+-- Detach resize handling and discard the settings view, tolerating already-destroyed UI.
 local function clearView()
     controls = {}
 
@@ -113,6 +122,7 @@ local function clearView()
     parent, view = nil, nil
 end
 
+-- Populate the client-provided settings layer from the settings definitions.
 local function buildSettings(event)
     clearView()
     parent = event.component
@@ -135,11 +145,13 @@ local function buildSettings(event)
         end
     end
 
+    -- Keep the scrolling view fitted to the settings panel as it resizes.
     parent:Subscribe(ui.Hook.ONRESIZE, eventID, function(control)
         if view ~= nil then view:SetSize(control.width, control.height) end
     end)
 end
 
+-- Load valid saved values and register the settings-panel builder.
 function settings.Start()
     for _, definition in ipairs(definitions) do
         local handler = types[definition.type]
@@ -154,6 +166,7 @@ function settings.Start()
     Event.SettingsLayerReady.Subscribe(eventID, buildSettings)
 end
 
+-- Unregister the settings event and release the mounted view.
 function settings.Stop()
     Event.SettingsLayerReady.Unsubscribe(eventID)
     clearView()

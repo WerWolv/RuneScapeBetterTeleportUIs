@@ -2,16 +2,18 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local utils = require("impl/utils")
 
-function resize(icon, newSize)
+-- Create a resized icon variant without modifying its shared definition.
+local function resize(icon, newSize)
     local result = utils.deepcopy(icon)
     result.size = newSize
 
     return result
 end
 
-function cropped(background, crop)
+-- Create an independent background variant with the requested crop rectangle.
+local function cropped(background, crop)
     local result = utils.deepcopy(background)
-    result.crop = crop
+    result.crop = utils.deepcopy(crop)
 
     return result
 end
@@ -71,7 +73,8 @@ return {
         background = cropped(
             backgrounds.wilderness,
             { x = 0, y = 80, width = 512, height = 792 }
-        ),        icons = teleportIcons.obelisk,
+        ),
+        icons = teleportIcons.obelisk,
         entries = {
             ["1. Teleport to Edgeville"] = {
                 nameOverride = "Edgeville",
@@ -92,7 +95,8 @@ return {
         background = cropped(
             backgrounds.wilderness,
             { x = 0, y = 80, width = 512, height = 792 }
-        ),        icons = teleportIcons.obelisk,
+        ),
+        icons = teleportIcons.obelisk,
         entries = {
             ["1. Teleport to Edgeville"] = {
                 nameOverride = "Edgeville",
@@ -335,15 +339,16 @@ return {
     underworldGrimoire23 = {
         title = "Underworld",
         background = backgrounds.cityOfUm,
-        icons = teleportIcons.underworldTeleport,
         entries = {
             ["1. Teleport to Um Smithy"] = {
                 nameOverride = "Um Smithy",
-                point = { x = 616, y = 377 }
+                point = { x = 616, y = 377 },
+                icons = teleportIcons.umSmithyTeleport
             },
             ["2. Teleport to Um Ritual Site"] = {
                 nameOverride = "Um Ritual Site",
-                point = { x = 96, y = 590 }
+                point = { x = 96, y = 590 },
+                icons = teleportIcons.underworldTeleport,
             },
             ["3. Teleport to Ungael Ritual Site"] = {
                 nameOverride = "Ungael Ritual Site",
@@ -354,7 +359,7 @@ return {
     },
     underworldGrimoire4 = {
         title = "Underworld",
-        background = backgrounds.city_of_um,
+        background = backgrounds.cityOfUm,
         entries = {
             ["1. Teleport to Um Smithy"] = {
                 nameOverride = "Um Smithy",

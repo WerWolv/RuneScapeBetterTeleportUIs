@@ -15,6 +15,8 @@ local function textHeight(font, text, width)
     return ok and math.max(18, height) or math.max(1, math.ceil(#text * 7 / width)) * 18
 end
 
+
+-- Attach a tooltip with title and optional description to the cursor
 function teleportTooltip.Attach(target, parent, title, description)
     if description == nil or description:match("^%s*$") then
         return prettyui.Tooltip.attach(target, parent, {
@@ -33,6 +35,7 @@ function teleportTooltip.Attach(target, parent, title, description)
         )
     )
 
+    -- Reserve separate regions so the title, divider, and wrapped description cannot overlap.
     local contentWidth = width - paddingX * 2
     local titleHeight = textHeight(font, title, contentWidth)
     local descriptionHeight = textHeight(font, description, contentWidth)
@@ -63,7 +66,7 @@ function teleportTooltip.Attach(target, parent, title, description)
     body.rgba = 0xD4CBB9FF
     body.maxLines = 0
     body.clickthrough = true
-    
+
     return tooltip
 end
 
