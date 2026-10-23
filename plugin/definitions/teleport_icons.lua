@@ -1,4 +1,4 @@
-local teleportIcons = {
+return {
     menaphosFactions = {
         imperial = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_0},
@@ -231,13 +231,13 @@ local teleportIcons = {
         size = 40,
     },
     lupeTeleport = {
-        image = "lupe_teleport",
+        image = Plugin.resources.icons.lupe_teleport,
         size = 40,
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521CC
     },
     umSmithyTeleport = {
-        image = "um_smithy_teleport",
+        image = Plugin.resources.icons.um_smithy_teleport,
         size = 40,
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521CC
@@ -262,5 +262,3 @@ local teleportIcons = {
 
 
 }
-
-return teleportIcons

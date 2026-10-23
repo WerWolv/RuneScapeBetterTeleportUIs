@@ -3,33 +3,33 @@
 -- Each entry of this table has the following fields
 -- - width: The width of the image
 -- - height: The height of the image
--- - image (only if sprites is not defined): File name stored under resources/backgrounds
+-- - image (only if sprites is not defined): A Plugin.resources.backgrounds resource object
 -- - sprites (only if image is not defined): A 2D Array of Sprite IDs. Use {{ id.Sprite.Something }} if the sprite contains the full image
 -- - crop (optional): x, y, width and height of the crop area
 
 return {
     pirate_islands = {
-        image = "pirate_islands",
+        image = Plugin.resources.backgrounds.pirate_islands,
         width = 805,
         height = 785,
     },
     menaphos = {
-        image = "menaphos",
+        image = Plugin.resources.backgrounds.menaphos,
         width = 1024,
         height = 882,
     },
     cityOfUm = {
-        image = "city_of_um",
+        image = Plugin.resources.backgrounds.city_of_um,
         width = 888,
         height = 852,
     },
     wilderness = {
-        image = "wilderness",
+        image = Plugin.resources.backgrounds.wilderness,
         width = 1024,
         height = 872,
     },
     morytaniaSouth = {
-        image = "southern_morytania",
+        image = Plugin.resources.backgrounds.southern_morytania,
         width = 851,
         height = 667,
     },

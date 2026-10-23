@@ -1,19 +1,13 @@
 local destinations = require("definitions/teleport_maps")
-local settings = require("definitions/constants")
+local constants = require("definitions/constants")
 local modalMap = require("impl/modal_map")
 local mapGeometry = require("impl/map_geometry")
+local utils = require("impl/utils")
 local userSettings = require("impl/settings")
-local maxWidth = settings.maxWidth
-local defaultShadowColor = settings.defaultShadowColor
-local defaultShadowColorHovered = settings.defaultShadowColorHovered
+local maxWidth = constants.maxWidth
+local defaultShadowColor = constants.defaultShadowColor
+local defaultShadowColorHovered = constants.defaultShadowColorHovered
 local teleportMaps = {}
-
-local function cleanText(text)
-    return (text or "")
-        :gsub("<[^>]*>", "")
-        :gsub("^%s+", "")
-        :gsub("%s+$", "")
-end
 
 local preview
 local imageHost
@@ -27,7 +21,15 @@ local hoveredDestination
 local previewWidth, previewHeight = 0, 0
 local lastImageError
 
+-- Report an image error only when it differs from the last failure.
+local function reportImageError(message)
+    if message ~= lastImageError then
+        print(message)
+        lastImageError = message
+    end
+end
 
+-- Lazily create the map layers inside the modal content.
 local function ensurePreview(parent)
     if preview ~= nil then
         return true
@@ -50,6 +52,7 @@ local function ensurePreview(parent)
     return true
 end
 
+-- Destroy plugin-owned artwork and restore the modal's saved state.
 local function releaseModal()
     -- The client may already have destroyed the modal when it closes.
     if previewImage ~= nil then
@@ -74,34 +77,26 @@ local function releaseModal()
     markers = {}
     previewWidth, previewHeight = 0, 0
     modalMap.Restore()
-    activeDestinations = nil
+    activeDestinations, selectedDestination, hoveredDestination = nil, nil, nil
 end
 
+-- Resolve and draw the selected background, rebuilding only when its source or layout changes.
 local function showPreview(name, parent)
     local background = activeDestinations[name].background
+    -- Built-in sprites take precedence over disk resources and need no explicit loading.
     local image = background.sprites or background.sprite
 
     if image == nil then
-        local backgrounds = Plugin.resources.backgrounds
-        image = background.image and
-            ((backgrounds and backgrounds[background.image]) or Plugin.resources[background.image])
+        image = background.image
         if image == nil then
-            local message = "Image resource not found: " .. tostring(background.image) ..
-                ".png (set image, sprite, or sprites; refresh PNG resources with prf)."
-            if lastImageError ~= message then
-                print(message)
-                lastImageError = message
-            end
+            reportImageError("Background resource missing for " .. name ..
+                " (set image to a Plugin.resources reference, or use sprite/sprites; refresh resources with prf).")
             return false
         end
         if not image.loaded then
             local result = image:Load()
             if not image.loaded then
-                local message = "Image load failed: " .. background.image .. ": " .. tostring(result)
-                if lastImageError ~= message then
-                    print(message)
-                    lastImageError = message
-                end
+                reportImageError("Image load failed: " .. tostring(image.path) .. ": " .. tostring(result))
             end
         end
         if not image.loaded then
@@ -114,6 +109,7 @@ local function showPreview(name, parent)
     end
 
     lastImageError = nil
+    -- Include crop coordinates in the cache key so panning a same-sized crop still redraws it.
     local crop = mapGeometry.Bounds(background)
     local view = table.concat({
         background.width, background.height,
@@ -122,20 +118,14 @@ local function showPreview(name, parent)
     }, ":")
 
     local imageWidth, imageHeight = modalMap.Fit(background, maxWidth)
-    local width, height = imageWidth, imageHeight
-
-    if previewWidth ~= width or previewHeight ~= height then
-        previewWidth, previewHeight = width, height
-        preview:SetSize(width, height)
+    local resized = previewWidth ~= imageWidth or previewHeight ~= imageHeight
+    if resized then
+        previewWidth, previewHeight = imageWidth, imageHeight
+        preview:SetSize(imageWidth, imageHeight)
         imageHost:SetSize(imageWidth, imageHeight)
-
-        if previewImage ~= nil then
-            previewImage:Destroy()
-            previewImage = nil
-        end
     end
 
-    if previewImage ~= nil and (currentImage ~= image or currentView ~= view) then
+    if previewImage ~= nil and (resized or currentImage ~= image or currentView ~= view) then
         previewImage:Destroy()
         previewImage = nil
     end
@@ -158,6 +148,7 @@ local function showPreview(name, parent)
         previewImage:SetSize(imageWidth, imageHeight)
         previewImage.clickthrough = true
 
+        -- Make sure backgrounds that consist of multiple sprites don't have visible gaps between them.
         for rowIndex, row in ipairs(grid) do
             for columnIndex, spriteID in ipairs(row) do
                 local left, top, tileWidth, tileHeight = mapGeometry.Rectangle(background,
@@ -213,20 +204,7 @@ local function showPreview(name, parent)
     return true
 end
 
-local function findIconResource(root, name)
-    if root == nil or name == nil then 
-        return nil 
-    end
-
-    local resource = root
-    for part in name:gmatch("[^/]+") do
-        resource = resource[part]
-        if resource == nil then return nil end
-    end
-
-    return resource
-end
-
+-- Fit an icon into its square marker while preserving proportions and shadow space.
 local function iconBounds(source, icons, size)
     local inset = (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) and 2 or 0
     local available = math.max(1, size - inset * 2)
@@ -248,11 +226,13 @@ local function iconBounds(source, icons, size)
     }
 end
 
+-- Convert Vector4 shadow colors to packed RGBA, leaving existing hex values unchanged.
 local function shadowRGBA(color)
     if type(color) == "number" then 
         return color
     end
 
+    -- Convert one normalized color channel into a clamped byte.
     local function byte(value) 
         return math.floor(math.max(0, math.min(1, value)) * 255 + 0.5)     
     end
@@ -260,12 +240,14 @@ local function shadowRGBA(color)
     return (byte(color.x) << 24) | (byte(color.y) << 16) | (byte(color.z) << 8) | byte(color.w)
 end
 
+-- Choose the normal or hovered shadow color, suppressing shadows for disabled destinations.
 local function getShadowColor(icons, highlighted, disabled)
     if disabled then return 0x00000000 end
     if highlighted then return icons.shadowColorHovered or defaultShadowColorHovered end
     return icons.shadowColor or defaultShadowColor
 end
 
+-- Maintain a tinted, offset copy behind non-item icons for their current shadow state.
 local function updateSpriteShadow(marker, image, icons, highlighted, disabled, size)
     if icons.shadowColor == nil and icons.shadowColorHovered == nil then
         return
@@ -289,20 +271,18 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled, s
             marker.shadow:Destroy()
         end
 
-        local bounds = marker.bounds
-        marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, {
-            x = bounds.x + offset, 
-            y = bounds.y + offset,
-            width = bounds.width, 
-            height = bounds.height, 
-            colour = color,
-        })
+        local options = utils.deepcopy(marker.bounds)
+        options.x = options.x + offset
+        options.y = options.y + offset
+        options.colour = color
+        marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, options)
 
         marker.shadowImage, marker.shadowTint = image, color
         marker.shadowOffset = offset
     end
 end
 
+-- Show the original option's numeric prefix at the icon's top-right when enabled in settings.
 local function updateHotkey(marker, name, size, disabled)
     local hotkey = name:match("^%s*(%d+)%.")
     if not userSettings.Get("showTeleportHotkeys") or hotkey == nil then
@@ -338,6 +318,7 @@ local function updateHotkey(marker, name, size, disabled)
     marker.hotkey:MoveToFront()
 end
 
+-- Create or reuse a destination marker and apply its image, hover and disabled states.
 local function getMarker(name, icons, highlighted, disabled)
     highlighted = highlighted and not disabled
     local marker = markers[name]
@@ -351,8 +332,7 @@ local function getMarker(name, icons, highlighted, disabled)
     if objectID == nil then
         image = source.sprite
         if image == nil then
-            local resourceName = source.image or (highlighted and source.highlighted or source.dimmed)
-            image = findIconResource(Plugin.resources.icons, resourceName) or findIconResource(Plugin.resources, resourceName)
+            image = source.image
 
             if image ~= nil and not image.loaded then
                 image:Load()
@@ -365,6 +345,7 @@ local function getMarker(name, icons, highlighted, disabled)
     end
 
     if marker ~= nil and marker.kind ~= kind then
+        -- Switching between inventory items and ordinary sprites requires a new component type.
         if marker.shadow ~= nil then marker.shadow:Destroy() end
         if marker.sprite ~= nil then marker.sprite:Destroy() end
 
@@ -390,7 +371,7 @@ local function getMarker(name, icons, highlighted, disabled)
             marker.objectID = objectID
         else
             marker.bounds = iconBounds(source, icons, size)
-            marker.sprite = prettyui.Sprite.new(layer, image, marker.bounds)
+            marker.sprite = prettyui.Sprite.new(layer, image, utils.deepcopy(marker.bounds))
             marker.image = image
         end
 
@@ -400,6 +381,7 @@ local function getMarker(name, icons, highlighted, disabled)
     if marker.itemSprite ~= nil and marker.objectID ~= objectID then
         marker.itemSprite.associatedObjectID = objectID
         marker.objectID = objectID
+        -- Reapply styling after swapping the associated inventory item.
         marker.highlighted, marker.disabled = nil, nil
     end
 
@@ -439,6 +421,7 @@ local function getMarker(name, icons, highlighted, disabled)
     return marker
 end
 
+-- Position visible destination icons on the active map and hide unused or cropped-out markers.
 local function updateMarkers(rows)
     for _, marker in pairs(markers) do
         marker.layer.hidden = true
@@ -475,64 +458,20 @@ local function updateMarkers(rows)
     end
 end
 
-local collectionTypes = {
-    [ui.ComponentType.LAYER] = true,
-    [ui.ComponentType.PANEL] = true,
-    [ui.ComponentType.GRID] = true,
-    [ui.ComponentType.PAGED_LAYER] = true,
-    [ui.ComponentType.PAGED_CAROUSEL] = true,
-    [ui.ComponentType.GROUP_BOX] = true,
-}
-
-local function collectLabels(component, labels, visited)
-    local key = table.concat({
-        component.interfaceID,
-        component.staticID,
-        component.categoryID,
-        component.dynamicID,
-    }, ":")
-
-    if visited[key] or not component.visibleGlobal then
-        return
-    end
-    visited[key] = true
-
-    local text
-    if component.type == ui.ComponentType.LABEL then
-        text = component.content
-    elseif component.type == ui.ComponentType.BUTTON then
-        text = component.label
-    end
-
-    text = cleanText(text)
-    if text ~= "" then
-        labels[text] = true
-    end
-
-    if collectionTypes[component.type] then
-        local function visit(child)
-            collectLabels(child, labels, visited)
-            return false
-        end
-
-        component:IterateStaticComponents(visit)
-        component:IterateDynamicComponents(visit)
-    end
-end
-
 local lastLayoutError
 
+-- Match the current menu and update its map, hitboxes, markers and tooltip each frame.
 local function draw()
     local ok, message = pcall(
         function()
-            local menu = modalMap.ReadRows(collectLabels, destinations)
+            local menu = modalMap.ReadRows(destinations)
             if menu == nil then
                 releaseModal()
-                selectedDestination, hoveredDestination = nil, nil
                 return
             end
 
             if not modalMap.Matches(menu) then
+                -- Restore the previous menu before attaching to a different interface or option set.
                 releaseModal()
                 modalMap.Begin(menu)
                 selectedDestination = menu.defaultDestination
@@ -555,6 +494,7 @@ local function draw()
     )
     
     if not ok then
+        -- Leave the original menu usable if any part of the custom layout fails.
         releaseModal()
         message = tostring(message)
         if message ~= lastLayoutError then
@@ -564,10 +504,12 @@ local function draw()
     end
 end
 
+-- Subscribe the renderer to the client's draw event.
 function teleportMaps.Start()
     Event.Draw.Subscribe("destinationPreview", draw)
 end
 
+-- Stop rendering and restore the native interface when the plugin unloads.
 function teleportMaps.Stop()
     Event.Draw.Unsubscribe("destinationPreview")
     releaseModal()

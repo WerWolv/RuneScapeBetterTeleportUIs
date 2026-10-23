@@ -2,10 +2,12 @@
 local modalMap = {}
 local teleportTooltip = require("impl/teleport_tooltip")
 local mapGeometry = require("impl/map_geometry")
+local utils = require("impl/utils")
 local settings = require("definitions/constants")
 local session
 local lastMatchReport
 
+-- Print changed match diagnostics when debug matching is enabled.
 local function reportMatch(lines)
     if not settings.debugMatching then
         lastMatchReport = nil
@@ -18,6 +20,7 @@ local function reportMatch(lines)
     end
 end
 
+-- Format detected labels in a stable order for readable matching diagnostics.
 local function labelSummary(labels)
     local names = {}
     for text in pairs(labels) do names[#names + 1] = string.format("%q", text) end
@@ -36,11 +39,52 @@ local collectionTypes = {
     [ui.ComponentType.GROUP_BOX] = true,
 }
 
+-- Identify a static or dynamic UI component uniquely during tree traversal.
+local function controlKey(control)
+    return table.concat({control.interfaceID, control.staticID, control.categoryID, control.dynamicID}, ":")
+end
+
+-- Remove formatting tags and surrounding whitespace before matching option labels.
+local function cleanText(text)
+    return (text or ""):gsub("<[^>]*>", ""):gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+-- Visit both static and dynamic children when a component supports collections.
+local function visitChildren(control, callback)
+    if collectionTypes[control.type] then
+        control:IterateStaticComponents(callback)
+        control:IterateDynamicComponents(callback)
+    end
+end
+
+-- Gather visible label and button text without visiting the same component twice.
+local function collectLabels(control, labels, visited)
+    local key = controlKey(control)
+    if visited[key] or not control.visibleGlobal then return false end
+    visited[key] = true
+
+    local text
+    if control.type == ui.ComponentType.LABEL then
+        text = control.content
+    elseif control.type == ui.ComponentType.BUTTON then
+        text = control.label
+    end
+    text = cleanText(text)
+    if text ~= "" then labels[text] = true end
+
+    visitChildren(control, function(child)
+        return collectLabels(child, labels, visited)
+    end)
+    return false
+end
+
+-- Look up a named component belonging to MODAL_CHOICE.
 local function component(name)
     local componentID = id.Component["MODAL_CHOICE__" .. name]
     return componentID and ui.Interfaces:GetComponent(componentID) or nil
 end
 
+-- Treat a native control as unavailable only when all its named actions are explicitly hidden.
 local function isDisabled(control)
     local ok, disabled = pcall(
         function()
@@ -67,6 +111,7 @@ local function isDisabled(control)
     return ok and disabled or false
 end
 
+-- Save a component's original state once so layout changes can be reversed later.
 local function remember(control)
     if session.saved[control] == nil then
         local snapshot = {
@@ -85,6 +130,7 @@ local function remember(control)
     end
 end
 
+-- Resolve a snapshot's component IDs against the currently loaded interface.
 local function currentControl(snapshot)
     if snapshot.categoryID >= 0 and snapshot.dynamicID >= 0 then
         return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, snapshot.staticID,
@@ -94,6 +140,7 @@ local function currentControl(snapshot)
     return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, snapshot.staticID)
 end
 
+-- Replace the modal title
 local function updateVisibleTitle()
     if #session.titles > 0 then
         local valid = true
@@ -116,8 +163,9 @@ local function updateVisibleTitle()
     end
 
     local visited = {}
+    -- Find generic headings in both labels and group-box header text.
     local function inspect(control)
-        local key = table.concat({control.staticID, control.categoryID, control.dynamicID}, ":")
+        local key = controlKey(control)
         if visited[key] or control.interfaceID ~= id.Interface.MODAL_CHOICE then return false end
         visited[key] = true
 
@@ -125,12 +173,7 @@ local function updateVisibleTitle()
         if control.type == ui.ComponentType.LABEL or header then
             local text = header and control.headerText.content or control.content
             if text ~= nil and text ~= "" and control.visibleGlobal then
-                local normalized = 
-                    text
-                    :gsub("<[^>]*>", "")
-                    :gsub("%s+", " ")
-                    :gsub("^%s+", "")
-                    :gsub("%s+$", ""):upper()
+                local normalized = cleanText(text):gsub("%s+", " "):upper()
 
                 local snapshot = session.saved[control]
                 local previouslyMatched = snapshot and snapshot.visibleTitle
@@ -154,22 +197,19 @@ local function updateVisibleTitle()
             end
         end
 
-        if collectionTypes[control.type] then
-            control:IterateStaticComponents(inspect)
-            control:IterateDynamicComponents(inspect)
-        end
+        visitChildren(control, inspect)
 
         return false
     end
 
-    -- This interface has static IDs 0..45; some header labels are created
-    -- dynamically under them rather than living in the named TITLE component.
+    -- Scan static IDs 0–45 and their dynamic children because the visible heading may not be TITLE.
     for staticID = 0, 45 do
         local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
         if control ~= nil then inspect(control) end
     end
 end
 
+-- Remove tooltips and restore saved properties on native components that still exist.
 function modalMap.Restore()
     if session == nil then
         return
@@ -183,8 +223,7 @@ function modalMap.Restore()
         pcall(function() prettyui.Tooltip.unregisterContext(parent) end)
     end
 
-    -- A closed interface may already have destroyed its controls. Never restore
-    -- saved state onto a new instance that happens to reuse the same IDs.
+    -- Only restore the original control instance, since a new modal may reuse its IDs.
     for _, snapshot in ipairs(session.order) do
         pcall(
             function()
@@ -208,6 +247,7 @@ function modalMap.Restore()
     session = nil
 end
 
+-- Resolve every visible row against a single teleport group and score the complete match.
 local function matchGroup(nativeRows, group)
     if type(group) ~= "table" or type(group.entries) ~= "table" then
         return nil, "missing entries table"
@@ -226,7 +266,7 @@ local function matchGroup(nativeRows, group)
             end
         end
 
-        -- Match the whole visible menu against one group, not a global name index.
+        -- Match the whole visible menu against one group
         if name == nil then
             return nil, "OPTION_" .. native.index .. " has no configured entry for " .. labelSummary(native.labels)
         end
@@ -235,13 +275,11 @@ local function matchGroup(nativeRows, group)
             return nil, string.format("entry %q must be a table", name)
         end
 
-        local destination = {}
-        for key, value in pairs(group.entries[name]) do 
-            destination[key] = value 
-        end
+        local definition = group.entries[name]
+        local destination = utils.deepcopy(definition)
 
-        destination.background = destination.background or group.background
-        destination.icons = destination.icons or group.icons
+        destination.background = definition.background or group.background
+        destination.icons = definition.icons or group.icons
 
         local hidden = destination.hidden == true
         if not hidden then
@@ -294,7 +332,8 @@ local function matchGroup(nativeRows, group)
     }
 end
 
-function modalMap.ReadRows(readLabels, groups)
+-- Inspect native option rows and select the best fully matching teleport map definition
+function modalMap.ReadRows(groups)
     local window = component("MODAL_DIALOG_WINDOW")
     local content = component("MODAL_DIALOG_WINDOW_CONTENT")
     if window == nil or not window.visibleGlobal then
@@ -319,7 +358,7 @@ function modalMap.ReadRows(readLabels, groups)
 
         if row ~= nil and row.visibleGlobal and click ~= nil then
             local labels = {}
-            readLabels(row, labels, {})
+            collectLabels(row, labels, {})
             local ancestor = click
 
             while ancestor ~= nil and ancestor ~= row do 
@@ -354,20 +393,25 @@ function modalMap.ReadRows(readLabels, groups)
 
     local menu, selectedGroupName
     local groupNames, failures, matches = {}, {}, {}
+    local candidateCount = 0
     for name in pairs(groups) do 
         groupNames[#groupNames + 1] = name
     end
     table.sort(groupNames)
-    
+
+    -- Prefer more matched rows, then fewer unused definitions, with group names breaking exact ties.
     for _, name in ipairs(groupNames) do
         local candidate, reason = matchGroup(nativeRows, groups[name])
         if candidate ~= nil then
+            candidateCount = candidateCount + 1
             if menu == nil or candidate.matchCount > menu.matchCount
                 or (candidate.matchCount == menu.matchCount and candidate.unusedEntries < menu.unusedEntries) then
                 menu, selectedGroupName = candidate, name
             end
-            matches[#matches + 1] = name .. " (" .. candidate.matchCount .. " matches, " ..
-                candidate.unusedEntries .. " unused entries)"
+            if settings.debugMatching then
+                matches[#matches + 1] = name .. " (" .. candidate.matchCount .. " matches, " ..
+                    candidate.unusedEntries .. " unused entries)"
+            end
         elseif settings.debugMatching then
             failures[#failures + 1] = "  " .. name .. ": " .. reason
         end
@@ -375,7 +419,7 @@ function modalMap.ReadRows(readLabels, groups)
 
     if menu ~= nil then
         menu.window, menu.content = window, content
-        if #matches > 1 then
+        if candidateCount > 1 and settings.debugMatching then
             reportMatch({"Selected " .. selectedGroupName .. " by match count, then fewest unused entries.",
                 "Candidates: " .. table.concat(matches, ", ")})
         else
@@ -403,6 +447,7 @@ function modalMap.ReadRows(readLabels, groups)
     return nil
 end
 
+-- Check whether the mounted session can be reused for this menu and its tooltip data.
 function modalMap.Matches(menu)
     if session == nil or session.window ~= menu.window or session.content ~= menu.content
         or session.group ~= menu.group or session.headerText ~= menu.title
@@ -423,6 +468,7 @@ function modalMap.Matches(menu)
     return true
 end
 
+-- Capture the modal's original layout and attach cursor-following tooltips to its buttons.
 function modalMap.Begin(menu)
     assert(session == nil, "Restore the previous modal before attaching a new map")
     local window, content = menu.window, menu.content
@@ -480,6 +526,8 @@ function modalMap.Begin(menu)
     end
 
     local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or window.parent
+
+    -- Convert native button positions to overlay coordinates so tooltips avoid clipping and scale offsets.
     for _, entry in ipairs(menu.rows) do
         if not entry.hidden then
             local parent = entry.click.parent
@@ -500,6 +548,7 @@ function modalMap.Begin(menu)
     end
 end
 
+-- Show only the hovered destination's tooltip and hide all others.
 function modalMap.UpdateTooltip(name)
     if session == nil then return end
     for destination, tooltip in pairs(session.tooltips) do
@@ -511,6 +560,7 @@ function modalMap.UpdateTooltip(name)
     end
 end
 
+-- Apply a global rectangle in the control's parent coordinate space after saving its original layout.
 local function setRect(control, x, y, width, height)
     remember(control)
     local parentPosition = control.parent.xyGlobal
@@ -519,6 +569,7 @@ local function setRect(control, x, y, width, height)
     control:SetSize(width, height)
 end
 
+-- Fit the cropped map inside the available window space while retaining its aspect ratio.
 function modalMap.Fit(background, maxWidth)
     local crop = mapGeometry.Bounds(background)
     local parent = session.window.parent
@@ -541,6 +592,7 @@ function modalMap.Fit(background, maxWidth)
         )
 end
 
+-- Resize the native modal and align its original click targets with the displayed map icons.
 function modalMap.Layout(width, height, imageHost, destinations)
     updateVisibleTitle()
 
@@ -559,19 +611,34 @@ function modalMap.Layout(width, height, imageHost, destinations)
 
     for _, name in ipairs({"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"}) do
         local control = component(name)
-        if control ~= nil then setRect(control, origin.x, origin.y, windowWidth, windowHeight) end
+        if control ~= nil then 
+            setRect(control, origin.x, origin.y, windowWidth, windowHeight) 
+        end
     end
 
     local close = session.close
     if close ~= nil then
-        setRect(close.control, origin.x + windowWidth - close.width - close.right,
-            origin.y + close.top, close.width, close.height)
+        setRect(
+            close.control, 
+            origin.x + windowWidth - close.width - close.right,
+            origin.y + close.top, 
+            close.width, 
+            close.height
+        )
     end
 
     local title = session.title
     if title ~= nil then
-        setRect(title.control, origin.x + title.left, origin.y + title.top,
-            math.max(1, windowWidth - title.left - title.right), title.height)
+        setRect(
+            title.control, 
+            origin.x + title.left, 
+            origin.y + title.top,
+            math.max(
+                1, 
+                windowWidth - title.left - title.right
+            ), 
+            title.height
+        )
     end
 
     -- Expand intermediate clipping containers before moving individual rows.
@@ -614,6 +681,8 @@ function modalMap.Layout(width, height, imageHost, destinations)
         entry.row.clickthrough = true
 
         local chain = {}
+
+        -- Resize the original input hierarchy
         local control = entry.click
         while control ~= entry.row do
             chain[#chain + 1] = control
@@ -630,6 +699,7 @@ function modalMap.Layout(width, height, imageHost, destinations)
     end
 end
 
+-- Return the hovered native destination only when its map point is visible and not hidden by configuration.
 function modalMap.Hovered(menu)
     for _, entry in ipairs(menu.rows) do
         if not entry.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
