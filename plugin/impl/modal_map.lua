@@ -207,8 +207,8 @@ local function matchGroup(nativeRows, group)
         return nil, "missing entries table"
     end
 
-    local rows, destinations = {}, {}
-    local background, defaultDestination
+    local rows, matched = {}, {}
+    local background
     for _, native in ipairs(nativeRows) do
         local name
         for text in pairs(native.labels) do
@@ -230,10 +230,12 @@ local function matchGroup(nativeRows, group)
         end
 
         local definition = group.entries[name]
-        local destination = utils.deepcopy(definition)
-
-        destination.background = definition.background or group.background
-        destination.icons = definition.icons or group.icons
+        local destination = {
+            hidden = definition.hidden,
+            point = definition.point,
+            background = definition.background or group.background,
+            icons = definition.icons or group.icons,
+        }
 
         local hidden = destination.hidden == true
         if not hidden then
@@ -250,26 +252,21 @@ local function matchGroup(nativeRows, group)
             end
 
             background = destination.background
-            defaultDestination = defaultDestination or name
         end
 
-        destinations[name] = destination
+        matched[name] = true
         rows[#rows + 1] = {
             name = name, row = native.row, click = native.click,
-            nameOverride = destination.nameOverride, description = destination.description,
-            disabled = not native.click.visibleGlobal or isDisabled(native.click),
-            background = destination.background, point = destination.point,
-            hidden = hidden,
         }
     end
 
-    if defaultDestination == nil then 
+    if background == nil then
         return nil, "no non-hidden destinations matched"
     end
 
     local unusedEntries = 0
     for name in pairs(group.entries) do
-        if destinations[name] == nil then 
+        if not matched[name] then
             unusedEntries = unusedEntries + 1
         end
     end
@@ -278,10 +275,7 @@ local function matchGroup(nativeRows, group)
         group = group, 
         title = group.title or "Select a destination", 
         rows = rows,
-        destinations = destinations, 
         background = background, 
-        defaultDestination = defaultDestination,
-        matchCount = #rows, 
         unusedEntries = unusedEntries
     }
 end
@@ -345,6 +339,31 @@ function modalMap.ReadRows(groups)
         return nil
     end
 
+    -- Reuse resolved definitions while the native controls and complete label sets stay unchanged.
+    if session ~= nil and session.menu.groups == groups and session.window == window
+        and session.content == content and #session.nativeRows == #nativeRows then
+        local unchanged = true
+        for index, native in ipairs(nativeRows) do
+            local previous = session.nativeRows[index]
+            if native.row ~= previous.row or native.click ~= previous.click or native.index ~= previous.index then
+                unchanged = false
+                break
+            end
+            for label in pairs(native.labels) do
+                if not previous.labels[label] then unchanged = false end
+            end
+            for label in pairs(previous.labels) do
+                if not native.labels[label] then unchanged = false end
+            end
+        end
+        if unchanged then
+            for _, row in ipairs(session.rows) do
+                row.disabled = not row.click.visibleGlobal or isDisabled(row.click)
+            end
+            return session.menu
+        end
+    end
+
     local menu, selectedGroupName
     local groupNames, failures, matches = {}, {}, {}
     local candidateCount = 0
@@ -353,17 +372,16 @@ function modalMap.ReadRows(groups)
     end
     table.sort(groupNames)
 
-    -- Prefer more matched rows, then fewer unused definitions, with group names breaking exact ties.
+    -- All candidates match every row, so prefer fewer unused entries and then alphabetical names.
     for _, name in ipairs(groupNames) do
         local candidate, reason = matchGroup(nativeRows, groups[name])
         if candidate ~= nil then
             candidateCount = candidateCount + 1
-            if menu == nil or candidate.matchCount > menu.matchCount
-                or (candidate.matchCount == menu.matchCount and candidate.unusedEntries < menu.unusedEntries) then
+            if menu == nil or candidate.unusedEntries < menu.unusedEntries then
                 menu, selectedGroupName = candidate, name
             end
             if settings.debugMatching then
-                matches[#matches + 1] = name .. " (" .. candidate.matchCount .. " matches, " ..
+                matches[#matches + 1] = name .. " (" .. #candidate.rows .. " matches, " ..
                     candidate.unusedEntries .. " unused entries)"
             end
         elseif settings.debugMatching then
@@ -373,8 +391,22 @@ function modalMap.ReadRows(groups)
 
     if menu ~= nil then
         menu.window, menu.content = window, content
+        menu.groups, menu.nativeRows = groups, nativeRows
+        -- Copy only the winner's per-entry data, retaining shared artwork and resource identities.
+        for _, row in ipairs(menu.rows) do
+            local definition = menu.group.entries[row.name]
+            local data = {}
+            for key, value in pairs(definition) do
+                if key ~= "background" and key ~= "icons" then data[key] = value end
+            end
+            row.destination = utils.deepcopy(data)
+            row.destination.hidden = definition.hidden == true
+            row.destination.background = definition.background or menu.group.background
+            row.destination.icons = definition.icons or menu.group.icons
+            row.disabled = not row.click.visibleGlobal or isDisabled(row.click)
+        end
         if candidateCount > 1 and settings.debugMatching then
-            reportMatch({"Selected " .. selectedGroupName .. " by match count, then fewest unused entries.",
+            reportMatch({"Selected " .. selectedGroupName .. " by fewest unused entries, then alphabetical group name.",
                 "Candidates: " .. table.concat(matches, ", ")})
         else
             lastMatchReport = nil
@@ -403,23 +435,7 @@ end
 
 -- Check whether the mounted session can be reused for this menu and its tooltip data.
 function modalMap.Matches(menu)
-    if session == nil or session.window ~= menu.window or session.content ~= menu.content
-        or session.group ~= menu.group or session.headerText ~= menu.title
-        or #session.rows ~= #menu.rows then
-        return false
-    end
-
-    for index, row in ipairs(menu.rows) do
-        local previous = session.rows[index]
-        if previous.name ~= row.name or previous.row ~= row.row or previous.click ~= row.click
-            or previous.nameOverride ~= row.nameOverride or previous.description ~= row.description
-            or previous.hidden ~= row.hidden 
-        then
-            return false
-        end
-    end
-
-    return true
+    return session ~= nil and session.menu == menu
 end
 
 -- Measure the modal's margins and attach cursor-following tooltips to its buttons.
@@ -431,6 +447,8 @@ function modalMap.Begin(menu)
     local top = math.max(32, contentPos.y - windowPos.y)
 
     session = {
+        menu = menu,
+        nativeRows = menu.nativeRows,
         window = window,
         content = content,
         rows = menu.rows,
@@ -476,7 +494,7 @@ function modalMap.Begin(menu)
 
     -- Convert native button positions to overlay coordinates so tooltips avoid clipping and scale offsets.
     for _, entry in ipairs(menu.rows) do
-        if not entry.hidden then
+        if not entry.destination.hidden then
             local parent = entry.click.parent
             if not session.tooltipContexts[parent] then
                 prettyui.Tooltip.registerContext(parent, overlay, function(target)
@@ -488,8 +506,8 @@ function modalMap.Begin(menu)
             session.tooltips[entry.name] = teleportTooltip.Attach(
                 entry.click, 
                 parent,
-                entry.nameOverride or entry.name:gsub("^%d+%.%s*", ""), 
-                entry.description
+                entry.destination.nameOverride or entry.name:gsub("^%d+%.%s*", ""),
+                entry.destination.description
             )
         end
     end
@@ -539,7 +557,7 @@ function modalMap.Fit(background, maxWidth)
 end
 
 -- Resize the native modal and align its original click targets with the displayed map icons.
-function modalMap.Layout(width, height, imageHost, destinations)
+function modalMap.Layout(width, height, imageHost)
     updateVisibleTitle()
 
     local window, content = session.window, session.content
@@ -608,10 +626,10 @@ function modalMap.Layout(width, height, imageHost, destinations)
 
     local imagePosition = imageHost.xyGlobal
     for _, entry in ipairs(session.rows) do
-        local destination = destinations[entry.name]
+        local destination = entry.destination
         local background, point = destination.background, destination.point
         local size, x, y = 0, nil, nil
-        if not entry.hidden then
+        if not destination.hidden then
             size = math.max(1, math.floor((destination.icons.size or 48) * hitboxScale))
             x, y = mapGeometry.Project(background, point, width, height)
         end
@@ -647,8 +665,9 @@ end
 -- Return the hovered native destination only when its map point is visible and not hidden by configuration.
 function modalMap.Hovered(menu)
     for _, entry in ipairs(menu.rows) do
-        if not entry.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
-            and mapGeometry.Contains(entry.background, entry.point) then
+        local destination = entry.destination
+        if not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
+            and mapGeometry.Contains(menu.background, destination.point) then
             return entry.name
         end
     end
