@@ -18,6 +18,24 @@ local function cropped(background, crop)
     return result
 end
 
+local function globeTrotterArmGuardsChargesRemaining(count)
+    local noun = tonumber(count) == 1 and "scroll" or "scrolls"
+    return string.format("%s %s remaining", count, noun)
+end
+
+local function chippedTeleportTabletsRemaining(count)
+    local noun = tonumber(count) == 1 and "tablet" or "tablets"
+    return string.format("%s teleport %s remaining", count, noun)
+end
+
+-- Entry keys are literal unless they begin with ^, which opts into Lua pattern matching.
+-- Example: ["^1%. Grand Exchange%. %(%d+%)$"] matches a changing teleport count.
+-- End patterns with $ to match the whole label; literal entries take precedence.
+-- Capture with (%d+) inside the key, then use %1 through %9 in nameOverride or description.
+-- Both fields also accept functions receiving captures in order and returning a string or nil.
+-- Literal entries call these functions without arguments; results are cached for the matched menu.
+-- Example: ["^1%. Grand Exchange%. %((%d+)%)$"] with description = "Teleports remaining: %1".
+-- In pattern-matched display text, %% produces a literal percent sign; missing captures stay unchanged.
 return {
     wildernessObelisks = {
         title = "Wilderness Obelisks",
@@ -440,6 +458,119 @@ return {
             }
         }
     },
-
+    globeTrotterArmGuards = {
+        title = "Teleport Scrolls",
+        background = cropped(
+            backgrounds.runescapeSurface,
+            { x = 0, y = 0, width = 420, height = 270 }
+        ),
+        entries = {
+            ["^1%. Grand Exchange%. %((%d+)%)$"] = {
+                nameOverride = "Grand Exchange",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 328, y = 95 },
+                icons = teleportIcons.teleportScrolls.grandExchange
+            },
+            ["^2%. Bandit Camp%. %((%d+)%)$"] = {
+                nameOverride = "Bandit Camp",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 330, y = 232 },
+                icons = teleportIcons.teleportScrolls.banditCamp
+            },
+            ["^3%. Clocktower%. %((%d+)%)$"] = {
+                nameOverride = "Clocktower",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 162, y = 159 },
+                icons = teleportIcons.teleportScrolls.clockTower
+            },
+            ["^4%. Gu'Tanoth%. %((%d+)%)$"] = {
+                nameOverride = "Gu'Tanoth",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 146, y = 212 },
+                icons = teleportIcons.teleportScrolls.guTanoth
+            },
+            ["^5%. Lighthouse%. %((%d+)%)$"] = {
+                nameOverride = "Lighthouse",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 141, y = 45 },
+                icons = teleportIcons.teleportScrolls.lighthouse
+            },
+            ["^6%. Fort Forinthry%. %((%d+)%)$"] = {
+                nameOverride = "Fort Forinthry",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 372, y = 73 },
+                icons = teleportIcons.teleportScrolls.fortForinthry
+            },
+            ["^7%. Miscellania%. %((%d+)%)$"] = {
+                nameOverride = "Miscellania",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 30, y = 20 },
+                icons = teleportIcons.teleportScrolls.miscellania
+            },
+            ["^8%. Phoenix Lair%. %((%d+)%)$"] = {
+                nameOverride = "Phoenix Lair",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 81, y = 55 },
+                icons = teleportIcons.teleportScrolls.phoenixLair
+            },
+            ["^9%. Pollnivneach%. %((%d+)%)$"] = {
+                nameOverride = "Pollnivneach",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 380, y = 235 },
+                icons = teleportIcons.teleportScrolls.pollnivneach
+            },
+            ["^0%. Tai Bwo Wannai%. %((%d+)%)$"] = {
+                nameOverride = "Tai Bwo Wannai",
+                description = globeTrotterArmGuardsChargesRemaining,
+                point = { x = 223, y = 201 },
+                icons = teleportIcons.teleportScrolls.taiBwoWannai
+            },
+        }
+    },
+    davesSpellbook = {
+        title = "'Chipped' Teleport Tablets",
+        background = cropped(
+            backgrounds.runescapeSurface,
+            { x = 80, y = 60, width = 320, height = 170 }
+        ),
+        entries = {
+            ["^1%. Watchtower %((%d+)%)$"] = {
+                nameOverride = "Observatory",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 123, y = 176 },
+                icons = teleportIcons.chippedTeleportTablets.watchtower
+            },
+            ["^2%. Camelot %((%d+)%)$"] = {
+                nameOverride = "Catherby docks",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 224, y = 104 },
+                icons = teleportIcons.chippedTeleportTablets.camelot
+            },
+            ["^3%. Falador %((%d+)%)$"] = {
+                nameOverride = "Southern Falador gate",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 286, y = 142 },
+                icons = teleportIcons.chippedTeleportTablets.falador
+            },
+            ["^4%. Ardougne %((%d+)%)$"] = {
+                nameOverride = "West Ardougne",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 147, y = 141 },
+                icons = teleportIcons.chippedTeleportTablets.ardougne
+            },
+            ["^5%. Lumbridge %((%d+)%)$"] = {
+                nameOverride = "Lumbridge Swamp",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 338, y = 182 },
+                icons = teleportIcons.chippedTeleportTablets.lumbridge
+            },
+            ["^6%. Varrock %((%d+)%)$"] = {
+                nameOverride = "Varrock Museum",
+                description = chippedTeleportTabletsRemaining,
+                point = { x = 355, y = 92 },
+                icons = teleportIcons.chippedTeleportTablets.varrock
+            },
+        }
+    }
     
 }

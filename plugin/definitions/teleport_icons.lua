@@ -247,6 +247,74 @@ return {
         size = 40
     },
 
+    teleportScrolls = {
+        grandExchange = {
+            objectID = id.Obj.TRAIL_SCROLL_TRAILHUBTELEPORT,
+            size = 40
+        },
+        banditCamp = {
+            objectID = id.Obj.TRAIL_SCROLL_BANDITCAMPTELEPORT,
+            size = 40
+        },
+        clockTower = {
+            objectID = id.Obj.TRAIL_SCROLL_ARDOUGNECLOCKTOWERTELEPORT,
+            size = 40
+        },
+        guTanoth = {
+            objectID = id.Obj.TRAIL_SCROLL_GUTANOTHTELEPORT,
+            size = 40
+        },
+        lighthouse = {
+            objectID = id.Obj.TRAIL_SCROLL_LIGHTHOUSETELEPORT,
+            size = 40
+        },
+        fortForinthry = {
+            objectID = id.Obj.TRAIL_SCROLL_LUMBERYARDTELEPORT,
+            size = 40
+        },
+        miscellania = {
+            objectID = id.Obj.TRAIL_SCROLL_MISCELLANIATELEPORT,
+            size = 40
+        },
+        phoenixLair = {
+            objectID = id.Obj.TRAIL_SCROLL_PHOENIXLAIRTELEPORT,
+            size = 40
+        },
+        pollnivneach = {
+            objectID = id.Obj.TRAIL_SCROLL_NARDAHTELEPORT,
+            size = 40
+        },
+        taiBwoWannai = {
+            objectID = id.Obj.TRAIL_SCROLL_TAIBWOWANNAITELEPORT,
+            size = 40
+        },
+    },
+    chippedTeleportTablets = {
+        varrock = {
+            objectID = id.Obj.POH_TABLET_VARROCKTELEPORT_CHIPPED,
+            size = 40
+        },
+        lumbridge = {
+            objectID = id.Obj.POH_TABLET_LUMBRIDGETELEPORT_CHIPPED,
+            size = 40
+        },
+        camelot = {
+            objectID = id.Obj.POH_TABLET_CAMELOTTELEPORT_CHIPPED,
+            size = 40
+        },
+        ardougne = {
+            objectID = id.Obj.POH_TABLET_ARDOUGNETELEPORT_CHIPPED,
+            size = 40
+        },
+        falador = {
+            objectID = id.Obj.POH_TABLET_FALADORTELEPORT_CHIPPED,
+            size = 40
+        },
+        watchtower = {
+            objectID = id.Obj.POH_TABLET_WATCHTOWERTELEPORT_CHIPPED,
+            size = 40
+        },
+    },
 
     nextArrow = {
         sprite = id.Sprite.RIGHTARROW,
