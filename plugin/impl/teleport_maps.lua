@@ -52,7 +52,7 @@ local function ensurePreview(parent)
     return true
 end
 
--- Destroy plugin-owned artwork and restore the modal's saved state.
+-- Destroy plugin-owned artwork and release the modal session.
 local function releaseModal()
     -- The client may already have destroyed the modal when it closes.
     if previewImage ~= nil then
@@ -76,7 +76,7 @@ local function releaseModal()
     currentView = nil
     markers = {}
     previewWidth, previewHeight = 0, 0
-    modalMap.Restore()
+    modalMap.Release()
     activeDestinations, selectedDestination, hoveredDestination = nil, nil, nil
 end
 
@@ -471,7 +471,7 @@ local function draw()
             end
 
             if not modalMap.Matches(menu) then
-                -- Restore the previous menu before attaching to a different interface or option set.
+                -- Release the previous session before attaching to a different interface or option set.
                 releaseModal()
                 modalMap.Begin(menu)
                 selectedDestination = menu.defaultDestination
@@ -509,7 +509,7 @@ function teleportMaps.Start()
     Event.Draw.Subscribe("destinationPreview", draw)
 end
 
--- Stop rendering and restore the native interface when the plugin unloads.
+-- Stop rendering and remove plugin-owned UI when the plugin unloads.
 function teleportMaps.Stop()
     Event.Draw.Unsubscribe("destinationPreview")
     releaseModal()
