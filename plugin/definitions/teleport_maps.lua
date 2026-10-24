@@ -68,25 +68,7 @@ return {
             },
         },
     },
-    wildernessSword1 = {
-        title = "Wilderness",
-        background = cropped(
-            backgrounds.wilderness,
-            { x = 0, y = 80, width = 512, height = 792 }
-        ),
-        icons = teleportIcons.obelisk,
-        entries = {
-            ["1. Teleport to Edgeville"] = {
-                nameOverride = "Edgeville",
-                point = {x = 263, y = 825},
-            },
-            ["2. Teleport to Herb patch"] = {
-                nameOverride = "Herb patch",
-                point = {x = 359, y = 355},
-            }
-        },
-    },
-    wildernessSword23 = {
+    wildernessSword = {
         title = "Wilderness",
         background = cropped(
             backgrounds.wilderness,
@@ -104,32 +86,12 @@ return {
             },
             ["3. Teleport to Forinthry Dungeon"] = {
                 nameOverride = "Forinthry Dungeon",
-                point = {x = 237, y = 667},
-            }
-        },
-    },
-    wildernessSword4 = {
-        title = "Wilderness",
-        background = cropped(
-            backgrounds.wilderness,
-            { x = 0, y = 80, width = 512, height = 792 }
-        ),
-        icons = teleportIcons.obelisk,
-        entries = {
-            ["1. Teleport to Edgeville"] = {
-                nameOverride = "Edgeville",
-                point = {x = 263, y = 825},
-            },
-            ["2. Teleport to Herb patch"] = {
-                nameOverride = "Herb patch",
-                point = {x = 359, y = 355},
-            },
-            ["3. Teleport to Forinthry Dungeon"] = {
-                nameOverride = "Forinthry Dungeon",
+                possiblyMissing = true,
                 point = {x = 237, y = 667},
             },
             ["4. Teleport to Wilderness Agility course"] = {
                 nameOverride = "Wilderness Agility course",
+                possiblyMissing = true,
                 point = {x = 106, y = 192},
             }
         },
@@ -354,28 +316,7 @@ return {
             }
         }
     },
-    underworldGrimoire23 = {
-        title = "Underworld",
-        background = backgrounds.cityOfUm,
-        entries = {
-            ["1. Teleport to Um Smithy"] = {
-                nameOverride = "Um Smithy",
-                point = { x = 616, y = 377 },
-                icons = teleportIcons.umSmithyTeleport
-            },
-            ["2. Teleport to Um Ritual Site"] = {
-                nameOverride = "Um Ritual Site",
-                point = { x = 96, y = 590 },
-                icons = teleportIcons.underworldTeleport,
-            },
-            ["3. Teleport to Ungael Ritual Site"] = {
-                nameOverride = "Ungael Ritual Site",
-                point = { x = 170, y = 165 },
-                icons = teleportIcons.ungaelTeleport
-            }
-        }
-    },
-    underworldGrimoire4 = {
+    underworldGrimoire = {
         title = "Underworld",
         background = backgrounds.cityOfUm,
         entries = {
@@ -396,6 +337,7 @@ return {
             },
             ["4. Teleport to Lupe"] = {
                 nameOverride = "Lupe",
+                possiblyMissing = true,
                 point = { x = 371, y = 417 },
                 icons = teleportIcons.lupeTeleport
             }

@@ -60,7 +60,7 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled, s
     end
 
     if marker.shadowLayer == nil then
-        marker.shadowLayer = ui.Layer.new(marker.layer)
+        marker.shadowLayer = ui.Layer.new(marker.artwork)
         marker.shadowLayer:SetSize(size, size)
         marker.shadowLayer.clickthrough = true
         marker.shadowLayer:MoveToBack()
@@ -85,9 +85,9 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled, s
 end
 
 -- Show the original option's numeric prefix at the icon's top-right when enabled in settings.
-local function updateHotkey(marker, name, size, disabled)
+local function updateHotkey(marker, name, size, disabled, locked)
     local hotkey = name:match("^%s*(%d+)%.")
-    if not userSettings.Get("showTeleportHotkeys") or hotkey == nil then
+    if locked or not userSettings.Get("showTeleportHotkeys") or hotkey == nil then
         if marker.hotkey ~= nil then marker.hotkey.hidden = true end
         return
     end
@@ -122,6 +122,24 @@ local function updateHotkey(marker, name, size, disabled)
     marker.hotkey:MoveToFront()
 end
 
+-- Overlay a small lock on destinations that have no corresponding native menu option.
+local function updateLock(marker, size, locked)
+    if locked and marker.lock == nil then
+        local lock = ui.Sprite.new(marker.layer)
+        local lockSize = math.max(1, math.min(50, math.floor(size / 1.6)))
+        lock:SetSize(lockSize, lockSize)
+        lock:SetPos(size - lockSize, size - lockSize)
+        lock.spriteID = id.Sprite.RS_MOBILE_ICON_LOCK_128PX
+        lock.clickthrough = true
+        lock.shadowRGBA = 0xFFFFFFFF
+        marker.lock = lock
+    end
+    if marker.lock ~= nil then
+        marker.lock.hidden = not locked
+        if locked then marker.lock:MoveToFront() end
+    end
+end
+
 -- Release explicit sprite wrappers and the native marker subtree.
 local function destroyMarker(marker)
     if marker.shadow ~= nil then 
@@ -147,12 +165,14 @@ function buttonIcon:Destroy()
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
-function buttonIcon:GetMarker(name, icons, highlighted, disabled)
+function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
+    disabled = disabled or locked == true
     highlighted = highlighted and not disabled
     local marker = self.markers[name]
     local size = icons.size or 48
     local normal = icons.normal or icons
-    local source = highlighted and (icons.hovered or normal) or normal
+    local source = locked and (icons.locked or normal)
+        or (highlighted and (icons.hovered or normal) or normal)
     local objectID = source.objectID
     local kind = objectID ~= nil and "item" or "sprite"
     local image
@@ -176,10 +196,13 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled)
         local layer = ui.Layer.new(self.parent)
         layer:SetSize(size, size)
         layer.clickthrough = true
-        marker = {layer = layer, kind = kind}
+        local artwork = ui.Layer.new(layer)
+        artwork:SetSize(size, size)
+        artwork.clickthrough = true
+        marker = {layer = layer, artwork = artwork, kind = kind}
 
         if objectID ~= nil then
-            local sprite = ui.Sprite.new(layer)
+            local sprite = ui.Sprite.new(artwork)
             sprite:SetSize(size, size)
             sprite.associatedObjectID = objectID
             sprite.associatedObjectQuantity = 1
@@ -188,7 +211,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled)
             marker.itemSprite, marker.objectID = sprite, objectID
         else
             marker.bounds = iconBounds(source, icons, size)
-            marker.sprite = prettyui.Sprite.new(layer, image, utils.deepcopy(marker.bounds))
+            marker.sprite = prettyui.Sprite.new(artwork, image, utils.deepcopy(marker.bounds))
             marker.image = image
         end
 
@@ -225,12 +248,13 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled)
             marker.itemSprite.colour = disabled
                 and Vector4.new(0.45, 0.45, 0.45, 1.0) or Vector4.new(1.0, 1.0, 1.0, 1.0)
         else
-            marker.layer.alpha = disabled and 0.4 or 1.0
+            marker.artwork.alpha = disabled and 0.4 or 1.0
         end
         marker.disabled = disabled
     end
 
-    updateHotkey(marker, name, size, disabled)
+    updateHotkey(marker, name, size, disabled, locked)
+    updateLock(marker, size, locked)
 
     return marker
 end
@@ -246,7 +270,7 @@ function buttonIcon:Update(menu, hovered)
         local icons, point = destination.icons, destination.point
 
         if not destination.hidden and icons ~= nil and point ~= nil and geometry.Contains(menu.background, point) then
-            local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled)
+            local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked)
 
             if marker ~= nil then
                 local size = icons.size or 48

@@ -231,7 +231,9 @@ return {
         size = 40,
     },
     lupeTeleport = {
-        image = Plugin.resources.icons.lupe_teleport,
+        normal = { image = Plugin.resources.icons.lupe_teleport },
+        hovered = { image = Plugin.resources.icons.lupe_teleport },
+        locked = { sprite = id.Sprite.SPELL_ICON_NECROMANCY_TELEPORT_UNDERWORLD_HUB_LOCKED },
         size = 40,
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521CC

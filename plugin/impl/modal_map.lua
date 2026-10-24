@@ -283,10 +283,29 @@ local function matchGroup(nativeRows, group)
     end
 
     local unusedEntries = 0
+    local missingKeys = {}
     for name in pairs(group.entries) do
         if not matched[name] then
             unusedEntries = unusedEntries + 1
+            local definition = group.entries[name]
+            if type(definition) == "table" and definition.possiblyMissing == true
+                and definition.hidden ~= true then
+                local entryBackground = definition.background or group.background
+                if definition.point == nil or (definition.icons or group.icons) == nil or entryBackground == nil then
+                    return nil, string.format("missing entry %q needs point, icons and background to show a locked marker", name)
+                end
+                if entryBackground ~= background then
+                    return nil, string.format("missing entry %q uses a different background", name)
+                end
+                missingKeys[#missingKeys + 1] = name
+            end
         end
+    end
+
+    -- Missing destinations are artwork-only rows, with no native controls or actions.
+    table.sort(missingKeys)
+    for _, name in ipairs(missingKeys) do
+        rows[#rows + 1] = {name = name, entryKey = name, locked = true, disabled = true}
     end
 
     return {
@@ -421,7 +440,7 @@ function modalMap.ReadRows(groups)
                 menu, selectedGroupName = candidate, name
             end
             if settings.debugMatching then
-                matches[#matches + 1] = name .. " (" .. #candidate.rows .. " matches, " ..
+                matches[#matches + 1] = name .. " (" .. #nativeRows .. " matches, " ..
                     candidate.unusedEntries .. " unused entries)"
             end
         elseif settings.debugMatching then
@@ -444,13 +463,15 @@ function modalMap.ReadRows(groups)
             row.destination.background = definition.background or menu.group.background
             row.destination.icons = definition.icons or menu.group.icons
             -- Resolve display fields once per match, preserving literal strings and shared definitions.
-            local match
-            if row.entryKey ~= row.name and row.entryKey:sub(1, 1) == "^" then
-                match = table.pack(string.find(row.name, row.entryKey))
+            if not row.locked then
+                local match
+                if row.entryKey ~= row.name and row.entryKey:sub(1, 1) == "^" then
+                    match = table.pack(string.find(row.name, row.entryKey))
+                end
+                row.destination.nameOverride = expandCaptures(row.destination.nameOverride, match)
+                row.destination.description = expandCaptures(row.destination.description, match)
+                row.disabled = not row.click.visibleGlobal or isDisabled(row.click)
             end
-            row.destination.nameOverride = expandCaptures(row.destination.nameOverride, match)
-            row.destination.description = expandCaptures(row.destination.description, match)
-            row.disabled = not row.click.visibleGlobal or isDisabled(row.click)
         end
         if candidateCount > 1 and settings.debugMatching then
             reportMatch({"Selected " .. selectedGroupName .. " by fewest unused entries, then alphabetical group name.",
@@ -498,7 +519,7 @@ function modalMap.Begin(menu)
         nativeRows = menu.nativeRows,
         window = window,
         content = content,
-        rows = menu.rows,
+        rows = {},
         group = menu.group,
         titles = {},
         tooltips = {},
@@ -511,6 +532,11 @@ function modalMap.Begin(menu)
         centerX = window.x + window.width / 2,
         centerY = window.y + window.height / 2,
     }
+
+    -- Only real rows participate in native layout and live availability checks.
+    for _, row in ipairs(menu.rows) do
+        if not row.locked then session.rows[#session.rows + 1] = row end
+    end
 
     local close = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON")
 
@@ -540,7 +566,7 @@ function modalMap.Begin(menu)
     local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or window.parent
 
     -- Convert native button positions to overlay coordinates so tooltips avoid clipping and scale offsets.
-    for _, entry in ipairs(menu.rows) do
+    for _, entry in ipairs(session.rows) do
         if not entry.destination.hidden then
             local parent = entry.click.parent
             if not session.tooltipContexts[parent] then
@@ -713,7 +739,7 @@ end
 function modalMap.Hovered(menu)
     for _, entry in ipairs(menu.rows) do
         local destination = entry.destination
-        if not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
+        if not entry.locked and not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
             and mapGeometry.Contains(menu.background, destination.point) then
             return entry.name
         end
