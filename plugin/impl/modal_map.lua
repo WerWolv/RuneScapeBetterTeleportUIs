@@ -210,13 +210,31 @@ local function matchGroup(nativeRows, group)
     local rows, matched = {}, {}
     local background
     for _, native in ipairs(nativeRows) do
-        local name
+        local name, entryKey
         for text in pairs(native.labels) do
-            if group.entries[text] ~= nil then
+            local key = group.entries[text] ~= nil and text or nil
+            -- Literal entries take precedence; keys beginning with ^ opt into Lua patterns.
+            if key == nil then
+                for candidateKey in pairs(group.entries) do
+                    if type(candidateKey) == "string" and candidateKey:sub(1, 1) == "^" then
+                        local ok, start = pcall(string.find, text, candidateKey)
+                        if not ok then
+                            return nil, string.format("entry %q has an invalid Lua pattern: %s", candidateKey, start)
+                        end
+                        if start ~= nil then
+                            if key ~= nil then
+                                return nil, "OPTION_" .. native.index .. " matches multiple pattern entries: " .. text
+                            end
+                            key = candidateKey
+                        end
+                    end
+                end
+            end
+            if key ~= nil then
                 if name ~= nil then
                     return nil, "OPTION_" .. native.index .. " matches multiple entries: " .. labelSummary(native.labels)
                 end
-                name = text
+                name, entryKey = text, key
             end
         end
 
@@ -225,11 +243,11 @@ local function matchGroup(nativeRows, group)
             return nil, "OPTION_" .. native.index .. " has no configured entry for " .. labelSummary(native.labels)
         end
 
-        if type(group.entries[name]) ~= "table" then
-            return nil, string.format("entry %q must be a table", name)
+        if type(group.entries[entryKey]) ~= "table" then
+            return nil, string.format("entry %q must be a table", entryKey)
         end
 
-        local definition = group.entries[name]
+        local definition = group.entries[entryKey]
         local destination = {
             hidden = definition.hidden,
             point = definition.point,
@@ -254,9 +272,9 @@ local function matchGroup(nativeRows, group)
             background = destination.background
         end
 
-        matched[name] = true
+        matched[entryKey] = true
         rows[#rows + 1] = {
-            name = name, row = native.row, click = native.click,
+            name = name, entryKey = entryKey, row = native.row, click = native.click,
         }
     end
 
@@ -278,6 +296,28 @@ local function matchGroup(nativeRows, group)
         background = background, 
         unusedEntries = unusedEntries
     }
+end
+
+-- Resolve display callbacks or expand numbered captures without reinterpreting captured text.
+local function expandCaptures(text, match)
+    if type(text) == "function" then
+        local result
+        if match ~= nil then
+            result = text(table.unpack(match, 3, match.n))
+        else
+            result = text()
+        end
+        assert(result == nil or type(result) == "string",
+            "Teleport nameOverride and description functions must return a string or nil")
+        return result
+    end
+    if match == nil then return text end
+    if type(text) ~= "string" then return text end
+    return (text:gsub("%%([1-9%%])", function(token)
+        if token == "%" then return "%" end
+        local value = match[tonumber(token) + 2]
+        return value ~= nil and tostring(value) or "%" .. token
+    end))
 end
 
 -- Inspect native option rows and select the best fully matching teleport map definition
@@ -394,7 +434,7 @@ function modalMap.ReadRows(groups)
         menu.groups, menu.nativeRows = groups, nativeRows
         -- Copy only the winner's per-entry data, retaining shared artwork and resource identities.
         for _, row in ipairs(menu.rows) do
-            local definition = menu.group.entries[row.name]
+            local definition = menu.group.entries[row.entryKey]
             local data = {}
             for key, value in pairs(definition) do
                 if key ~= "background" and key ~= "icons" then data[key] = value end
@@ -403,6 +443,13 @@ function modalMap.ReadRows(groups)
             row.destination.hidden = definition.hidden == true
             row.destination.background = definition.background or menu.group.background
             row.destination.icons = definition.icons or menu.group.icons
+            -- Resolve display fields once per match, preserving literal strings and shared definitions.
+            local match
+            if row.entryKey ~= row.name and row.entryKey:sub(1, 1) == "^" then
+                match = table.pack(string.find(row.name, row.entryKey))
+            end
+            row.destination.nameOverride = expandCaptures(row.destination.nameOverride, match)
+            row.destination.description = expandCaptures(row.destination.description, match)
             row.disabled = not row.click.visibleGlobal or isDisabled(row.click)
         end
         if candidateCount > 1 and settings.debugMatching then
