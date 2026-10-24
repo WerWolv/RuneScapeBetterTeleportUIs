@@ -5,6 +5,7 @@ local mapGeometry = require("impl/map_geometry")
 local utils = require("impl/utils")
 local settings = require("definitions/constants")
 local session
+local knownTitles = setmetatable({}, {__mode = "k"})
 local lastMatchReport
 
 -- Print changed match diagnostics when debug matching is enabled.
@@ -111,33 +112,14 @@ local function isDisabled(control)
     return ok and disabled or false
 end
 
--- Save a component's original state once so layout changes can be reversed later.
-local function remember(control)
-    if session.saved[control] == nil then
-        local snapshot = {
-            control = control,
-            position = ui.Pos.new(control.position),
-            size = ui.Size.new(control.size),
-            alpha = control.alpha,
-            clickthrough = control.clickthrough,
-            staticID = control.staticID,
-            categoryID = control.categoryID,
-            dynamicID = control.dynamicID,
-        }
-
-        session.saved[control] = snapshot
-        session.order[#session.order + 1] = snapshot
-    end
-end
-
--- Resolve a snapshot's component IDs against the currently loaded interface.
-local function currentControl(snapshot)
-    if snapshot.categoryID >= 0 and snapshot.dynamicID >= 0 then
-        return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, snapshot.staticID,
-            snapshot.categoryID, snapshot.dynamicID)
+-- Resolve a cached title's IDs against the currently loaded interface.
+local function currentTitle(title)
+    if title.categoryID >= 0 and title.dynamicID >= 0 then
+        return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID,
+            title.categoryID, title.dynamicID)
     end
 
-    return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, snapshot.staticID)
+    return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID)
 end
 
 -- Replace the modal title
@@ -145,14 +127,14 @@ local function updateVisibleTitle()
     if #session.titles > 0 then
         local valid = true
 
-        for _, snapshot in ipairs(session.titles) do
-            local control = currentControl(snapshot)
-            if control ~= snapshot.control then
+        for _, title in ipairs(session.titles) do
+            local control = currentTitle(title)
+            if control ~= title.control then
                 valid = false
                 break
             end
 
-            if snapshot.originalHeader ~= nil then
+            if title.header then
                 control.headerText.content = session.headerText
             else
                 control.content = session.headerText
@@ -175,24 +157,17 @@ local function updateVisibleTitle()
             if text ~= nil and text ~= "" and control.visibleGlobal then
                 local normalized = cleanText(text):gsub("%s+", " "):upper()
 
-                local snapshot = session.saved[control]
-                local previouslyMatched = snapshot and snapshot.visibleTitle
-
-                if normalized:match("^SELECT AN OPTION[%.:!]?$") or previouslyMatched then
-                    remember(control)
-                    snapshot = session.saved[control]
-                    snapshot.visibleTitle = true
-
+                if normalized:match("^SELECT AN OPTION[%.:!]?$") or knownTitles[control] then
+                    knownTitles[control] = true
                     if header then
-                        if snapshot.originalHeader == nil then snapshot.originalHeader = text end
-                        snapshot.replacementHeader = session.headerText
                         control.headerText.content = session.headerText
                     else
-                        if snapshot.originalContent == nil then snapshot.originalContent = text end
-                        snapshot.replacementContent = session.headerText
                         control.content = session.headerText
                     end
-                    session.titles[#session.titles + 1] = snapshot
+                    session.titles[#session.titles + 1] = {
+                        control = control, header = header, staticID = control.staticID,
+                        categoryID = control.categoryID, dynamicID = control.dynamicID,
+                    }
                 end
             end
         end
@@ -209,8 +184,8 @@ local function updateVisibleTitle()
     end
 end
 
--- Remove tooltips and restore saved properties on native components that still exist.
-function modalMap.Restore()
+-- Remove plugin tooltip hooks and discard the session without restoring native UI properties.
+function modalMap.Release()
     if session == nil then
         return
     end
@@ -221,27 +196,6 @@ function modalMap.Restore()
 
     for parent in pairs(session.tooltipContexts) do
         pcall(function() prettyui.Tooltip.unregisterContext(parent) end)
-    end
-
-    -- Only restore the original control instance, since a new modal may reuse its IDs.
-    for _, snapshot in ipairs(session.order) do
-        pcall(
-            function()
-                local control = currentControl(snapshot)
-                if control == snapshot.control then
-                    control.position = snapshot.position
-                    control.size = snapshot.size
-                    control.alpha = snapshot.alpha
-                    control.clickthrough = snapshot.clickthrough
-                    if snapshot.originalContent ~= nil and control.content == snapshot.replacementContent then
-                        control.content = snapshot.originalContent
-                    end
-                    if snapshot.originalHeader ~= nil and control.headerText.content == snapshot.replacementHeader then
-                        control.headerText.content = snapshot.originalHeader
-                    end
-                end
-            end
-        )
     end
 
     session = nil
@@ -468,9 +422,9 @@ function modalMap.Matches(menu)
     return true
 end
 
--- Capture the modal's original layout and attach cursor-following tooltips to its buttons.
+-- Measure the modal's margins and attach cursor-following tooltips to its buttons.
 function modalMap.Begin(menu)
-    assert(session == nil, "Restore the previous modal before attaching a new map")
+    assert(session == nil, "Release the previous modal before attaching a new map")
     local window, content = menu.window, menu.content
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
     local left = math.max(padding, contentPos.x - windowPos.x)
@@ -481,8 +435,6 @@ function modalMap.Begin(menu)
         content = content,
         rows = menu.rows,
         group = menu.group,
-        saved = {},
-        order = {},
         titles = {},
         tooltips = {},
         tooltipContexts = {},
@@ -495,9 +447,6 @@ function modalMap.Begin(menu)
         centerY = window.y + window.height / 2,
     }
 
-    remember(window)
-    remember(content)
-
     local close = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON")
 
     if close ~= nil then
@@ -509,12 +458,10 @@ function modalMap.Begin(menu)
             width = close.width,
             height = close.height,
         }
-        remember(close)
     end
 
     local title = component("TITLE")
     if title ~= nil and title.type == ui.ComponentType.LABEL then
-        remember(title)
         local position = title.xyGlobal
         session.title = {
             control = title,
@@ -560,9 +507,8 @@ function modalMap.UpdateTooltip(name)
     end
 end
 
--- Apply a global rectangle in the control's parent coordinate space after saving its original layout.
+-- Apply a global rectangle in the control's parent coordinate space.
 local function setRect(control, x, y, width, height)
-    remember(control)
     local parentPosition = control.parent.xyGlobal
 
     control:SetPos(math.floor(x - parentPosition.x), math.floor(y - parentPosition.y))
@@ -691,7 +637,6 @@ function modalMap.Layout(width, height, imageHost, destinations)
         
         for index = #chain, 1, -1 do
             control = chain[index]
-            remember(control)
             control:SetPos(0, 0)
             control:SetSize(size, size)
             control.clickthrough = control ~= entry.click
