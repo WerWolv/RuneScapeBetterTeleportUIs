@@ -187,18 +187,39 @@ function ModalChoiceMenu:UpdateTitle()
     end
 end
 
--- Measure native margins and attach tooltips without changing the client's teleport actions.
-function ModalChoiceMenu:BeginInterface()
+-- Preserve placement across pages without retaining native controls or plugin-owned artwork.
+function ModalChoiceMenu:GetTransitionState(nextMenu, match)
+    local session = self.session
+    if session == nil or self.interface ~= nextMenu.interface or session.parent ~= match.window.parent then
+        return nil
+    end
+    local relatedPage = self.pageGroup ~= nil and self.pageGroup == nextMenu.pageGroup
+    local sameMenu = self == nextMenu and session.window == match.window
+    if not relatedPage and not sameMenu then return nil end
+    return {
+        left = session.left, top = session.top, right = session.right, bottom = session.bottom,
+        centerX = session.centerX, centerY = session.centerY,
+    }
+end
+
+-- Measure native margins or reuse the current page group's placement before attaching tooltips.
+function ModalChoiceMenu:BeginInterface(placement)
     local session = self.session
     local menu = session.menu
     local window, content = menu.window, menu.content
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
     session.window, session.content = window, content
+    session.parent = window.parent
     session.left = math.max(padding, contentPos.x - windowPos.x)
     session.top = math.max(32, contentPos.y - windowPos.y)
     session.right = math.max(padding, window.width - session.left - content.width)
     session.bottom = math.max(padding, window.height - session.top - content.height)
     session.centerX, session.centerY = window.x + window.width / 2, window.y + window.height / 2
+    if placement ~= nil then
+        session.left, session.top = placement.left, placement.top
+        session.right, session.bottom = placement.right, placement.bottom
+        session.centerX, session.centerY = placement.centerX, placement.centerY
+    end
     session.rows, session.titles, session.tooltips, session.tooltipContexts = {}, {}, {}, {}
     for _, row in ipairs(menu.rows) do
         if not row.locked then session.rows[#session.rows + 1] = row end
