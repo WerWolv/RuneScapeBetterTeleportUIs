@@ -8,7 +8,7 @@
 -- - crop (optional): x, y, width and height of the crop area
 
 return {
-    pirate_islands = {
+    pirateIslands = {
         image = Plugin.resources.backgrounds.pirate_islands,
         width = 805,
         height = 785,
