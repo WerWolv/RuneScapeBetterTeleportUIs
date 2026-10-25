@@ -1,0 +1,370 @@
+local TeleportMenu = require("impl/teleport_menu")
+local teleportTooltip = require("impl/teleport_tooltip")
+local geometry = require("impl/map_geometry")
+local constants = require("definitions/constants")
+local BackgroundView = require("impl/background_view")
+local ButtonIcon = require("impl/button_icon")
+local ModalChoiceMenu = TeleportMenu:Extend()
+ModalChoiceMenu.interface = ModalChoiceMenu
+ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
+local knownTitles = setmetatable({}, {__mode = "k"})
+local padding, hitboxScale = 12, 0.75
+local collectionTypes = {
+    [ui.ComponentType.LAYER] = true,
+    [ui.ComponentType.PANEL] = true,
+    [ui.ComponentType.GRID] = true,
+    [ui.ComponentType.PAGED_LAYER] = true,
+    [ui.ComponentType.PAGED_CAROUSEL] = true,
+    [ui.ComponentType.GROUP_BOX] = true,
+}
+
+-- Identify a static or dynamic component uniquely during tree traversal.
+local function controlKey(control)
+    return table.concat({control.interfaceID, control.staticID, control.categoryID, control.dynamicID}, ":")
+end
+
+-- Strip formatting and surrounding whitespace from native labels.
+local function cleanText(text)
+    return (text or ""):gsub("<[^>]*>", ""):gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+-- Visit both static and dynamic children of native collections.
+local function visitChildren(control, callback)
+    if collectionTypes[control.type] then
+        control:IterateStaticComponents(callback)
+        control:IterateDynamicComponents(callback)
+    end
+end
+
+-- Gather visible text without visiting a native component twice.
+local function collectLabels(control, labels, visited)
+    local key = controlKey(control)
+    if visited[key] or not control.visibleGlobal then return false end
+    visited[key] = true
+    local text
+    if control.type == ui.ComponentType.LABEL then text = control.content
+    elseif control.type == ui.ComponentType.BUTTON then text = control.label end
+    text = cleanText(text)
+    if text ~= "" then labels[text] = true end
+    visitChildren(control, function(child) return collectLabels(child, labels, visited) end)
+    return false
+end
+
+-- Look up a named component belonging to MODAL_CHOICE.
+local function component(name)
+    local componentID = id.Component["MODAL_CHOICE__" .. name]
+    return componentID and ui.Interfaces:GetComponent(componentID) or nil
+end
+
+-- Read the interface once for all registered modal-choice menu candidates.
+function ModalChoiceMenu:ReadInterface()
+    local window = component("MODAL_DIALOG_WINDOW")
+    local content = component("MODAL_DIALOG_WINDOW_CONTENT")
+    if window == nil or not window.visibleGlobal then
+        self:ReportMatch(nil)
+        return nil
+    end
+    if content == nil then
+        self:ReportMatch({"Not matched: missing MODAL_DIALOG_WINDOW_CONTENT."})
+        return nil
+    end
+    local rows = {}
+    for index = 1, 10 do
+        local row = component("OPTION_" .. index)
+        local click = component("OPTION_CLICK_" .. index)
+        if row ~= nil and row.visibleGlobal then
+            if click == nil then
+                self:ReportMatch({"Not matched: visible OPTION_" .. index .. " has no OPTION_CLICK_" .. index .. "."})
+                return nil
+            end
+            local labels = {}
+            collectLabels(row, labels, {})
+            local ancestor = click
+            while ancestor ~= nil and ancestor ~= row do ancestor = ancestor.parent end
+            if ancestor == nil then
+                self:ReportMatch({"Not matched: OPTION_CLICK_" .. index .. " is not a child of OPTION_" .. index .. "."})
+                return nil
+            end
+            ancestor = row
+            while ancestor ~= nil and ancestor ~= window do ancestor = ancestor.parent end
+            if ancestor == nil then
+                self:ReportMatch({"Not matched: OPTION_" .. index .. " is outside MODAL_DIALOG_WINDOW."})
+                return nil
+            end
+            rows[#rows + 1] = {row = row, click = click, labels = labels, index = index}
+        end
+    end
+    if #rows == 0 then
+        self:ReportMatch({"Not matched: no visible option rows were found."})
+        return nil
+    end
+    return {window = window, content = content, nativeRows = rows}
+end
+
+-- Require visible map destinations to have artwork, coordinates and a shared background.
+function ModalChoiceMenu:ValidateDestination(definition, background)
+    local entryBackground = definition.background or self.definition.background
+    local icons = definition.icons or self.definition.icons
+    if definition.point == nil or icons == nil or entryBackground == nil then
+        return false, "needs point, icons and background (including group defaults)"
+    end
+    if background ~= nil and entryBackground ~= background then
+        return false, "uses a different background from the other visible entries"
+    end
+    return true
+end
+
+-- Treat controls as unavailable only when invisible or all named actions are explicitly hidden.
+function ModalChoiceMenu:IsDisabled(row)
+    local control = row.click
+    if not control.visibleGlobal then return true end
+    local ok, disabled = pcall(function()
+        local ops = control.opConfig
+        if ops == nil then return false end
+        local hasNamedAction = false
+        for index = 1, ops.numOpNames do
+            local name = ops:GetOpName(index)
+            if name ~= nil and name ~= "" then
+                hasNamedAction = true
+                if not ops:TestOpIsHidden(index) then return false end
+            end
+        end
+        return hasNamedAction
+    end)
+    return ok and disabled or false
+end
+
+-- Resolve a cached heading against the currently loaded interface.
+local function currentTitle(title)
+    if title.categoryID >= 0 and title.dynamicID >= 0 then
+        return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID, title.categoryID, title.dynamicID)
+    end
+    return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID)
+end
+
+-- Replace generic headings while remembering renamed controls across menu sessions.
+function ModalChoiceMenu:UpdateTitle()
+    local session = self.session
+    if #session.titles > 0 then
+        local valid = true
+        for _, title in ipairs(session.titles) do
+            local control = currentTitle(title)
+            if control ~= title.control then valid = false; break end
+            if title.header then control.headerText.content = session.menu.title
+            else control.content = session.menu.title end
+        end
+        if valid then return end
+        session.titles = {}
+    end
+    local visited = {}
+    local function inspect(control)
+        local key = controlKey(control)
+        if visited[key] or control.interfaceID ~= id.Interface.MODAL_CHOICE then return false end
+        visited[key] = true
+        local header = control.type == ui.ComponentType.GROUP_BOX
+        if control.type == ui.ComponentType.LABEL or header then
+            local text = header and control.headerText.content or control.content
+            if text ~= nil and text ~= "" and control.visibleGlobal then
+                local normalized = cleanText(text):gsub("%s+", " "):upper()
+                if normalized:match("^SELECT AN OPTION[%.:!]?$") or knownTitles[control] then
+                    knownTitles[control] = true
+                    if header then control.headerText.content = session.menu.title
+                    else control.content = session.menu.title end
+                    session.titles[#session.titles + 1] = {
+                        control = control, header = header, staticID = control.staticID,
+                        categoryID = control.categoryID, dynamicID = control.dynamicID,
+                    }
+                end
+            end
+        end
+        visitChildren(control, inspect)
+        return false
+    end
+    -- Generic headings can live outside the named TITLE component.
+    for staticID = 0, 45 do
+        local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
+        if control ~= nil then inspect(control) end
+    end
+end
+
+-- Measure native margins and attach tooltips without changing the client's teleport actions.
+function ModalChoiceMenu:BeginInterface()
+    local session = self.session
+    local menu = session.menu
+    local window, content = menu.window, menu.content
+    local windowPos, contentPos = window.xyGlobal, content.xyGlobal
+    session.window, session.content = window, content
+    session.left = math.max(padding, contentPos.x - windowPos.x)
+    session.top = math.max(32, contentPos.y - windowPos.y)
+    session.right = math.max(padding, window.width - session.left - content.width)
+    session.bottom = math.max(padding, window.height - session.top - content.height)
+    session.centerX, session.centerY = window.x + window.width / 2, window.y + window.height / 2
+    session.rows, session.titles, session.tooltips, session.tooltipContexts = {}, {}, {}, {}
+    for _, row in ipairs(menu.rows) do
+        if not row.locked then session.rows[#session.rows + 1] = row end
+    end
+    local close = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON")
+    if close ~= nil then
+        local position = close.xyGlobal
+        session.close = {
+            control = close, right = windowPos.x + window.width - position.x - close.width,
+            top = position.y - windowPos.y, width = close.width, height = close.height,
+        }
+    end
+    local title = component("TITLE")
+    if title ~= nil and title.type == ui.ComponentType.LABEL then
+        local position = title.xyGlobal
+        session.title = {
+            control = title, left = position.x - windowPos.x,
+            right = windowPos.x + window.width - position.x - title.width,
+            top = position.y - windowPos.y, height = title.height,
+        }
+    end
+    local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or window.parent
+    for _, entry in ipairs(session.rows) do
+        if not entry.destination.hidden then
+            local parent = entry.click.parent
+            if not session.tooltipContexts[parent] then
+                prettyui.Tooltip.registerContext(parent, overlay, function(target)
+                    local targetPosition, overlayPosition = target.xyGlobal, overlay.xyGlobal
+                    return targetPosition.x - overlayPosition.x, targetPosition.y - overlayPosition.y
+                end)
+                session.tooltipContexts[parent] = true
+            end
+            session.tooltips[entry.name] = teleportTooltip.Attach(entry.click, parent,
+                entry.destination.nameOverride or entry.name:gsub("^%d+%.%s*", ""), entry.destination.description)
+        end
+    end
+end
+
+-- Create the map's plugin-owned background and marker views for this menu instance.
+function ModalChoiceMenu:BeginVisuals()
+    self.backgroundView = BackgroundView.New(self.session.content)
+    self.iconView = ButtonIcon.New(self.backgroundView.layer)
+end
+
+-- Fit the cropped map into the native window's available space.
+function ModalChoiceMenu:CalculateLayout()
+    local session = self.session
+    local crop = geometry.Bounds(session.menu.background)
+    local parent = session.window.parent
+    local scale = math.min(constants.maxWidth / crop.width,
+        (parent.width - session.left - session.right - 16) / crop.width,
+        (parent.height - session.top - session.bottom - 16) / crop.height)
+    return {width = math.max(1, math.floor(crop.width * scale)), height = math.max(1, math.floor(crop.height * scale))}
+end
+
+-- Apply a global rectangle in a native control's parent coordinate space.
+local function setRect(control, x, y, width, height)
+    local parentPosition = control.parent.xyGlobal
+    control:SetPos(math.floor(x - parentPosition.x), math.floor(y - parentPosition.y))
+    control:SetSize(width, height)
+end
+
+-- Resize the native modal and align original click targets with the map's destination markers.
+function ModalChoiceMenu:ApplyLayout(layout)
+    local session = self.session
+    local width, height = layout.width, layout.height
+    self.backgroundView:Show(session.menu.background, width, height)
+    self:UpdateTitle()
+    local window, content = session.window, session.content
+    local parent = window.parent
+    local windowWidth, windowHeight = width + session.left + session.right, height + session.top + session.bottom
+    window:SetSize(windowWidth, windowHeight)
+    window:SetPos(
+        math.max(8, math.min(math.floor(session.centerX - windowWidth / 2), parent.width - windowWidth - 8)),
+        math.max(8, math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8)))
+    local origin = window.xyGlobal
+    setRect(content, origin.x + session.left, origin.y + session.top, width, height)
+    for _, name in ipairs({"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"}) do
+        local control = component(name)
+        if control ~= nil then setRect(control, origin.x, origin.y, windowWidth, windowHeight) end
+    end
+    local close = session.close
+    if close ~= nil then
+        setRect(close.control, origin.x + windowWidth - close.width - close.right,
+            origin.y + close.top, close.width, close.height)
+    end
+    local title = session.title
+    if title ~= nil then
+        setRect(title.control, origin.x + title.left, origin.y + title.top,
+            math.max(1, windowWidth - title.left - title.right), title.height)
+    end
+    -- Expand intermediate clipping containers before moving their individual rows.
+    local expanded = {}
+    for _, entry in ipairs(session.rows) do
+        local ancestors, ancestor = {}, entry.row.parent
+        while ancestor ~= nil and ancestor ~= window do
+            ancestors[#ancestors + 1] = ancestor
+            ancestor = ancestor.parent
+        end
+        for index = #ancestors, 1, -1 do
+            local control = ancestors[index]
+            if control ~= content and not expanded[control] then
+                setRect(control, origin.x + session.left, origin.y + session.top, width, height)
+                control.clickthrough = true
+                expanded[control] = true
+            end
+        end
+    end
+    local imagePosition = self.backgroundView.layer.xyGlobal
+    for _, entry in ipairs(session.rows) do
+        local destination = entry.destination
+        local size, x, y = 0, nil, nil
+        if not destination.hidden then
+            size = math.max(1, math.floor((destination.icons.size or 48) * hitboxScale))
+            x, y = geometry.Project(destination.background, destination.point, width, height)
+        end
+        if x == nil then x, y, size = 0, 0, 0 else x, y = x - size / 2, y - size / 2 end
+        setRect(entry.row, imagePosition.x + x, imagePosition.y + y, size, size)
+        entry.row.alpha = 0
+        entry.row.clickthrough = true
+        local chain, control = {}, entry.click
+        while control ~= entry.row do
+            chain[#chain + 1] = control
+            control = control.parent
+        end
+        for index = #chain, 1, -1 do
+            control = chain[index]
+            control:SetPos(0, 0)
+            control:SetSize(size, size)
+            control.clickthrough = control ~= entry.click
+        end
+    end
+end
+
+-- Return the hovered native destination only when its map point is visible.
+function ModalChoiceMenu:GetHovered()
+    local menu = self.session.menu
+    for _, entry in ipairs(menu.rows) do
+        local destination = entry.destination
+        if not entry.locked and not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
+            and geometry.Contains(menu.background, destination.point) then return entry.name end
+    end
+end
+
+-- Refresh icon states and show only the hovered destination's tooltip.
+function ModalChoiceMenu:UpdateVisuals(layout, hovered)
+    self.iconView:Update(self.session.menu, hovered)
+    for name, tooltip in pairs(self.session.tooltips) do
+        if name == hovered then tooltip:Show() else tooltip:Hide() end
+    end
+end
+
+-- Destroy this menu's artwork even if the native interface has already closed.
+function ModalChoiceMenu:ReleaseVisuals()
+    if self.iconView ~= nil then pcall(function() self.iconView:Destroy() end) end
+    if self.backgroundView ~= nil then pcall(function() self.backgroundView:Destroy() end) end
+    self.iconView, self.backgroundView = nil, nil
+end
+
+-- Remove plugin hooks without restoring native positions, sizes, alpha or headings.
+function ModalChoiceMenu:ReleaseInterface()
+    if self.session == nil then return end
+    for _, tooltip in pairs(self.session.tooltips or {}) do pcall(function() tooltip:Destroy() end) end
+    for parent in pairs(self.session.tooltipContexts or {}) do
+        pcall(function() prettyui.Tooltip.unregisterContext(parent) end)
+    end
+end
+
+return ModalChoiceMenu

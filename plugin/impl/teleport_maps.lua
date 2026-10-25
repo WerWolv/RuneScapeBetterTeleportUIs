@@ -1,46 +1,83 @@
-local destinations = require("definitions/teleport_maps")
-local constants = require("definitions/constants")
-local modalMap = require("impl/modal_map")
-local backgroundView = require("impl/background_view")
-local buttonIcon = require("impl/button_icon")
+local registry = require("menus/registry")
+local matcher = require("impl/destination_matcher")
+local settings = require("definitions/constants")
 local teleportMaps = {}
-local background, icons
+local interfaces, active
 local lastLayoutError
 
--- Destroy plugin-owned artwork and release the native modal session.
-local function releaseModal()
-    if icons ~= nil then icons:Destroy() end
-    if background ~= nil then background:Destroy() end
-    icons, background = nil, nil
-    modalMap.Release()
+-- Release the selected menu's resources before switching or closing interfaces.
+local function releaseActive()
+    if active ~= nil then active:Release() end
+    active = nil
 end
 
--- Match the current menu and update its map, native hitboxes, icons and tooltip each frame.
+-- Rank read-only candidates and resolve only the winner for an interface snapshot.
+local function selectMenu(interface, menus, snapshot)
+    if active ~= nil and active.interface == interface and active:Matches(snapshot) then
+        return active, active.session.menu
+    end
+    local winner, match
+    local matches, failures = {}, {}
+    for _, menu in ipairs(menus) do
+        local candidate, reason = menu:Match(snapshot)
+        if candidate ~= nil then
+            if match == nil or candidate.unusedEntries < match.unusedEntries then
+                winner, match = menu, candidate
+            end
+            if settings.debugMatching then
+                matches[#matches + 1] = menu.key .. " (" .. #snapshot.nativeRows .. " matches, " .. candidate.unusedEntries .. " unused entries)"
+            end
+        elseif settings.debugMatching then
+            failures[#failures + 1] = "  " .. menu.key .. ": " .. reason
+        end
+    end
+    if winner ~= nil then
+        if #matches > 1 then
+            interface:ReportMatch({"Selected " .. winner.key .. " by fewest unused entries, then alphabetical menu key.",
+                "Candidates: " .. table.concat(matches, ", ")})
+        else
+            interface:ReportMatch(nil)
+        end
+    elseif settings.debugMatching then
+        local lines = {"Not matched: no menu matched every visible option.",
+            "Current options (after removing formatting tags and outer whitespace):"}
+        for _, row in ipairs(snapshot.nativeRows) do
+            lines[#lines + 1] = "  OPTION_" .. row.index .. ": " .. matcher.LabelSummary(row.labels)
+        end
+        lines[#lines + 1] = "First rejection reason for each menu:"
+        for _, failure in ipairs(failures) do lines[#lines + 1] = failure end
+        interface:ReportMatch(lines)
+    else
+        interface:ReportMatch(nil)
+    end
+    return winner, match
+end
+
+-- Read each interface once and update only its selected concrete menu instance.
 local function draw()
     local ok, message = pcall(function()
-        local menu = modalMap.ReadRows(destinations)
-        if menu == nil then
-            releaseModal()
-            return
+        local winner, match, selectedSnapshot
+        for _, entry in ipairs(interfaces) do
+            local snapshot = entry.interface:ReadInterface()
+            if snapshot ~= nil then
+                winner, match = selectMenu(entry.interface, entry.menus, snapshot)
+                if winner ~= nil then
+                    selectedSnapshot = snapshot
+                    break
+                end
+            end
         end
-        if not modalMap.Matches(menu) then
-            releaseModal()
-            modalMap.Begin(menu)
-            background = backgroundView.New(menu.content)
-            icons = buttonIcon.New(background.layer)
+        if winner == nil then releaseActive(); return end
+        if active ~= winner or active.session == nil or active.session.menu ~= match then
+            releaseActive()
+            active = winner
+            active:Begin(match)
         end
-
-        local hovered = modalMap.Hovered(menu)
-        local width, height = modalMap.Fit(menu.background, constants.maxWidth)
-        
-        background:Show(menu.background, width, height)
-        modalMap.Layout(width, height, background.layer)
-        icons:Update(menu, hovered)
-        modalMap.UpdateTooltip(hovered)
+        active:Update(selectedSnapshot)
         lastLayoutError = nil
     end)
     if not ok then
-        releaseModal()
+        releaseActive()
         message = tostring(message)
         if message ~= lastLayoutError then
             print("Unable to embed teleport map: " .. message)
@@ -49,15 +86,36 @@ local function draw()
     end
 end
 
--- Subscribe the renderer to the client's draw event.
+-- Instantiate concrete menus and group them by their inherited interface class.
 function teleportMaps.Start()
+    if interfaces ~= nil then return end
+    local discovered = {}
+    local byInterface, keys = {}, {}
+    for _, class in ipairs(registry) do
+        local menu = class:New()
+        assert(type(menu.key) == "string" and not keys[menu.key], "Teleport menu keys must be unique strings")
+        keys[menu.key] = true
+        local interface = assert(menu.interface, "Teleport menu must inherit an interface class")
+        local entry = byInterface[interface]
+        if entry == nil then
+            entry = {interface = interface, menus = {}}
+            byInterface[interface] = entry
+            discovered[#discovered + 1] = entry
+        end
+        entry.menus[#entry.menus + 1] = menu
+    end
+    for _, entry in ipairs(discovered) do
+        table.sort(entry.menus, function(a, b) return a.key < b.key end)
+    end
+    interfaces = discovered
     Event.Draw.Subscribe("destinationPreview", draw)
 end
 
--- Stop rendering and remove plugin-owned UI when the plugin unloads.
+-- Stop rendering and discard all menu instances and active session resources.
 function teleportMaps.Stop()
     Event.Draw.Unsubscribe("destinationPreview")
-    releaseModal()
+    releaseActive()
+    interfaces = nil
 end
 
 return teleportMaps
