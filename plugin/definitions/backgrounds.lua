@@ -33,6 +33,11 @@ return {
         width = 851,
         height = 667,
     },
+    fremennikIsles = {
+        image = Plugin.resources.backgrounds.fremennik_isles,
+        width = 1024,
+        height = 513,
+    },
     runescapeSurface = {
         sprites = {{id.Sprite.RS3_LODESTONE_WORLDMAP_ACTIVE}},
         width = 560,

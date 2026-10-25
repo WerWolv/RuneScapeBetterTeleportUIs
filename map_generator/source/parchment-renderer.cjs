@@ -132,7 +132,18 @@ async function renderMap(profile) {
 
     // Ocean and coastline ---------------------------------------------------------
 
-    function findOcean(source) {
+    // Bridge decks are not coastline: allow sea to connect beneath their spans.
+    async function createBridgeWaterMask() {
+        if (!profile.bridges?.length) return null;
+        const paths = profile.bridges.map(({ from, to, waterWidth }) =>
+            `<path d="M${from[0]} ${from[1]} L${to[0]} ${to[1]}" stroke="white" stroke-width="${waterWidth}"/>`,
+        ).join('');
+        return sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
+            <rect width="100%" height="100%" fill="black"/>${paths}</svg>`))
+            .flatten({ background: '#000000' }).greyscale().raw().toBuffer();
+    }
+
+    function findOcean(source, bridgeWater) {
         const candidates = new Uint8Array(PIXEL_COUNT);
         for (let index = 0; index < PIXEL_COUNT; index++) {
             const [red, green, blue] = readRgb(source, index);
@@ -140,7 +151,7 @@ async function renderMap(profile) {
                 Math.abs(red - PALETTE.sourceOcean[0]) +
                 Math.abs(green - PALETTE.sourceOcean[1]) +
                 Math.abs(blue - PALETTE.sourceOcean[2]);
-            candidates[index] = difference < profile.oceanTolerance ? 1 : 0;
+            candidates[index] = difference < profile.oceanTolerance || bridgeWater?.[index] >= 128 ? 1 : 0;
         }
 
         // Only border-connected water is sea. Grey inland buildings must not acquire
@@ -493,6 +504,26 @@ async function renderMap(profile) {
     `);
     }
 
+    // Draw restrained wooden crossings above the water instead of wrapping them in shoreline bands.
+    function createBridgesSvg() {
+        const bridges = profile.bridges.map(({ from, to, width }) => {
+            const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+            const angle = Math.atan2(to[1] - from[1], to[0] - from[0]) * 180 / Math.PI;
+            const half = width / 2;
+            let planks = '';
+            for (let x = 1; x < length; x += 3) {
+                planks += `M${x} ${-half} V${half} `;
+            }
+            return `<g transform="translate(${from[0]} ${from[1]}) rotate(${angle})">
+                <path d="M0 0 H${length}" stroke="#b29a6c" stroke-width="${width}"/>
+                <path d="M0 ${-half} H${length} M0 ${half} H${length} ${planks}"
+                    stroke="rgb(${PALETTE.landmarkInk.join(',')})" stroke-width="0.65"/>
+            </g>`;
+        }).join('');
+        return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
+            <g fill="none" opacity="0.75">${bridges}</g></svg>`);
+    }
+
     // Rendering pipeline ----------------------------------------------------------
 
     const source = await sharp(INPUT_PATH).resize(WIDTH, HEIGHT).removeAlpha().raw().toBuffer();
@@ -500,7 +531,8 @@ async function renderMap(profile) {
     const textures = await createTextures();
     const districts = await createDistrictWashes();
 
-    const ocean = findOcean(source);
+    const bridgeWater = await createBridgeWaterMask();
+    const ocean = findOcean(source, bridgeWater);
     const coastDistance = measureCoastDistance(ocean);
     const lava = await createLavaMasks(source, ocean);
     const landmarks = extractLandmarks(source, smoothed, ocean, coastDistance, lava);
@@ -508,14 +540,17 @@ async function renderMap(profile) {
 
     const parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts });
     let output = rawImage(parchment, RGB_CHANNELS);
+    const overlays = [];
+    if (profile.bridges?.length) overlays.push({ input: createBridgesSvg() });
     if (COMPASS !== null) {
         const compassPosition = findCompassPosition(ocean);
         const compass = createCompassSvg(compassPosition);
         console.log(
             `Compass at (${compassPosition.x}, ${compassPosition.y}); ocean-only radius ${compassPosition.clearance}px verified.`,
         );
-        output = output.composite([{ input: compass }]);
+        overlays.push({ input: compass });
     }
+    if (overlays.length > 0) output = output.composite(overlays);
     await fs.mkdir(OUTPUT_DIRECTORY, { recursive: true });
     await output.png().toFile(OUTPUT_PATH);
     console.log(`Rendered ${profile.output} (${WIDTH}x${HEIGHT}).`);

@@ -666,6 +666,12 @@ return {
             shadowColorHovered = 0x00000066,
         },
     },
+    magicLyre = {
+        objectID = id.Obj.MAGIC_ENCHANTED_STRUNG_LYRE_FULL_CHARGE,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },

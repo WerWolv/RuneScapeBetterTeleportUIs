@@ -17,6 +17,7 @@ local modules = {
     require("menus/tirannwn_quiver"),
     require("menus/dungeoneering_cape"),
     require("menus/desert_amulet"),
+    require("menus/enchanted_lyre"),
     (require("menus/slayer_cape")),
 }
 
