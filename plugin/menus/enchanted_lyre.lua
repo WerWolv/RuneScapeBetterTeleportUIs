@@ -4,7 +4,7 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local EnchantedLyre = ModalChoiceMenu:Extend("enchantedLyre")
 
--- Define the Desert Amulet destinations.
+-- Define the Enchanted Lyre destinations.
 function EnchantedLyre:Define()
     return {
         title = "Fremennik Isles",
@@ -13,35 +13,41 @@ function EnchantedLyre:Define()
             { x = 380, y = 60, width = 640, height = 453 }
         ),
         entries = {
-            ["1. Rellekka"] = {
+            ["^%d+%. Rellekka$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 970, y = 418},
             },
-            ["2. Waterbirth Island"] = {
+            ["^%d+%. Waterbirth Island$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 754, y = 349},
+                possiblyMissing = true,
             },
-            ["3. Neitiznot"] = {
+            ["^%d+%. Neitiznot$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 431, y = 255},
+                possiblyMissing = true,
             },
-            ["4. Jatizso"] = {
+            ["^%d+%. Jatizso$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 559, y = 255},
+                possiblyMissing = true,
             },
-            ["5. Miscellania"] = {
+            ["^%d+%. Miscellania$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 766, y = 151},
+                possiblyMissing = true,
             },
-            ["6. Etceteria"] = {
+            ["^%d+%. Etceteria$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 855, y = 140},
+                possiblyMissing = true,
             },
-            ["7. Rellekka Market"] = {
+            ["^%d+%. Rellekka Market$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 918, y = 456},
+                possiblyMissing = true,
             },
-            ["8. Cancel."] = {
+            ["^%d+%. Cancel%.?$"] = {
                 hidden = true
             },
         },
