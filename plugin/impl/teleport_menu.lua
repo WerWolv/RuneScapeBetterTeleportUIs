@@ -53,10 +53,10 @@ function TeleportMenu:RefreshAvailability(snapshot)
 end
 
 -- Resolve the winner and establish its native and plugin-owned session resources.
-function TeleportMenu:Begin(menu)
+function TeleportMenu:Begin(menu, transition)
     self.session = {menu = matcher.Resolve(menu)}
     self:RefreshAvailability()
-    self:BeginInterface()
+    self:BeginInterface(transition)
     self:BeginVisuals()
 end
 
@@ -82,6 +82,9 @@ function TeleportMenu:UpdateVisuals(layout, hovered) end
 function TeleportMenu:ReleaseVisuals() end
 function TeleportMenu:ReleaseInterface() end
 function TeleportMenu:GetHovered() return nil end
+
+-- Let interfaces carry lightweight layout state between related menu sessions.
+function TeleportMenu:GetTransitionState(nextMenu, match) return nil end
 
 -- Require interface classes to discover their native controls.
 function TeleportMenu:ReadInterface()

@@ -69,9 +69,10 @@ local function draw()
         end
         if winner == nil then releaseActive(); return end
         if active ~= winner or active.session == nil or active.session.menu ~= match then
+            local transition = active and active:GetTransitionState(winner, match)
             releaseActive()
             active = winner
-            active:Begin(match)
+            active:Begin(match, transition)
         end
         active:Update(selectedSnapshot)
         lastLayoutError = nil
@@ -93,7 +94,8 @@ function teleportMaps.Start()
     local byInterface, keys = {}, {}
     for _, class in ipairs(registry) do
         local menu = class:New()
-        assert(type(menu.key) == "string" and not keys[menu.key], "Teleport menu keys must be unique strings")
+        assert(type(menu.key) == "string", "Teleport menu key must be a string, got " .. tostring(menu.key))
+        assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
         keys[menu.key] = true
         local interface = assert(menu.interface, "Teleport menu must inherit an interface class")
         local entry = byInterface[interface]
