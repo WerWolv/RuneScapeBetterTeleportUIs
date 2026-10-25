@@ -628,6 +628,44 @@ return {
             shadowColorHovered = 0x00000066,
         },
     },
+    magicCarpet = {
+        imperial = {
+            objectID = id.Obj.MENAPHOS_MAGIC_CARPET_IMPERIAL,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        merchant = {
+            objectID = id.Obj.MENAPHOS_MAGIC_CARPET_MERCHANT,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        worker = {
+            objectID = id.Obj.MENAPHOS_MAGIC_CARPET_SLAVE,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        port = {
+            objectID = id.Obj.MENAPHOS_MAGIC_CARPET_PORT,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        basic = {
+            objectID = id.Obj.MENAPHOS_GOLDEN_PATH_MAGIC_CARPET_BASIC,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        gold = {
+            objectID = id.Obj.MENAPHOS_GOLDEN_PATH_MAGIC_CARPET_GOLD,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
