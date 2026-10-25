@@ -7,7 +7,7 @@ local BigBookOPiracy = ModalChoiceMenu:Extend("bigBookOPiracy")
 function BigBookOPiracy:Define()
     return {
         title = "Pirate Islands",
-        background = backgrounds.pirate_islands,
+        background = backgrounds.pirateIslands,
         icons = teleportIcons.bigBookOPiracy,
         entries = {
             ["1. Mos Le'Harmless."] = {
