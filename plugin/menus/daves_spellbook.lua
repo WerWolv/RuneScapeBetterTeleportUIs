@@ -7,7 +7,7 @@ local DavesSpellbook = ModalChoiceMenu:Extend("davesSpellbook")
 -- Format the captured chipped tablet count using the appropriate plural form.
 local function tabletsRemaining(count)
     local noun = tonumber(count) == 1 and "tablet" or "tablets"
-    return string.format("%s teleport %s remaining", count, noun)
+    return string.format("- %s <sprite=1824> teleport %s left", count, noun)
 end
 
 -- Define Dave's spellbook destinations with captured remaining-tablet counts.
