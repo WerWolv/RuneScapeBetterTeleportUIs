@@ -329,7 +329,7 @@ async function renderMap(profile) {
 
     function paintOcean(distance) {
         distance /= SHORELINE_SCALE;
-        let color = mixColors(PALETTE.paper, PALETTE.oceanStain, 0.25 * Math.exp(-distance / 11));
+        let color = mixColors(PALETTE.oceanBase ?? PALETTE.paper, PALETTE.oceanStain, 0.25 * Math.exp(-distance / 11));
         if (distance < 1.2) {
             color = mixColors(color, PALETTE.oceanShore, 0.72);
         } else if (distance < 3) {

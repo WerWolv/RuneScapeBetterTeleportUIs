@@ -9,7 +9,7 @@ module.exports = {
         lava: false,
         snow: true,
         landmarkOpacity: 0.75,
-        inkWash: 0.2,
+        inkWash: 0.08,
         marsh: null,
         // Bridge spans in output pixels: flood water beneath them, then ink the crossings separately.
         bridges: [
@@ -22,13 +22,14 @@ module.exports = {
             { from: [584, 182], to: [584, 198], width: 3, waterWidth: 9 },
         ],
         palette: {
-            lowTerrain: [169, 163, 125],
-            highTerrain: [222, 210, 175],
-            terrainShadow: [105, 107, 79],
-            landmarkInk: [89, 77, 54],
-            vegetation: [123, 143, 97],
-            inlandStain: [151, 158, 127],
-            snow: [246, 242, 224],
+            oceanBase: [226, 207, 165],
+            lowTerrain: [166, 116, 63],
+            highTerrain: [211, 166, 108],
+            terrainShadow: [105, 67, 35],
+            landmarkInk: [100, 67, 36],
+            vegetation: [170, 126, 70],
+            inlandStain: [174, 136, 87],
+            snow: [225, 200, 158],
         },
         compass: {
             scale: 0.75,
