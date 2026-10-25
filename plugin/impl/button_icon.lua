@@ -126,12 +126,12 @@ end
 local function updateLock(marker, size, locked)
     if locked and marker.lock == nil then
         local lock = ui.Sprite.new(marker.layer)
-        local lockSize = math.max(1, math.min(50, math.floor(size / 1.6)))
+        local lockSize = math.max(1, math.min(50, math.floor(size)))
         lock:SetSize(lockSize, lockSize)
-        lock:SetPos(size - lockSize, size - lockSize)
-        lock.spriteID = id.Sprite.RS_MOBILE_ICON_LOCK_128PX
+        lock:SetPos(size - lockSize / 1.3, size - lockSize / 1.3)
+        lock.spriteID = id.Sprite.RS_MOBILE_ICON_LOCK_ABILITY_BOOK
         lock.clickthrough = true
-        lock.shadowRGBA = 0xFFFFFFFF
+        lock.shadowRGBA = 0x000000FF
         marker.lock = lock
     end
     if marker.lock ~= nil then
