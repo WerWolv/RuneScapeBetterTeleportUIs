@@ -303,16 +303,310 @@ return {
             size = 40
         },
     },
+    surfaceRegions = {
+        anachronia = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ANACHRONIA_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ANACHRONIA_1 },
+        },
+        apeAtoll = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_APEATOLL_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_APEATOLL_1 },
+        },
+        asgarnia = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ASGARNIA_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ASGARNIA_1 },
+        },
+        ashdale = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ASHDALE_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_ASHDALE_1 },
+        },
+        desert = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_DESERT_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_DESERT_1 },
+        },
+        fremennik = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_FREMENNIK_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_FREMENNIK_1 },
+        },
+        havenhythe = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_HAVENHYTHE_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_HAVENHYTHE_1 },
+        },
+        kandarin = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_KANDARIN_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_KANDARIN_1 },
+        },
+        karamja = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_KARAMJA_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_KARAMJA_1 },
+        },
+        lostGrove = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_LOSTGROVE_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_LOSTGROVE_1 },
+        },
+        misthalin = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MISTHALIN_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MISTHALIN_1 },
+        },
+        morytania = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MORYTANIA_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MORYTANIA_1 },
+        },
+        mosLeHarmless = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MOSLEHARMLESS_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_MOSLEHARMLESS_1 },
+        },
+        pestControl = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_PEST_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_PEST_1 },
+        },
+        soulWars = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_SOULWARS_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_SOULWARS_1 },
+        },
+        tirannwn = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_TIRANNWN_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_TIRANNWN_1 },
+        },
+        wilderness = {
+            normal  = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_WILDERNESS_0 },
+            hovered = { sprite = id.Sprite.RS3_ICON_LEAGUES_REGION_MAP_WILDERNESS_1 },
+        },
+    },
+    regionShields = {
+        apeAtoll = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_APE_ATOLL,
+        },
+        desert = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_KHARIDIAN_DESERT,
+        },
+        feldipHills = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_FELDIP_HILLS,
+        },
+        fremennik = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_FREMENNIK,
+        },
+        kandarin = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_KANDARIN,
+        },
+        karamja = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_KARAMJA,
+        },
+        morytania = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_MORYTANIA,
+        },
+        mosLeHarmless = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_MOSLEHARMLESS,
+        },
+        tirannwn = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_TIRANNWN,
+        },
+        trollLands = {
+            sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_TROLL_LANDS,
+        },
+    },
+    slayer = {
+        normal = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_0 },
+        hovered = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_1 },
+        locked = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_2 }
+    },
+    digsite = {
+        guild = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_GUILD_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_GUILD_1 }
+        },
+        everlight = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_EVERLIGHT_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_EVERLIGHT_1 }
+        },
+        infernalSource = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_INFERNALSOURCE_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_INFERNALSOURCE_1 }
+        },
+        kharidEt = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_KHARIDET_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_KHARIDET_1 }
+        },
+        orthen = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_1 },
+            locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_2 }
+        },
+        stormguard = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_STORMGUARD_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_STORMGUARD_1 }
+        },
+        warforge = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_WARFORGE_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_WARFORGE_1 }
+        },
+        senntisten = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_1 },
+            locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_2 }
+        },
+        daemonheim = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_DAEMONHEIM_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_DAEMONHEIM_1 }
+        },
+        moonrise = {
+            normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_0 },
+            hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_1 },
+            locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_2 }
+        },
+    },
+    runeIcons = {
+        air = {
+            normal = { sprite = id.Sprite.AIR_CAPE_GRAPHIC }
+        },
+        astral = {
+            normal = { sprite = id.Sprite.ASTRAL_CAPE_GRAPHIC }
+        },
+        blood = {
+            normal = { sprite = id.Sprite.BLOOD_CAPE_GRAPHIC }
+        },
+        body = {
+            normal = { sprite = id.Sprite.BODY_CAPE_GRAPHIC }
+        },
+        chaos = {
+            normal = { sprite = id.Sprite.CHAOS_CAPE_GRAPHIC }
+        },
+        cosmic = {
+            normal = { sprite = id.Sprite.COSMIC_CAPE_GRAPHIC }
+        },
+        death = {
+            normal = { sprite = id.Sprite.DEATH_CAPE_GRAPHIC }
+        },
+        earth = {
+            normal = { sprite = id.Sprite.EARTH_CAPE_GRAPHIC }
+        },
+        essence = {
+            normal = { sprite = id.Sprite.ESSENCE_CAPE_GRAPHIC }
+        },
+        fire = {
+            normal = { sprite = id.Sprite.FIRE_CAPE_GRAPHIC }
+        },
+        law = {
+            normal = { sprite = id.Sprite.LAW_CAPE_GRAPHIC }
+        },
+        mind = {
+            normal = { sprite = id.Sprite.MIND_CAPE_GRAPHIC }
+        },
+        nature = {
+            normal = { sprite = id.Sprite.NATURE_CAPE_GRAPHIC }
+        },
+        soul = {
+            normal = { sprite = id.Sprite.SOUL_CAPE_GRAPHIC }
+        },
+        water = {
+            normal = { sprite = id.Sprite.WATER_CAPE_GRAPHIC }
+        },
+    },
+    runes = {
+        air = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_7 }
+        },
+        earth = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_8 }
+        },
+        fire = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_9 }
+        },
+        water = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_10 }
+        },
+        mind = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_11 }
+        },
+        body = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_12 }
+        },
+        astral = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_13 }
+        },
+        death = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_14 }
+        },
+        blood = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_15 }
+        },
+        cosmic = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_16 }
+        },
+        chaos = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_17 }
+        },
+        soul = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_18 }
+        },
+        nature = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_19 }
+        },
+        law = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_20 }
+        },
+        armadyl = {
+            normal = { sprite = id.Sprite.COMBATV2_ATTRIBUTE_REQUIREMENT_ICONS_21 }
+        },
+    },
+    gods = {
+        bandos = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_0 }
+        },
+        armadyl = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_1 }
+        },
+        brassicaPrime = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_2 }
+        },
+        godless = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_3 }
+        },
+        icthlarin = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_4 }
+        },
+        marimbo = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_5 }
+        },
+        saradomin = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_6 }
+        },
+        seren = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_7 }
+        },
+        sliske = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_8 }
+        },
+        tuska = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_9 }
+        },
+        zamorak = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_10 }
+        },
+        zaros = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_11 }
+        },
+        death = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_12 }
+        },
+        dragonkin = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_13 }
+        },
+        orthen = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_14 }
+        },
+        guthix = {
+            normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_15 }
+        },
+    },
 
     nextArrow = {
-        sprite = id.Sprite.RIGHTARROW,
-        size = 35,
-        shadowColor = 0x00000099,
+        normal = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_2 },
+        hovered = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_3 },
     },
     prevArrow = {
-        sprite = id.Sprite.LEFTARROW,
-        size = 35,
-        shadowColor = 0x00000099
+        normal = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_0 },
+        hovered = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_1 },
     },
 
 
