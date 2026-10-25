@@ -211,11 +211,6 @@ return {
         objectID = id.Obj.FEVER_PIRACY_BOOK,
         size = 40
     },
-    slayerMaster = {
-        normal = { sprite = id.Sprite.TRH56_ICON_SLAYER_XP_2 },
-        hovered = { sprite = id.Sprite.TRH56_ICON_SLAYER_XP_1 },
-        size = 40,
-    },
     lupeTeleport = {
         normal = { image = Plugin.resources.icons.lupe_teleport },
         hovered = { image = Plugin.resources.icons.lupe_teleport },
@@ -405,10 +400,12 @@ return {
             sprite = id.Sprite.RS3_WORLDMAP_REGION_SHIELD_TROLL_LANDS,
         },
     },
-    slayer = {
+    slayerMaster = {
         normal = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_0 },
         hovered = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_1 },
-        locked = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_2 }
+        locked = { sprite =  id.Sprite.TRH56_ICON_SLAYER_XP_2 },
+        size = 40,
+        shadowColor = 0x202020FF
     },
     digsite = {
         guild = {
@@ -599,14 +596,54 @@ return {
             normal = { sprite = id.Sprite.GSB_ICON_GOD_SYMBOLS_15 }
         },
     },
+    dungeoneeringDungeon = {
+        frozen = {
+            objectID = id.Obj.RAND_FURN_THEME_ICON,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        abandoned = {
+            objectID = id.Obj.RAND_ABND_THEME_ICON,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        furnished = {
+            objectID = id.Obj.RAND_FRZN_THEME_ICON,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        occult = {
+            objectID = id.Obj.RAND_OCLT_THEME_ICON,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+        warped = {
+            objectID = id.Obj.RAND_WRPD_THEME_ICON,
+            size = 32,
+            shadowColor = 0x00000066,
+            shadowColorHovered = 0x00000066,
+        },
+    },
 
     nextArrow = {
-        normal = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_2 },
-        hovered = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_3 },
+        normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
+        hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_1 },
+        locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_4 },
+        size = 40,
+        shadowColor = 0x202020FF,
+        shadowColorHovered = 0x202020FF
     },
     prevArrow = {
-        normal = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_0 },
-        hovered = { sprite = id.Sprite.MARKETPLACE_ICON_CAROUSEL_ARROW_1 },
+        normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_0 },
+        hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_1 },
+        locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_4 },
+        size = 40,
+        shadowColor = 0x202020FF,
+        shadowColorHovered = 0x202020FF
     },
 
 
