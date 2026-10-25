@@ -7,7 +7,7 @@ local GlobetrotterArmGuards = ModalChoiceMenu:Extend("globeTrotterArmGuards")
 -- Format the captured scroll count using the appropriate plural form.
 local function chargesRemaining(count)
     local noun = tonumber(count) == 1 and "scroll" or "scrolls"
-    return string.format("%s %s remaining", count, noun)
+    return string.format("- %s <sprite=4513> %s remaining", count, noun)
 end
 
 -- Define scroll destinations with live charge counts captured from native labels.
