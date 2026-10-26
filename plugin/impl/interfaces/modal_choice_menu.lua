@@ -98,7 +98,9 @@ function ModalChoiceMenu:ReadInterface()
         self:ReportMatch({"Not matched: no visible option rows were found."})
         return nil
     end
-    return {window = window, content = content, nativeRows = rows}
+    local title = component("TITLE")
+    local prompt = title ~= nil and title.type == ui.ComponentType.LABEL and cleanText(title.content) or nil
+    return {window = window, content = content, nativeRows = rows, prompt = prompt}
 end
 
 -- Require visible map destinations to have artwork, coordinates and a shared background.
@@ -282,11 +284,9 @@ local function setRect(control, x, y, width, height)
     control:SetSize(width, height)
 end
 
--- Resize the native modal and align original click targets with the map's destination markers.
-function ModalChoiceMenu:ApplyLayout(layout)
+-- Resize the native window and clipping containers for either maps or custom menu layouts.
+function ModalChoiceMenu:LayoutWindow(width, height)
     local session = self.session
-    local width, height = layout.width, layout.height
-    self.backgroundView:Show(session.menu.background, width, height)
     self:UpdateTitle()
     local window, content = session.window, session.content
     local parent = window.parent
@@ -328,6 +328,47 @@ function ModalChoiceMenu:ApplyLayout(layout)
             end
         end
     end
+end
+
+-- Suppress native child artwork without hiding controls from matching or input.
+function ModalChoiceMenu:HideRowArtwork(entry, originals)
+    local visited = {}
+    local function hideArtwork(control)
+        local key = controlKey(control)
+        if visited[key] then return false end
+        visited[key] = true
+        if originals ~= nil and originals[control] == nil then originals[control] = control.alpha end
+        control.alpha = 0
+        visitChildren(control, hideArtwork)
+        return false
+    end
+    hideArtwork(entry.row)
+end
+
+-- Position a native row and its input hierarchy without replacing its actions or hooks.
+function ModalChoiceMenu:LayoutRow(entry, x, y, width, height)
+    setRect(entry.row, x, y, width, height)
+    entry.row.alpha = 0
+    entry.row.clickthrough = true
+    local chain, control = {}, entry.click
+    while control ~= entry.row do
+        chain[#chain + 1] = control
+        control = control.parent
+    end
+    for index = #chain, 1, -1 do
+        control = chain[index]
+        control:SetPos(0, 0)
+        control:SetSize(width, height)
+        control.clickthrough = control ~= entry.click
+    end
+end
+
+-- Align original click targets with the map's destination markers.
+function ModalChoiceMenu:ApplyLayout(layout)
+    local session = self.session
+    local width, height = layout.width, layout.height
+    self.backgroundView:Show(session.menu.background, width, height)
+    self:LayoutWindow(width, height)
     local imagePosition = self.backgroundView.layer.xyGlobal
     for _, entry in ipairs(session.rows) do
         local destination = entry.destination
@@ -337,20 +378,7 @@ function ModalChoiceMenu:ApplyLayout(layout)
             x, y = geometry.Project(destination.background, destination.point, width, height)
         end
         if x == nil then x, y, size = 0, 0, 0 else x, y = x - size / 2, y - size / 2 end
-        setRect(entry.row, imagePosition.x + x, imagePosition.y + y, size, size)
-        entry.row.alpha = 0
-        entry.row.clickthrough = true
-        local chain, control = {}, entry.click
-        while control ~= entry.row do
-            chain[#chain + 1] = control
-            control = control.parent
-        end
-        for index = #chain, 1, -1 do
-            control = chain[index]
-            control:SetPos(0, 0)
-            control:SetSize(size, size)
-            control.clickthrough = control ~= entry.click
-        end
+        self:LayoutRow(entry, imagePosition.x + x, imagePosition.y + y, size, size)
     end
 end
 
