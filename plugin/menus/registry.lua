@@ -18,6 +18,7 @@ local modules = {
     require("menus/dungeoneering_cape"),
     require("menus/desert_amulet"),
     require("menus/enchanted_lyre"),
+    require("menus/passage_of_the_abyss"),
     (require("menus/slayer_cape")),
 }
 
