@@ -598,7 +598,7 @@ return {
     },
     dungeoneeringDungeon = {
         frozen = {
-            objectID = id.Obj.RAND_FURN_THEME_ICON,
+            objectID = id.Obj.RAND_FRZN_THEME_ICON,
             size = 32,
             shadowColor = 0x00000066,
             shadowColorHovered = 0x00000066,
@@ -610,7 +610,7 @@ return {
             shadowColorHovered = 0x00000066,
         },
         furnished = {
-            objectID = id.Obj.RAND_FRZN_THEME_ICON,
+            objectID = id.Obj.RAND_FURN_THEME_ICON,
             size = 32,
             shadowColor = 0x00000066,
             shadowColorHovered = 0x00000066,
