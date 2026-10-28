@@ -10,23 +10,24 @@ function RingOfDuelling:Define()
         title = "Ring of Duelling",
         background = cropped(
             backgrounds.runescapeSurface, 
-            {x = 93, y = 81, width = 314, height = 213}
+            {x = 63, y = 81, width = 344, height = 213}
         ),
+        icons = teleportIcons.ringOfDuelling,
         entries = {
             ["1. Het's Oasis"] = {
-                icons = teleportIcons.relicOfHet,
+                --icons = teleportIcons.relicOfHet,
                 point = {x = 369, y = 161},
             },
             ["2. Castle Wars Arena"] = {
-                icons = teleportIcons.castleWarsCape,
+                --icons = teleportIcons.castleWarsCape,
                 point = {x = 110, y = 199},
             },
             ["3. The Warforge"] = {
-                icons = teleportIcons.warForgeShield,
+                --icons = teleportIcons.warForgeShield,
                 point = {x = 112, y = 276},
             },
             ["4. Fist of Guthix"] = {
-                icons = teleportIcons.fistOfGuthixOrb,
+                --icons = teleportIcons.fistOfGuthixOrb,
                 point = {x = 283, y = 111},
             },
             ["5. Nowhere"] = {hidden = true},
