@@ -254,7 +254,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
     end
 
     updateHotkey(marker, name, size, disabled, locked)
-    updateLock(marker, size, locked and icons.locked == nil)
+    updateLock(marker, size, locked and (icons.locked == nil or icons.showLockIcon == true))
 
     return marker
 end
