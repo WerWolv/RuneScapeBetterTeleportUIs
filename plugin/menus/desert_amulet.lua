@@ -7,6 +7,7 @@ function DesertAmulet:Define()
     return {
         title = "Desert",
         background = backgrounds.desert,
+        vignette = false,
         entries = {
             ["1. Nardah"] = {
                 icons = teleportIcons.magicCarpet.port,
