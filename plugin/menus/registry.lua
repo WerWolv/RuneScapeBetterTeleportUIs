@@ -22,6 +22,7 @@ local modules = {
     require("menus/amulet_of_glory"),
     require("menus/ring_of_respawn"),
     require("menus/skills_necklace"),
+    require("menus/delvers_anklet"),
     (require("menus/slayer_cape")),
 }
 

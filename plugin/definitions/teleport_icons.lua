@@ -896,6 +896,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    delversAnklet = {
+        objectID = id.Obj.PLATINUM_DELVERS_ANKLET,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
