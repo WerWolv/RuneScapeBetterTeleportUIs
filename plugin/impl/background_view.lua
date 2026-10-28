@@ -10,8 +10,62 @@ function backgroundView.New(parent)
     return setmetatable({layer = layer}, backgroundView)
 end
 
+-- Shade the visible viewport rather than the uncropped source image.
+function backgroundView:ShowVignette(option, width, height)
+    local settings = type(option) == "table" and option or {}
+    local depth = option and math.max(0, math.floor(math.min(settings.width or 32, width / 2, height / 2))) or 0
+    local opacity = math.max(0, math.min(1, settings.opacity or 0.65))
+    local key = table.concat({ width, height, depth, opacity }, ":")
+
+    if self.vignetteKey == key then
+        return
+    end
+
+    if self.vignette ~= nil then
+        self.vignette:Destroy()
+        self.vignette = nil
+    end
+
+    self.vignetteKey = key
+
+    if depth == 0 or opacity == 0 then
+        return
+    end
+
+    self.vignette = ui.Layer.new(self.artwork)
+    self.vignette:SetSize(width, height)
+    self.vignette.clickthrough = true
+
+    local function strip(x, y, stripWidth, stripHeight, alpha)
+        local rectangle = ui.Rectangle.new(self.vignette)
+        rectangle:SetPos(x, y)
+        rectangle:SetSize(stripWidth, stripHeight)
+        rectangle.fill = true
+        rectangle.rgba = alpha
+        rectangle.clickthrough = true
+    end
+
+    -- Blend independent edge fades so corners darken smoothly without diagonal ring creases.
+    for inset = 0, depth - 1 do
+        local fade = 1 - inset / depth
+        local alpha = math.floor(255 * opacity * fade * fade + 0.5)
+
+        strip(0, inset, width, 1, alpha)
+        strip(0, height - inset - 1, width, 1, alpha)
+        strip(inset, 0, 1, height, alpha)
+        strip(width - inset - 1, 0, 1, height, alpha)
+    end
+end
+
 -- Destroy explicit sprite wrappers before their containing artwork layer.
 function backgroundView:Clear()
+    if self.vignette ~= nil then
+        self.vignette:Destroy()
+        self.vignette = nil
+    end
+
+    self.vignetteKey = nil
+
     if self.sprite ~= nil then
         self.sprite:Destroy()
         self.sprite = nil
@@ -30,7 +84,7 @@ function backgroundView:Destroy()
 end
 
 -- Load and display a background, rebuilding artwork only when its source or geometry changes.
-function backgroundView:Show(background, width, height)
+function backgroundView:Show(background, width, height, vignette)
     local image = background.sprites or background.sprite or background.image
     if image == nil then
         error("Background resource missing (set image to a Plugin.resources reference, or use sprite/sprites)")
@@ -122,6 +176,16 @@ function backgroundView:Show(background, width, height)
         
         self.artwork:MoveToBack()
     end
+
+    if vignette == nil then
+        vignette = background.vignette
+    end
+
+    if vignette == nil then
+        vignette = true
+    end
+
+    self:ShowVignette(vignette, width, height)
 
     self.image, self.view = image, view
     self.layer.hidden = false
