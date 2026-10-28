@@ -264,12 +264,19 @@ function ModalChoiceMenu:BeginInterface(placement)
         }
     end
     local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or window.parent
+
+    -- Own the entire tooltip subtree before calling PrettyUI: a failed constructor may
+    -- have created components without returning an attachment we can individually destroy.
+    session.tooltipLayer = ui.Layer.new(overlay)
+    session.tooltipLayer:SetSize(0, 0, 1.0, 1.0)
+    session.tooltipLayer.clickthrough = true
+
     for _, entry in ipairs(session.rows) do
         if not entry.destination.hidden then
             local parent = entry.click.parent
             if not session.tooltipContexts[parent] then
-                prettyui.Tooltip.registerContext(parent, overlay, function(target)
-                    local targetPosition, overlayPosition = target.xyGlobal, overlay.xyGlobal
+                prettyui.Tooltip.registerContext(parent, session.tooltipLayer, function(target)
+                    local targetPosition, overlayPosition = target.xyGlobal, session.tooltipLayer.xyGlobal
                     return targetPosition.x - overlayPosition.x, targetPosition.y - overlayPosition.y
                 end)
                 session.tooltipContexts[parent] = true
@@ -435,6 +442,10 @@ function ModalChoiceMenu:ReleaseInterface()
     for _, tooltip in pairs(self.session.tooltips or {}) do pcall(function() tooltip:Destroy() end) end
     for parent in pairs(self.session.tooltipContexts or {}) do
         pcall(function() prettyui.Tooltip.unregisterContext(parent) end)
+    end
+    if self.session.tooltipLayer ~= nil then
+        pcall(function() self.session.tooltipLayer:Destroy() end)
+        self.session.tooltipLayer = nil
     end
 end
 
