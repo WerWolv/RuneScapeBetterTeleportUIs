@@ -223,6 +223,25 @@ function ModalChoiceMenu:BeginInterface(placement)
         session.centerX, session.centerY = placement.centerX, placement.centerY
     end
     session.rows, session.titles, session.tooltips, session.tooltipContexts = {}, {}, {}, {}
+    session.frame = {}
+
+    -- Frame artwork can be inset from the window bounds, especially the background fill.
+    for _, name in ipairs({"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"}) do
+        local control = component(name)
+
+        if control ~= nil then
+            local position = control.xyGlobal
+
+            session.frame[#session.frame + 1] = {
+                control = control,
+                left = position.x - windowPos.x,
+                top = position.y - windowPos.y,
+                right = windowPos.x + window.width - position.x - control.width,
+                bottom = windowPos.y + window.height - position.y - control.height,
+            }
+        end
+    end
+
     for _, row in ipairs(menu.rows) do
         if not row.locked then session.rows[#session.rows + 1] = row end
     end
@@ -297,9 +316,11 @@ function ModalChoiceMenu:LayoutWindow(width, height)
         math.max(8, math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8)))
     local origin = window.xyGlobal
     setRect(content, origin.x + session.left, origin.y + session.top, width, height)
-    for _, name in ipairs({"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"}) do
-        local control = component(name)
-        if control ~= nil then setRect(control, origin.x, origin.y, windowWidth, windowHeight) end
+    for _, frame in ipairs(session.frame) do
+        setRect(frame.control,
+            origin.x + frame.left, origin.y + frame.top,
+            math.max(1, windowWidth - frame.left - frame.right),
+            math.max(1, windowHeight - frame.top - frame.bottom))
     end
     local close = session.close
     if close ~= nil then
@@ -367,7 +388,7 @@ end
 function ModalChoiceMenu:ApplyLayout(layout)
     local session = self.session
     local width, height = layout.width, layout.height
-    self.backgroundView:Show(session.menu.background, width, height)
+    self.backgroundView:Show(session.menu.background, width, height, self.definition.vignette)
     self:LayoutWindow(width, height)
     local imagePosition = self.backgroundView.layer.xyGlobal
     for _, entry in ipairs(session.rows) do
