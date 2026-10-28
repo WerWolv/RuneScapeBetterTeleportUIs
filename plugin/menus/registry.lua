@@ -15,7 +15,6 @@ local modules = {
     require("menus/globetrotter_arm_guards"),
     require("menus/daves_spellbook"),
     require("menus/tirannwn_quiver"),
-    require("menus/dungeoneering_cape"),
     require("menus/desert_amulet"),
     require("menus/enchanted_lyre"),
     require("menus/passage_of_the_abyss"),
@@ -23,6 +22,7 @@ local modules = {
     require("menus/ring_of_respawn"),
     require("menus/skills_necklace"),
     require("menus/delvers_anklet"),
+    require("menus/dungeoneering_cape"),
     (require("menus/slayer_cape")),
 }
 

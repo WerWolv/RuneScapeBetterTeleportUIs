@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local GamesNecklace = ModalChoiceMenu:Extend("gamesNecklace")
 
--- Define games necklace destinations on the cropped surface map.
 function GamesNecklace:Define()
     return {
         title = "Games necklace",

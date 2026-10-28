@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local LeelasFavour = ModalChoiceMenu:Extend("leelasFavour")
 
--- Define Leela's favour destinations and its hidden Soul Obelisk entry.
 function LeelasFavour:Define()
     return {
         title = "Menaphos",

@@ -11,7 +11,6 @@ local function description(level, location)
            descriptions.Location(location)
 end
 
--- Define ring of duelling destinations and its hidden cancel option.
 function DungeoneeringCapePage1:Define()
     return {
         title = "Resource Dungeons",

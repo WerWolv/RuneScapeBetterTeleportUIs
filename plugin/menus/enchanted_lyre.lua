@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local EnchantedLyre = ModalChoiceMenu:Extend("enchantedLyre")
 
--- Define the Enchanted Lyre destinations.
 function EnchantedLyre:Define()
     return {
         title = "Fremennik Isles",

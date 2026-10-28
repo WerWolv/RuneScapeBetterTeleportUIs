@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local PassingBracelet = ModalChoiceMenu:Extend("passingBracelet")
 
--- Define passing bracelet destinations in the City of Um.
 function PassingBracelet:Define()
     return {
         title = "Underworld",
