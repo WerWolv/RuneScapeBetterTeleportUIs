@@ -8,7 +8,7 @@ local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
 local knownTitles = setmetatable({}, {__mode = "k"})
-local padding, hitboxScale = 12, 0.75
+local frameInset, hitboxScale = 5, 0.75
 local collectionTypes = {
     [ui.ComponentType.LAYER] = true,
     [ui.ComponentType.PANEL] = true,
@@ -212,10 +212,11 @@ function ModalChoiceMenu:BeginInterface(placement)
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
     session.window, session.content = window, content
     session.parent = window.parent
-    session.left = math.max(padding, contentPos.x - windowPos.x)
+    -- Maps fill the frame interior rather than retaining the native text list's padding.
+    session.left = frameInset
     session.top = math.max(32, contentPos.y - windowPos.y)
-    session.right = math.max(padding, window.width - session.left - content.width)
-    session.bottom = math.max(padding, window.height - session.top - content.height)
+    session.right = frameInset
+    session.bottom = frameInset
     session.centerX, session.centerY = window.x + window.width / 2, window.y + window.height / 2
     if placement ~= nil then
         session.left, session.top = placement.left, placement.top
