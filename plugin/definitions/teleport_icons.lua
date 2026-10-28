@@ -878,6 +878,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    gamesNecklace = {
+        objectID = id.Obj.NECKLACE_OF_MINIGAMES_8,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
     amuletOfGlory = {
         objectID = id.Obj.AMULET_OF_GLORY_4,
         size = 32,
