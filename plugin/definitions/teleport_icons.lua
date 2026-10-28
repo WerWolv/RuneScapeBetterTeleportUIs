@@ -666,6 +666,206 @@ return {
             shadowColorHovered = 0x00000066,
         },
     },
+    skillCursor = {
+        agility = {
+            sprite = id.Sprite.CURSORS_SKILLS_0,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        thieving = {
+            sprite = id.Sprite.CURSORS_SKILLS_1,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        archaeologyBrush = {
+            sprite = id.Sprite.CURSORS_SKILLS_2,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        cooking = {
+            sprite = id.Sprite.CURSORS_SKILLS_3,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        archaeologyScreening = {
+            sprite = id.Sprite.CURSORS_SKILLS_4,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        archaeologyExcavating = {
+            sprite = id.Sprite.CURSORS_SKILLS_5,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        runecrafting = {
+            sprite = id.Sprite.CURSORS_SKILLS_6,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        archaeology = {
+            sprite = id.Sprite.CURSORS_SKILLS_7,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        attack = {
+            sprite = id.Sprite.CURSORS_SKILLS_9,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        slayer = {
+            sprite = id.Sprite.CURSORS_SKILLS_10,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        ranged = {
+            sprite = id.Sprite.CURSORS_SKILLS_11,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        fletching = {
+            sprite = id.Sprite.CURSORS_SKILLS_12,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        herblore = {
+            sprite = id.Sprite.CURSORS_SKILLS_13,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        rope = {
+            sprite = id.Sprite.CURSORS_SKILLS_14,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        fishing = {
+            sprite = id.Sprite.CURSORS_SKILLS_17,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        prayer = {
+            sprite = id.Sprite.CURSORS_SKILLS_18,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        magic = {
+            sprite = id.Sprite.CURSORS_SKILLS_21,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        summoning = {
+            sprite = id.Sprite.CURSORS_SKILLS_22,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        woodcutting = {
+            sprite = id.Sprite.CURSORS_SKILLS_23,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        ladder = {
+            sprite = id.Sprite.CURSORS_SKILLS_24,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        defence = {
+            sprite = id.Sprite.CURSORS_SKILLS_25,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        smithing = {
+            sprite = id.Sprite.CURSORS_SKILLS_26,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        mining = {
+            sprite = id.Sprite.CURSORS_SKILLS_27,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        strength = {
+            sprite = id.Sprite.CURSORS_SKILLS_29,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        crafting = {
+            sprite = id.Sprite.CURSORS_SKILLS_30,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        dungeoneering = {
+            sprite = id.Sprite.CURSORS_SKILLS_31,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        farming = {
+            sprite = id.Sprite.CURSORS_SKILLS_32,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        construction = {
+            sprite = id.Sprite.CURSORS_SKILLS_33,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        hunter = {
+            sprite = id.Sprite.CURSORS_SKILLS_35,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        firemaking = {
+            sprite = id.Sprite.CURSORS_SKILLS_36,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        divination = {
+            sprite = id.Sprite.CURSORS_SKILLS_37,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        inventionDiscover = {
+            sprite = id.Sprite.CURSORS_SKILLS_38,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+        inventionBuild = {
+            sprite = id.Sprite.CURSORS_SKILLS_39,
+            size = 36,
+            shadowColor = 0x9A4521FF,
+            shadowColorHovered = 0x9A4521CC
+        },
+    },
     magicLyre = {
         objectID = id.Obj.MAGIC_ENCHANTED_STRUNG_LYRE_FULL_CHARGE,
         size = 32,
