@@ -1,13 +1,14 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local descriptions = require("definitions/descriptions")
 local cropped = require("definitions/artwork_variants").Cropped
 local DavesSpellbook = ModalChoiceMenu:Extend("davesSpellbook")
 
 -- Format the captured chipped tablet count using the appropriate plural form.
 local function tabletsRemaining(count)
     local noun = tonumber(count) == 1 and "tablet" or "tablets"
-    return string.format("- %s <sprite=1824> teleport %s left", count, noun)
+    return descriptions.Text(string.format("%s <sprite=1824> teleport %s left", count, noun))
 end
 
 function DavesSpellbook:Define()

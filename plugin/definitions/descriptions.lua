@@ -1,30 +1,30 @@
 local description = {}
 
 description.SKILL = {
-    AGILITY         = 16038,
-    ARCHAEOLOGY     = 16039,
-    ATTACK          = 16040,
-    CONSTITUTION    = 16041,
-    CONSTRUCTION    = 16042,
-    COOKING         = 16043,
-    CRAFTING        = 16044,
-    DEFENCE         = 16045,
-    DIVINATION      = 16046,
-    DUNGEONEERING   = 16047,
-    FARMING         = 16048,
-    FIREMAKING      = 16049,
-    FISHING         = 16050,
-    FLETCHING       = 16051,
-    HERBLORE        = 16052,
-    HUNTING         = 16053,
-    INVENTION       = 16054,
-    MAGIC           = 16055,
-    MINING          = 16056,
-    PRAYER          = 16057,
-    RANGED          = 16058,
-    RUNECRAFTING    = 16059,
-    SLAYER          = 16060,
-    SMITHING        = 16061,
+    AGILITY         = id.Sprite.HITMARK_ICON_SKILL_AGILITY,
+    ARCHAEOLOGY     = id.Sprite.HITMARK_ICON_SKILL_ARCHAEOLOGY,
+    ATTACK          = id.Sprite.HITMARK_ICON_SKILL_ATTACK,
+    CONSTITUTION    = id.Sprite.HITMARK_ICON_SKILL_CONSTITUTION,
+    CONSTRUCTION    = id.Sprite.HITMARK_ICON_SKILL_CONSTRUCTION,
+    COOKING         = id.Sprite.HITMARK_ICON_SKILL_COOKING,
+    CRAFTING        = id.Sprite.HITMARK_ICON_SKILL_CRAFTING,
+    DEFENCE         = id.Sprite.HITMARK_ICON_SKILL_DEFENCE,
+    DIVINATION      = id.Sprite.HITMARK_ICON_SKILL_DIVINATION,
+    DUNGEONEERING   = id.Sprite.HITMARK_ICON_SKILL_DUNGEONEERING,
+    FARMING         = id.Sprite.HITMARK_ICON_SKILL_FARMING,
+    FIREMAKING      = id.Sprite.HITMARK_ICON_SKILL_FIREMAKING,
+    FISHING         = id.Sprite.HITMARK_ICON_SKILL_FISHING,
+    FLETCHING       = id.Sprite.HITMARK_ICON_SKILL_FLETCHING,
+    HERBLORE        = id.Sprite.HITMARK_ICON_SKILL_HERBLORE,
+    HUNTING         = id.Sprite.HITMARK_ICON_SKILL_HUNTING,
+    INVENTION       = id.Sprite.HITMARK_ICON_SKILL_INVENTION,
+    MAGIC           = id.Sprite.HITMARK_ICON_SKILL_MAGIC,
+    MINING          = id.Sprite.HITMARK_ICON_SKILL_MINING,
+    PRAYER          = id.Sprite.HITMARK_ICON_SKILL_PRAYER,
+    RANGED          = id.Sprite.HITMARK_ICON_SKILL_RANGED,
+    RUNECRAFTING    = id.Sprite.HITMARK_ICON_SKILL_RUNECRAFTING,
+    SLAYER          = id.Sprite.HITMARK_ICON_SKILL_SLAYER,
+    SMITHING        = id.Sprite.HITMARK_ICON_SKILL_SMITHING
 }
 
 local skillInfo = {
@@ -61,12 +61,20 @@ function description.LevelRequirement(level, skill)
         level, skill, info.color, info.name)
 end
 
+function description.CombatLevel(level)
+    return string.format("- Level <col=ffffff>%d</col>  <sprite=9286> <col=85B5E8>Combat</col><br>", level)
+end
+
 -- Adds a world location description
 function description.Location(name)
     return string.format("- <sprite=%d> <col=ffffff>%s</col><br>",
-        id.Sprite.ABILITY_ICON_TOOLTIP_TARGET_AOE,
+        id.Sprite.TOPLEVEL_WORLDMAP_BUTTON_0,
         name
     )
+end
+
+function description.Text(text)
+    return string.format("- %s<br>", text)
 end
 
 return description
