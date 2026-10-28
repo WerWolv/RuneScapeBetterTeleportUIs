@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local SlayerCapePage1 = ModalChoiceMenu:Extend("slayerCapePage1")
 local SlayerCapePage2 = ModalChoiceMenu:Extend("slayerCapePage2")
 
--- Define ring of duelling destinations and its hidden cancel option.
 function SlayerCapePage1:Define()
     return {
         title = "Slayer Masters",

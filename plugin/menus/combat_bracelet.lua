@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local CombatBracelet = ModalChoiceMenu:Extend("combatBracelet")
 
--- Define combat bracelet guild destinations.
 function CombatBracelet:Define()
     return {
         title = "Combat Bracelet",

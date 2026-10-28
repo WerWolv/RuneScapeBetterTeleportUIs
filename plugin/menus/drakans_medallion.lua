@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local DrakansMedallion = ModalChoiceMenu:Extend("drakansMedallion")
 
--- Define Drakan's medallion destinations.
 function DrakansMedallion:Define()
     return {
         title = "Drakan's Medallion",

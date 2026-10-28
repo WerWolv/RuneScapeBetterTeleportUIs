@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local RingOfDuelling = ModalChoiceMenu:Extend("ringOfDuelling")
 
--- Define ring of duelling destinations and its hidden cancel option.
 function RingOfDuelling:Define()
     return {
         title = "Ring of Duelling",

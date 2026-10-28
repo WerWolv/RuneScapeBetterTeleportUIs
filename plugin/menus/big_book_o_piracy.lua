@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local BigBookOPiracy = ModalChoiceMenu:Extend("bigBookOPiracy")
 
--- Define the Big Book o' Piracy island destinations.
 function BigBookOPiracy:Define()
     return {
         title = "Pirate Islands",

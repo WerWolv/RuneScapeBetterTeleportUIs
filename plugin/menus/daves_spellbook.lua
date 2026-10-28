@@ -10,7 +10,6 @@ local function tabletsRemaining(count)
     return string.format("- %s <sprite=1824> teleport %s left", count, noun)
 end
 
--- Define Dave's spellbook destinations with captured remaining-tablet counts.
 function DavesSpellbook:Define()
     return {
         title = "'Chipped' Teleport Tablets",

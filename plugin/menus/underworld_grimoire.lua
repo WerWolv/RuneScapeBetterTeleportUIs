@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local UnderworldGrimoire = ModalChoiceMenu:Extend("underworldGrimoire")
 
--- Define grimoire destinations with a locked Lupe marker for lower tiers.
 function UnderworldGrimoire:Define()
     return {
         title = "Underworld",

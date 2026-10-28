@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local CrystalTeleportSeed = ModalChoiceMenu:Extend("crystalTeleportSeed")
 
--- Define crystal seed destinations including the eight Prifddinas clan sectors.
 function CrystalTeleportSeed:Define()
     return {
         title = "Tirannwn",

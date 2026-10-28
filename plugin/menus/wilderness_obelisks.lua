@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local WildernessObelisks = ModalChoiceMenu:Extend("wildernessObelisks")
 
--- Define the Wilderness obelisk destinations.
 function WildernessObelisks:Define()
     return {
         title = "Wilderness Obelisks",

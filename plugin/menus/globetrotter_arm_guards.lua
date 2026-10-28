@@ -10,7 +10,6 @@ local function chargesRemaining(count)
     return string.format("- %s <sprite=4513> %s remaining", count, noun)
 end
 
--- Define scroll destinations with live charge counts captured from native labels.
 function GlobetrotterArmGuards:Define()
     return {
         title = "Teleport Scrolls",

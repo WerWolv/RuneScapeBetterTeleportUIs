@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local cropped = require("definitions/artwork_variants").Cropped
 local WildernessSword = ModalChoiceMenu:Extend("wildernessSword")
 
--- Define the shared sword menu with locked markers for unavailable upgrades.
 function WildernessSword:Define()
     return {
         title = "Wilderness",

@@ -3,7 +3,6 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local DesertAmulet = ModalChoiceMenu:Extend("desertAmulet")
 
--- Define the Desert Amulet destinations.
 function DesertAmulet:Define()
     return {
         title = "Desert",

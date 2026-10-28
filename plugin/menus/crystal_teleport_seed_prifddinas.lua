@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local resize = require("definitions/artwork_variants").Resize
 local CrystalTeleportSeedPrifddinas = ModalChoiceMenu:Extend("crystalTeleportSeedPrifddinas")
 
--- Define the Prifddinas-only crystal seed menu with enlarged clan icons.
 function CrystalTeleportSeedPrifddinas:Define()
     return {
         title = "Prifddinas",
