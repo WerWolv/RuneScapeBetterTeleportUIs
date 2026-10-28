@@ -872,6 +872,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    ringOfRespawn = {
+        objectID = id.Obj.ENCHANTED_JADE_RING_NEW,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
