@@ -13,7 +13,7 @@ end
 -- Shade the visible viewport rather than the uncropped source image.
 function backgroundView:ShowVignette(option, width, height)
     local settings = type(option) == "table" and option or {}
-    local depth = option and math.max(0, math.floor(math.min(settings.width or 32, width / 2, height / 2))) or 0
+    local depth = option and math.max(0, math.floor(math.min(settings.width or 20, width / 2, height / 2))) or 0
     local opacity = math.max(0, math.min(1, settings.opacity or 0.65))
     local key = table.concat({ width, height, depth, opacity }, ":")
 
