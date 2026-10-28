@@ -1,89 +1,159 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local backgrounds = require("definitions/backgrounds")
+local NpcSlotMenu = require("impl/interfaces/npc_slot_menu")
 local teleportIcons = require("definitions/teleport_icons")
-local SlayerCapePage1 = ModalChoiceMenu:Extend("slayerCapePage1")
-local SlayerCapePage2 = ModalChoiceMenu:Extend("slayerCapePage2")
+local descriptions = require("definitions/descriptions")
+local SlayerCapePage1 = NpcSlotMenu:Extend("slayerCapePage1")
+local SlayerCapePage2 = NpcSlotMenu:Extend("slayerCapePage2")
+
+local distance = 400
+local offset = {
+    x = 0,
+    y = 280,
+}
+
+local function description(slayerLevel, combatLevel, location)
+    local result = ""
+    
+    if slayerLevel > 0 then
+        result = result .. descriptions.LevelRequirement(slayerLevel, descriptions.SKILL.SLAYER)
+    end
+
+    if combatLevel > 0 then
+        result = result .. descriptions.CombatLevel(combatLevel)
+    end
+
+    return result .. descriptions.Location(location)
+end
 
 function SlayerCapePage1:Define()
     return {
         title = "Slayer Masters",
-        background = backgrounds.runescapeSurface,
-        icons = teleportIcons.slayerMaster,
         entries = {
             ["1. Mandrith"] = {
-                point = {x = 297, y = 23},
+                npcID = id.NPC.BOUNTY_MANDRITH,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = 500,
+                modelOffset = {
+                    x = 0,
+                    y = 250
+                },
+                description = description(95, 120, "Level 55 <sprite=1184> Wilderness")
             },
             ["2. Laniakea"] = {
-                point = {x = 535, y = 25},
+                npcID = id.NPC.SLAYER_MASTER_8_DINO_ISLAND,
+                animID = id.Seq.DINO_SLAYER_MASTER_IDLE,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(90, 120, "Xolo City, Anachronia")
             },
             ["3. Morvran"] = {
-                point = {x = 47, y = 117},
+                npcID = id.NPC.SLAYER_MASTER_7_IORWERTH,
+                animID = id.Seq.ELF_2014_SLAYER_MASTER_IDLE,
+                viewDistance = distance,
+                modelOffset = {
+                    x = 0,
+                    y = 240
+                },
+                description = description(85, 120, "Iorwerth Clan, Prifddinas")
             },
             ["4. Kuradal"] = {
-                point = {x = 141, y = 83},
+                npcID = id.NPC.SLAYER_MASTER_6_KURADAL,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(75, 110, "Ancient Cavern")
             },
             ["5. Lapalok"] = {
-                point = {x = 244, y = 230},
+                npcID = id.NPC.SLAYER_MASTER_5_LAPALOK,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(85, 100, "Shilo Village, Karamja")
             },
             ["5. Duradel"] = {
-                point = {x = 244, y = 230},
+                npcID = id.NPC.SLAYER_MASTER_5_DURADEL,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(85, 100, "Shilo Village, Karamja")
             },
             ["6. Sumona"] = {
-                point = {x = 379, y = 235},
+                npcID = id.NPC.SMKI_SUMONA,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(35, 90, "Pollnivneach, Kharidian Desert")
             },
             ["7. Chaeldar"] = {
-                point = {x = 338, y = 181},
+                npcID = id.NPC.SLAYER_MASTER_4,
+                animID = id.Seq.FAIRYKIT_FAIRY_READY,
+                viewDistance = distance,
+                modelOffset = {
+                    x = 0,
+                    y = 330,
+                },
+                description = description(0, 75, "Zanaris")
             },
             ["8. Mazchna"] = {
-                point = {x = 425, y = 83},
+                npcID = id.NPC.SLAYER_MASTER_2_MAZCHNA,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(0, 50, "Canifis, Morytania")
             },
             ["9. The Raptor"] = {
-                point = {x = 370, y = 74},
+                npcID = id.NPC.SLAYER_MASTER_2A_FORT_SLAYER,
+                animID = id.Seq.SIGHERO_RAPTOR_CASUAL_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(10, 35, "Fort Forinthry")
             },
             ["0. Next page"] = {
+                anchor = "bottomRight",
                 nameOverride = "Next",
                 icons = teleportIcons.nextArrow,
-                point = {x = 560 - 24, y = 290},
             },
-            ["X. Previous page"] = {
-                nameOverride = "Previous",
-                icons = teleportIcons.prevArrow,
-                point = {x = 24, y = 290 },
-                possiblyMissing = true,
-            }
         },
     }
 end
 
--- Define ring of duelling destinations and its hidden cancel option.
+-- The second native page retains the early-level masters and the previous-page action.
 function SlayerCapePage2:Define()
     return {
         title = "Slayer Masters",
-        background = backgrounds.runescapeSurface,
-        icons = teleportIcons.slayerMaster,
         entries = {
             ["1. Vannaka"] = {
-                point = {x = 302, y = 87},
+                npcID = id.NPC.SLAYER_MASTER_3,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(0, 30, "Edgeville")
             },
             ["2. Jacquelyn"] = {
-                point = {x = 338, y = 172},
+                npcID = id.NPC.SLAYER_MASTER_1A_JACQUELYN,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(0, 0, "Lumbridge")
             },
             ["3. Spria"] = {
-                point = {x = 252, y = 73},
+                npcID = id.NPC.SLAYER_MASTER_1_SPRIA,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(0, 0, "Burthorpe")
             },
             ["3. Turael"] = {
-                point = {x = 252, y = 73},
+                npcID = id.NPC.SLAYER_MASTER_1_TUREAL,
+                animID = id.Seq.HUMAN_READY,
+                viewDistance = distance,
+                modelOffset = offset,
+                description = description(0, 0, "Burthorpe")
             },
             ["4. Previous page"] = {
-                nameOverride = "Previous",
-                icons = teleportIcons.prevArrow,
-                point = {x = 24, y = 290 },
-            },
-            ["X. Next page"] = {
+                anchor = "bottomRight",
                 nameOverride = "Next",
                 icons = teleportIcons.nextArrow,
-                point = {x = 560 - 24, y = 290},
-                possiblyMissing = true,
+                point = { x = 100, y = 100 }
             }
         },
     }
