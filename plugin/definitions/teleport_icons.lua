@@ -872,6 +872,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    amuletOfGlory = {
+        objectID = id.Obj.AMULET_OF_GLORY_4,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
     ringOfRespawn = {
         objectID = id.Obj.ENCHANTED_JADE_RING_NEW,
         size = 32,
