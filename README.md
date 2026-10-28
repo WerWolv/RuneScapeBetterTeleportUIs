@@ -8,13 +8,11 @@ This plugin replaces many of the existing Modal Dialog-based Teleport UIs with p
 
 ## Currently supported UIs
 
-- Wilderness Obelisks, Portable Obelisk and PoH Obelisk
-- Drakan's medallion
-- Ring of Duelling
-- Games necklace
-- Crystal teleport seed and PoH Crystal Seed
-- Passing bracelet
-- Underworld Grimoire 2, 3 and 4
+Take a look at the Teleport Interfaces Backlog to see the status and screenshots of every single interface: https://github.com/users/WerWolv/projects/2
+
+## Locked destination icons
+
+Icon definitions with a `locked` artwork variant normally hide the lock badge. Set `showLockIcon = true` on the icon definition to display the badge alongside that artwork when the destination is locked.
 
 ## License
 
