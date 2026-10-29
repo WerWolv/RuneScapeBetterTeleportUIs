@@ -173,6 +173,7 @@ function FairyRings:BeginInterface()
     local controls = {}
 
     session.cursorOverrides = {}
+    session.favouriteIcons = {}
     session.headerControls = {}
 
     for _, name in ipairs(headerControls) do
@@ -591,6 +592,35 @@ function FairyRings:ApplyLayout()
             end
         end
     end
+end
+
+-- Replace unselected star artwork on the native sprites so favourite actions stay live.
+function FairyRings:UpdateVisuals()
+    local favourites = component("FAVOURITE_BUILD")
+
+    if favourites == nil then
+        return
+    end
+
+    local image = Plugin.resources.icons.fairy_ring_favorite_unselected
+
+    if not image.loaded then
+        image:Load()
+    end
+
+    if not image.loaded then
+        return
+    end
+
+    favourites:IterateDynamicComponents(function(control)
+        if control.type == ui.ComponentType.SPRITE
+            and control.spriteID == id.Sprite.FAIRY_RINGS_ICON_FAVOURITE_0 then
+            control.sprite = image
+            self.session.favouriteIcons[control] = control.runtimeSprite
+        end
+
+        return false
+    end)
 end
 
 function FairyRings:ReleaseVisuals()
