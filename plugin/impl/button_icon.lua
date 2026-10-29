@@ -7,26 +7,19 @@ local text = require("impl/text")
 local buttonIcon = {}
 buttonIcon.__index = buttonIcon
 
--- Fit an icon into its square marker while preserving proportions and shadow space.
-local function iconBounds(source, icons, size)
-    local inset = (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) and 2 or 0
-    local available = math.max(1, size - inset * 2)
-    local width, height = available, available
+-- Explicit dimensions take precedence; size specifies width when source proportions are known.
+function buttonIcon.Dimensions(icons)
+    local source = icons.normal or icons
+    local width = math.max(1, math.floor(icons.width or icons.size or 48))
+    local height = icons.height
     local sourceWidth = source.imageWidth or icons.imageWidth
     local sourceHeight = source.imageHeight or icons.imageHeight
 
-    if sourceWidth and sourceHeight then
-        local scale = math.min(available / sourceWidth, available / sourceHeight)
-        width = math.max(1, math.floor(sourceWidth * scale))
-        height = math.max(1, math.floor(sourceHeight * scale))
+    if height == nil and sourceWidth and sourceHeight then
+        height = width * sourceHeight / sourceWidth
     end
 
-    return {
-        x = math.floor((size - width) / 2), 
-        y = math.floor((size - height) / 2),
-        width = width, 
-        height = height,
-    }
+    return width, math.max(1, math.floor((height or width) + 0.5))
 end
 
 -- Convert Vector4 shadow colors to packed RGBA, leaving existing hex values unchanged.
@@ -56,14 +49,14 @@ local function getShadowColor(icons, highlighted, disabled)
 end
 
 -- Maintain a tinted, offset copy behind non-item icons for their current shadow state.
-local function updateSpriteShadow(marker, image, icons, highlighted, disabled, size)
+local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     if icons.shadowColor == nil and icons.shadowColorHovered == nil then
         return
     end
 
     if marker.shadowLayer == nil then
         marker.shadowLayer = ui.Layer.new(marker.artwork)
-        marker.shadowLayer:SetSize(size, size)
+        marker.shadowLayer:SetSize(marker.artwork.width, marker.artwork.height)
         marker.shadowLayer.clickthrough = true
         marker.shadowLayer:MoveToBack()
     end
@@ -120,12 +113,12 @@ local function updateHotkey(marker, name, size, disabled, locked)
 end
 
 -- Overlay a small lock on destinations that have no corresponding native menu option.
-local function updateLock(marker, size, locked)
+local function updateLock(marker, width, height, locked)
     if locked and marker.lock == nil then
         local lock = ui.Sprite.new(marker.layer)
-        local lockSize = math.max(1, math.min(50, math.floor(size)))
+        local lockSize = math.max(1, math.min(50, width, height))
         lock:SetSize(lockSize, lockSize)
-        lock:SetPos(size - lockSize / 1.3, size - lockSize / 1.3)
+        lock:SetPos(width - lockSize / 1.3, height - lockSize / 1.3)
         lock.spriteID = id.Sprite.RS_MOBILE_ICON_LOCK_ABILITY_BOOK
         lock.clickthrough = true
         lock.shadowRGBA = 0x000000FF
@@ -181,7 +174,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
     local marker = self.markers[name]
-    local size = icons.size or 48
+    local width, height = buttonIcon.Dimensions(icons)
     local source = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local kind = objectID ~= nil and "item" or "sprite"
@@ -196,27 +189,41 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         end
     end
 
-    if marker ~= nil and marker.kind ~= kind then
-        -- Inventory items and ordinary sprites require different native component types.
+    if marker ~= nil and (marker.kind ~= kind or marker.width ~= width or marker.height ~= height) then
+        -- Rebuild artwork and its overlays when the component type or dimensions change.
         destroyMarker(marker)
         self.markers[name], marker = nil, nil
     end
 
     if marker == nil then
+        -- Shadows extend right and down; grow clipping containers rather than shrinking artwork.
+        local shadowPadding = kind == "sprite"
+            and (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) and 2 or 0
         local layer = ui.Layer.new(self.parent)
-        layer:SetSize(size, size)
+        layer:SetSize(width + shadowPadding, height + shadowPadding)
         layer.clickthrough = true
         local artwork = ui.Layer.new(layer)
-        artwork:SetSize(size, size)
+        artwork:SetSize(width + shadowPadding, height + shadowPadding)
         artwork.clickthrough = true
-        marker = {layer = layer, artwork = artwork, kind = kind}
+        marker = {
+            layer = layer,
+            artwork = artwork,
+            kind = kind,
+            width = width,
+            height = height,
+        }
 
         if objectID ~= nil then
             local sprite = components.ItemSprite(artwork, objectID)
-            sprite:SetSize(size, size)
+            sprite:SetSize(width, height)
             marker.itemSprite, marker.objectID = sprite, objectID
         else
-            marker.bounds = iconBounds(source, icons, size)
+            marker.bounds = {
+                x = 0,
+                y = 0,
+                width = width,
+                height = height,
+            }
             marker.sprite = prettyui.Sprite.new(artwork, image, utils.deepcopy(marker.bounds))
             marker.image = image
         end
@@ -246,7 +253,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
     end
 
     if marker.sprite ~= nil then
-        updateSpriteShadow(marker, image, icons, highlighted, disabled, size)
+        updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 
     if marker.disabled ~= disabled then
@@ -259,8 +266,8 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         marker.disabled = disabled
     end
 
-    updateHotkey(marker, name, size, disabled, locked)
-    updateLock(marker, size, locked and (icons.locked == nil or icons.showLockIcon == true))
+    updateHotkey(marker, name, width, disabled, locked)
+    updateLock(marker, width, height, locked and (icons.locked == nil or icons.showLockIcon == true))
 
     return marker
 end
@@ -279,9 +286,8 @@ function buttonIcon:Update(menu, hovered)
             local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked)
 
             if marker ~= nil then
-                local size = icons.size or 48
                 local x, y = geometry.Project(menu.background, point, self.parent.width, self.parent.height)
-                marker.layer:SetPos(x - size / 2, y - size / 2)
+                marker.layer:SetPos(x - marker.width / 2, y - marker.height / 2)
                 marker.layer.hidden = false
                 marker.layer:MoveToFront()
             end
