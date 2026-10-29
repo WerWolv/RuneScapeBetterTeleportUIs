@@ -1,30 +1,38 @@
+local function definition(path)
+    local module, _ = require("menus/" .. path)
+
+    return module
+end
+
 -- Menu modules may export one concrete class or a list of page classes.
 local modules = {
-    require("menus/wilderness_obelisks"),
-    require("menus/wilderness_sword"),
-    require("menus/drakans_medallion"),
-    require("menus/ring_of_duelling"),
-    require("menus/games_necklace"),
-    require("menus/combat_bracelet"),
-    require("menus/crystal_teleport_seed"),
-    require("menus/crystal_teleport_seed_prifddinas"),
-    require("menus/passing_bracelet"),
-    require("menus/underworld_grimoire"),
-    require("menus/leelas_favour"),
-    require("menus/big_book_o_piracy"),
-    require("menus/globetrotter_arm_guards"),
-    require("menus/daves_spellbook"),
-    require("menus/tirannwn_quiver"),
-    require("menus/desert_amulet"),
-    require("menus/enchanted_lyre"),
-    require("menus/passage_of_the_abyss"),
-    require("menus/amulet_of_glory"),
-    require("menus/ring_of_respawn"),
-    require("menus/skills_necklace"),
-    require("menus/delvers_anklet"),
-    require("menus/dungeoneering_cape"),
-    require("menus/fairy_rings"),
-    (require("menus/slayer_cape")),
+    definition("maps/wilderness_obelisks"),
+    definition("maps/wilderness_sword"),
+    definition("maps/drakans_medallion"),
+    definition("maps/ring_of_duelling"),
+    definition("maps/games_necklace"),
+    definition("maps/combat_bracelet"),
+    definition("maps/crystal_teleport_seed"),
+    definition("maps/crystal_teleport_seed_prifddinas"),
+    definition("maps/passing_bracelet"),
+    definition("maps/underworld_grimoire"),
+    definition("maps/leelas_favour"),
+    definition("maps/big_book_o_piracy"),
+    definition("maps/globetrotter_arm_guards"),
+    definition("maps/daves_spellbook"),
+    definition("maps/desert_amulet"),
+    definition("maps/enchanted_lyre"),
+    definition("maps/amulet_of_glory"),
+    definition("maps/ring_of_respawn"),
+    definition("maps/skills_necklace"),
+    definition("maps/delvers_anklet"),
+    definition("maps/dungeoneering_cape"),
+
+    definition("enhancements/fairy_rings"),
+    definition("enhancements/tirannwn_quiver"),
+
+    definition("special/passage_of_the_abyss"),
+    definition("special/slayer_cape"),
 }
 
 local registry = {}
