@@ -55,6 +55,7 @@ local function logRows()
             index = location.dynamicID,
             top = background.y,
             height = background.height,
+            background = background,
             text = {},
             controls = {},
         }
@@ -290,6 +291,18 @@ function FairyRings:FilterLog()
         return
     end
 
+    -- Capture the native alternating shades before applying filtered row positions.
+    local stripes = {}
+
+    for index = 1, math.min(2, #rows) do
+        local background = rows[index].background
+
+        stripes[index] = {
+            rgb = background.rgb,
+            alpha = background.alpha,
+        }
+    end
+
     local controls, columns, favouriteNumbers = {}, {}, {}
 
     for _, name in ipairs(logColumns) do
@@ -362,7 +375,7 @@ function FairyRings:FilterLog()
     end
 
     gap = gap or 0
-    local nextY, bottom = 0, 0
+    local nextY, bottom, visibleRows = 0, 0, 0
     local height
 
     session.filteredLayout:Apply(function()
@@ -395,6 +408,11 @@ function FairyRings:FilterLog()
             end
 
             if matches then
+                local stripe = stripes[visibleRows % #stripes + 1]
+                row.background.rgb = stripe.rgb
+                row.background.alpha = stripe.alpha
+                visibleRows = visibleRows + 1
+
                 bottom = nextY + row.height
                 nextY = bottom + gap
             end
@@ -478,9 +496,7 @@ function FairyRings:UpdateScrollbar()
         parts[1]:SetHeight(math.max(0, thumbHeight - topCap - bottomCap))
         parts[3]:SetY(thumbY + thumbHeight - bottomCap)
 
-        if range == 0 then
-            scrollbar.hidden = true
-        end
+        scrollbar.hidden = false
     end)
 end
 
