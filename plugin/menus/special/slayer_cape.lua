@@ -85,11 +85,11 @@ function SlayerCapePage1:Define()
             },
             ["7. Chaeldar"] = {
                 npcID = id.NPC.SLAYER_MASTER_4,
-                animID = id.Seq.FAIRYKIT_FAIRY_READY,
+                animID = id.Seq.FAIRYKIT_FAIRY_QUEEN_READY,
                 viewDistance = distance,
                 modelOffset = {
                     x = 0,
-                    y = 330,
+                    y = 300,
                 },
                 description = description(0, 75, "Zanaris")
             },
