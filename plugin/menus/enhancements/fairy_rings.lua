@@ -12,6 +12,7 @@ local wheelControls = {
 }
 
 local searchHeight, searchGap = 28, 6
+local selectedRowColor = 0x66512E
 local headerControls = {
     "LOG_TITLE", "SORT_DROPDOWN_HOLDER", "LOG_FOUND_LABEL", "LOG_FOUND_TOTAL",
 }
@@ -56,6 +57,7 @@ local function logRows()
             top = background.y,
             height = background.height,
             background = background,
+            location = text,
             text = {},
             controls = {},
         }
@@ -500,12 +502,45 @@ function FairyRings:UpdateScrollbar()
     end)
 end
 
+-- The native destination label identifies the selection, including special destinations.
+function FairyRings:HighlightDestination()
+    local destination = component("COMBINATION_DESTINATION")
+
+    if destination == nil or not destination.visibleGlobal then
+        return
+    end
+
+    local selected = text.Trim(plainText(destination.content))
+
+    if selected == "" then
+        return
+    end
+
+    for _, row in ipairs(logRows()) do
+        if text.Trim(row.location) == selected then
+            self.session.highlightLayout = NativeLayout.FromControls({ row.background })
+            self.session.highlightLayout:Apply(function()
+                row.background.rgb = selectedRowColor
+                row.background.alpha = 1
+            end)
+
+            return
+        end
+    end
+end
+
 -- The client retains the wheel layout and all native turn actions.
 function FairyRings:CalculateLayout()
     return {}
 end
 
 function FairyRings:ApplyLayout()
+    -- Restore selection styling before reading the native shades for filtered stripes.
+    if self.session.highlightLayout ~= nil then
+        self.session.highlightLayout:Restore()
+        self.session.highlightLayout = nil
+    end
+
     if self.search ~= nil then
         if self.session.scrollbarLayout ~= nil then
             self.session.scrollbarLayout:Restore()
@@ -522,6 +557,8 @@ function FairyRings:ApplyLayout()
         self:FilterLog()
         self:UpdateScrollbar()
     end
+
+    self:HighlightDestination()
 
     for _, row in ipairs(self.session.menu.rows) do
         local control = row.click
@@ -556,6 +593,10 @@ end
 
 -- Restore only our own cursor changes when the shared controller releases this menu.
 function FairyRings:ReleaseInterface()
+    if self.session.highlightLayout ~= nil then
+        self.session.highlightLayout:Restore()
+    end
+
     if self.session.scrollbarLayout ~= nil then
         self.session.scrollbarLayout:Restore()
     end
