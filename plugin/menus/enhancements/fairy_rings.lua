@@ -12,6 +12,7 @@ local wheelControls = {
 }
 
 local searchHeight, searchGap = 28, 6
+local searchIconSize, searchIconInset = 24, 4
 local selectedRowColor = 0x66512E
 local headerControls = {
     "LOG_TITLE", "SORT_DROPDOWN_HOLDER", "LOG_FOUND_LABEL", "LOG_FOUND_TOTAL",
@@ -215,7 +216,13 @@ function FairyRings:BeginVisuals()
         placeholder = "Search destinations or codes...",
         height = searchHeight,
         maxLength = 80,
+        contentMargin = ui.Margin.new(searchIconInset * 2 + searchIconSize, 3, 8, 0),
     })
+
+    self.searchIcon = ui.Sprite.new(snapshot.searchParent)
+    self.searchIcon.spriteID = id.Sprite.AIF_SEARCH_ICON_0
+    self.searchIcon:SetSize(searchIconSize, searchIconSize)
+    self.searchIcon.clickthrough = true
 end
 
 -- Reserve a dedicated search row below the client's existing log controls.
@@ -250,6 +257,8 @@ function FairyRings:LayoutSearch()
 
         self.search.root:SetPos(searchGap, searchY)
         self.search.root:SetSize(math.max(1, top.width - searchGap * 2), searchHeight)
+        self.searchIcon:SetPos(searchGap + searchIconInset, searchY + (searchHeight - searchIconSize) / 2)
+        self.searchIcon:MoveToFront()
     end)
 end
 
@@ -585,6 +594,11 @@ function FairyRings:ApplyLayout()
 end
 
 function FairyRings:ReleaseVisuals()
+    if self.searchIcon ~= nil then
+        self.searchIcon:Destroy()
+        self.searchIcon = nil
+    end
+
     if self.search ~= nil then
         self.search:Destroy()
         self.search = nil
