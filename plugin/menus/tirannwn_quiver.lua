@@ -1,4 +1,6 @@
 local AtelfTeleportsMenu = require("impl/interfaces/atelf_teleports_menu")
+local textUtils = require("impl/text")
+local componentUtils = require("impl/components")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
 
 function TirannwnQuiver:Define()
@@ -41,14 +43,9 @@ function TirannwnQuiver:BeginVisuals()
         return
     end
 
-    local text = ui.Text.new(session.deathButton.parent)
-    text:SetSize(48, 18)
-    text.font = id.Font.MUSEO_SANS_13PT_BOLD
-    text:AlignTo(ui.AlignMode.CENTRE)
+    local text = componentUtils.CenteredLabel(session.deathButton.parent, id.Font.MUSEO_SANS_13PT_BOLD)
+    text:SetSize(51, 18)
     text.rgba = 0xFFFFFFC0
-    text.isShadowed = true
-    text.maxLines = 1
-    text.clickthrough = true
 
     session.chargesText = text
 end
@@ -70,7 +67,7 @@ function TirannwnQuiver:UpdateVisuals()
         position.y - parentPosition.y + (button.height - 32) / 2
     )
 
-    local source = (session.chargesSource.content or ""):gsub("<[^>]*>", "")
+    local source = textUtils.StripFormatting(session.chargesSource.content)
     local count = source:match("Death Altar%s+(%d+)%s+more times today%.")
     text.content = count or ""
     text.hidden = not button.visibleGlobal or count == nil

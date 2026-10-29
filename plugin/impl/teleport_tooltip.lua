@@ -1,3 +1,4 @@
+local text = require("impl/text")
 local teleportTooltip = {}
 local maxWidth = 240
 local paddingX, paddingY = 8, 5
@@ -18,7 +19,7 @@ end
 
 -- Attach a tooltip with title and optional description to the cursor
 function teleportTooltip.Attach(target, parent, title, description)
-    if description == nil or description:match("^%s*$") then
+    if text.IsBlank(description) then
         return prettyui.Tooltip.attach(target, parent, {
             text = title,
             maxWidth = maxWidth,

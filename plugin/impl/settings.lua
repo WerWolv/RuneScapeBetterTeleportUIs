@@ -1,14 +1,11 @@
 local definitions = require("definitions/settings")
+local utils = require("impl/utils")
+local text = require("impl/text")
 local settings = {}
 local eventID = "teleportMapsSettings"
 local values, byKey, controls = {}, {}, {}
 local view
 local parent
-
--- Treat absent or whitespace-only descriptions as omitted.
-local function hasDescription(definition)
-    return definition.description ~= nil and not definition.description:match("^%s*$")
-end
 
 -- Each setting type supplies typed persistence, validation, and a UI control builder.
 local types = {
@@ -21,7 +18,7 @@ local types = {
             local control = host:AddCheckboxButton({
                 {text = definition.label, value = definition.key, selected = values[definition.key]},
             }, {
-                marginBottom = hasDescription(definition) and 0 or nil,
+                marginBottom = not text.IsBlank(definition.description) and 0 or nil,
                 onChange = function(_, _, _, selected)
                     settings.Set(definition.key, selected)
                 end,
@@ -34,7 +31,7 @@ local types = {
         write = function(key, value) PersistentDB:SetFloat(key, value) end,
         -- Accept only finite numbers within the slider's configured range.
         valid = function(value, definition)
-            return type(value) == "number" and value == value and math.abs(value) < math.huge
+            return utils.IsFinite(value)
                 and value >= (definition.min or 0) and value <= (definition.max or 100)
         end,
         -- Bind a labelled slider to the setting without notifying during UI synchronization.
@@ -45,7 +42,7 @@ local types = {
                 max = definition.max or 100,
                 step = definition.step or 1,
                 value = values[definition.key],
-                marginBottom = hasDescription(definition) and 0 or nil,
+                marginBottom = not text.IsBlank(definition.description) and 0 or nil,
                 onChange = function(_, value) settings.Set(definition.key, value) end,
             })
             return function(value) control:SetValue(value, false) end
@@ -61,7 +58,7 @@ local types = {
             local control = host:AddTextField({
                 text = values[definition.key],
                 placeholder = definition.placeholder,
-                marginBottom = hasDescription(definition) and 0 or nil,
+                marginBottom = not text.IsBlank(definition.description) and 0 or nil,
                 onChange = function(_, _, text) settings.Set(definition.key, text) end,
             })
             return function(value) control:SetText(value, false) end
@@ -133,7 +130,7 @@ local function buildSettings(event)
 
     for _, definition in ipairs(definitions) do
         controls[definition.key] = types[definition.type].create(view, definition)
-        if hasDescription(definition) then
+        if not text.IsBlank(definition.description) then
             view:AddText({
                 text = "       " .. definition.description,
                 font = id.Font.MUSEO_SANS_11PT_REGULAR,

@@ -1,6 +1,9 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local SlotMenu = require("impl/interfaces/slot_menu")
+local ButtonIcon = require("impl/button_icon")
+local components = require("impl/components")
+local text = require("impl/text")
 local userSettings = require("impl/settings")
-local NpcSlotMenu = ModalChoiceMenu:Extend()
+local NpcSlotMenu = SlotMenu:Extend()
 
 local columns, slotSize, labelHeight, gap, inset = 5, 112, 24, 8, 8
 local gridWidth = columns * slotSize + (columns - 1) * gap + inset * 2
@@ -9,7 +12,7 @@ local modelInset = 6
 
 -- The model cards identify the choices without the native selection prompt.
 function NpcSlotMenu:UpdateTitle()
-    ModalChoiceMenu.UpdateTitle(self)
+    SlotMenu.UpdateTitle(self)
 
     local title = self.session.title
 
@@ -29,28 +32,14 @@ end
 
 -- Build passive model cards; the original native rows remain the only click targets.
 function NpcSlotMenu:BeginVisuals()
-    self.slotLayer = ui.Layer.new(self.session.content)
-    self.slotLayer.clickthrough = true
-    self.slots = {}
+    SlotMenu.BeginVisuals(self)
 
     for _, row in ipairs(self.session.menu.rows) do
         local destination = row.destination
-        local layer = ui.Layer.new(self.slotLayer)
-        layer.clickthrough = true
-
-        local slot = {
-            row = row,
-            layer = layer,
-        }
-
-        self.slots[#self.slots + 1] = slot
+        local slot = self:CreateSlot(row, destination.npcID ~= nil)
+        local layer = slot.layer
 
         if destination.npcID ~= nil then
-            local background = ui.Sprite.new(layer)
-            background.spriteID = id.Sprite.RS3_INV_ICON_SLOT
-            background.clickthrough = true
-            slot.background = background
-
             -- Clip model drawing to the slot interior, excluding its border and name label.
             local viewport = ui.Layer.new(layer)
             viewport.clickthrough = true
@@ -69,17 +58,11 @@ function NpcSlotMenu:BeginVisuals()
 
             slot.model = model
 
-            local label = ui.Text.new(layer)
-            label.font = id.Font.MUSEO_SANS_13PT_REGULAR
-            label:AlignTo(ui.AlignMode.CENTRE)
-            label.isShadowed = true
-            label.maxLines = 1
-            label.clickthrough = true
-            slot.label = label
+            slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_REGULAR)
         else
             local sprite = ui.Sprite.new(layer)
             local icons = destination.icons
-            sprite.spriteID = (row.locked and icons.locked or icons.normal or icons).sprite
+            sprite.spriteID = ButtonIcon.Source(icons, false, row.disabled, row.locked).sprite
             sprite.clickthrough = true
             slot.icon = sprite
         end
@@ -172,8 +155,8 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
         if slot.label ~= nil then
-            local name = row.destination.nameOverride or row.name:gsub("^%d+%.%s*", "")
-            local hotkey = row.name:match("^(%d+)%.")
+            local name = self:GetDisplayName(row)
+            local hotkey = text.Hotkey(row.name)
 
             if not row.locked and hotkey ~= nil and userSettings.Get("showTeleportHotkeys") then
                 name = hotkey .. ". " .. name
@@ -183,9 +166,7 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
             slot.label.rgba = row.name == hovered and 0xFFFFFFFF or 0xFFE3A3FF
         else
             local icons = row.destination.icons
-            local normal = icons.normal or icons
-            local source = row.locked and (icons.locked or normal)
-                or (not row.disabled and row.name == hovered and (icons.hovered or normal) or normal)
+            local source = ButtonIcon.Source(icons, row.name == hovered, row.disabled, row.locked)
 
             slot.icon.spriteID = source.sprite
         end
@@ -197,25 +178,7 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
         end
     end
 
-    self.slotLayer:MoveToFront()
-
-    for name, tooltip in pairs(self.session.tooltips) do
-        if name == hovered then
-            tooltip:Show()
-        else
-            tooltip:Hide()
-        end
-    end
-end
-
-function NpcSlotMenu:ReleaseVisuals()
-    if self.slotLayer ~= nil then
-        pcall(function()
-            self.slotLayer:Destroy()
-        end)
-    end
-
-    self.slotLayer, self.slots = nil, nil
+    SlotMenu.UpdateVisuals(self, layout, hovered)
 end
 
 return NpcSlotMenu
