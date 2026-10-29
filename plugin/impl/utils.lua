@@ -1,5 +1,9 @@
 local utils = {}
 
+function utils.IsFinite(value)
+    return type(value) == "number" and value == value and math.abs(value) < math.huge
+end
+
 function utils.deepcopy(orig)
     local orig_type = type(orig)
     local copy

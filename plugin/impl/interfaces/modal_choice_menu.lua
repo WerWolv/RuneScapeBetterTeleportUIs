@@ -4,50 +4,39 @@ local geometry = require("impl/map_geometry")
 local constants = require("definitions/constants")
 local BackgroundView = require("impl/background_view")
 local ButtonIcon = require("impl/button_icon")
+local components = require("impl/components")
+local text = require("impl/text")
 local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
 local knownTitles = setmetatable({}, {__mode = "k"})
 local frameInset, hitboxScale = 5, 0.75
-local collectionTypes = {
-    [ui.ComponentType.LAYER] = true,
-    [ui.ComponentType.PANEL] = true,
-    [ui.ComponentType.GRID] = true,
-    [ui.ComponentType.PAGED_LAYER] = true,
-    [ui.ComponentType.PAGED_CAROUSEL] = true,
-    [ui.ComponentType.GROUP_BOX] = true,
-}
-
--- Identify a static or dynamic component uniquely during tree traversal.
-local function controlKey(control)
-    return table.concat({control.interfaceID, control.staticID, control.categoryID, control.dynamicID}, ":")
-end
-
--- Strip formatting and surrounding whitespace from native labels.
-local function cleanText(text)
-    return (text or ""):gsub("<[^>]*>", ""):gsub("^%s+", ""):gsub("%s+$", "")
-end
-
--- Visit both static and dynamic children of native collections.
-local function visitChildren(control, callback)
-    if collectionTypes[control.type] then
-        control:IterateStaticComponents(callback)
-        control:IterateDynamicComponents(callback)
-    end
-end
 
 -- Gather visible text without visiting a native component twice.
-local function collectLabels(control, labels, visited)
-    local key = controlKey(control)
-    if visited[key] or not control.visibleGlobal then return false end
-    visited[key] = true
-    local text
-    if control.type == ui.ComponentType.LABEL then text = control.content
-    elseif control.type == ui.ComponentType.BUTTON then text = control.label end
-    text = cleanText(text)
-    if text ~= "" then labels[text] = true end
-    visitChildren(control, function(child) return collectLabels(child, labels, visited) end)
-    return false
+local function collectLabels(root)
+    local labels = {}
+
+    components.Walk(root, function(control)
+        if not control.visibleGlobal then
+            return false
+        end
+
+        local label
+
+        if control.type == ui.ComponentType.LABEL then
+            label = control.content
+        elseif control.type == ui.ComponentType.BUTTON then
+            label = control.label
+        end
+
+        label = text.Clean(label)
+
+        if label ~= "" then
+            labels[label] = true
+        end
+    end)
+
+    return labels
 end
 
 -- Look up a named component belonging to MODAL_CHOICE.
@@ -77,8 +66,7 @@ function ModalChoiceMenu:ReadInterface()
                 self:ReportMatch({"Not matched: visible OPTION_" .. index .. " has no OPTION_CLICK_" .. index .. "."})
                 return nil
             end
-            local labels = {}
-            collectLabels(row, labels, {})
+            local labels = collectLabels(row)
             local ancestor = click
             while ancestor ~= nil and ancestor ~= row do ancestor = ancestor.parent end
             if ancestor == nil then
@@ -99,7 +87,7 @@ function ModalChoiceMenu:ReadInterface()
         return nil
     end
     local title = component("TITLE")
-    local prompt = title ~= nil and title.type == ui.ComponentType.LABEL and cleanText(title.content) or nil
+    local prompt = title ~= nil and title.type == ui.ComponentType.LABEL and text.Clean(title.content) or nil
     return {window = window, content = content, nativeRows = rows, prompt = prompt}
 end
 
@@ -160,14 +148,15 @@ function ModalChoiceMenu:UpdateTitle()
     end
     local visited = {}
     local function inspect(control)
-        local key = controlKey(control)
-        if visited[key] or control.interfaceID ~= id.Interface.MODAL_CHOICE then return false end
-        visited[key] = true
+        if control.interfaceID ~= id.Interface.MODAL_CHOICE then
+            return false
+        end
+
         local header = control.type == ui.ComponentType.GROUP_BOX
         if control.type == ui.ComponentType.LABEL or header then
-            local text = header and control.headerText.content or control.content
-            if text ~= nil and text ~= "" and control.visibleGlobal then
-                local normalized = cleanText(text):gsub("%s+", " "):upper()
+            local label = header and control.headerText.content or control.content
+            if label ~= nil and label ~= "" and control.visibleGlobal then
+                local normalized = text.Clean(label):gsub("%s+", " "):upper()
                 if normalized:match("^SELECT AN OPTION[%.:!]?$") or knownTitles[control] then
                     knownTitles[control] = true
                     if header then control.headerText.content = session.menu.title
@@ -179,13 +168,13 @@ function ModalChoiceMenu:UpdateTitle()
                 end
             end
         end
-        visitChildren(control, inspect)
-        return false
     end
     -- Generic headings can live outside the named TITLE component.
     for staticID = 0, 45 do
         local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
-        if control ~= nil then inspect(control) end
+        if control ~= nil then
+            components.Walk(control, inspect, visited)
+        end
     end
 end
 
@@ -282,7 +271,7 @@ function ModalChoiceMenu:BeginInterface(placement)
                 session.tooltipContexts[parent] = true
             end
             session.tooltips[entry.name] = teleportTooltip.Attach(entry.click, parent,
-                entry.destination.nameOverride or entry.name:gsub("^%d+%.%s*", ""), entry.destination.description)
+                self:GetDisplayName(entry), entry.destination.description)
         end
     end
 end
@@ -360,18 +349,10 @@ function ModalChoiceMenu:LayoutWindow(width, height)
 end
 
 -- Suppress native child artwork without hiding controls from matching or input.
-function ModalChoiceMenu:HideRowArtwork(entry, originals)
-    local visited = {}
-    local function hideArtwork(control)
-        local key = controlKey(control)
-        if visited[key] then return false end
-        visited[key] = true
-        if originals ~= nil and originals[control] == nil then originals[control] = control.alpha end
+function ModalChoiceMenu:HideRowArtwork(entry)
+    components.Walk(entry.row, function(control)
         control.alpha = 0
-        visitChildren(control, hideArtwork)
-        return false
-    end
-    hideArtwork(entry.row)
+    end)
 end
 
 -- Position a native row and its input hierarchy without replacing its actions or hooks.
@@ -424,8 +405,17 @@ end
 -- Refresh icon states and show only the hovered destination's tooltip.
 function ModalChoiceMenu:UpdateVisuals(layout, hovered)
     self.iconView:Update(self.session.menu, hovered)
+    self:UpdateTooltips(hovered)
+end
+
+-- Maps and slot menus share native tooltip attachments and hover selection.
+function ModalChoiceMenu:UpdateTooltips(hovered)
     for name, tooltip in pairs(self.session.tooltips) do
-        if name == hovered then tooltip:Show() else tooltip:Hide() end
+        if name == hovered then
+            tooltip:Show()
+        else
+            tooltip:Hide()
+        end
     end
 end
 

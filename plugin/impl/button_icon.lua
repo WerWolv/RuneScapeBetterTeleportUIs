@@ -2,6 +2,8 @@ local constants = require("definitions/constants")
 local geometry = require("impl/map_geometry")
 local utils = require("impl/utils")
 local userSettings = require("impl/settings")
+local components = require("impl/components")
+local text = require("impl/text")
 local buttonIcon = {}
 buttonIcon.__index = buttonIcon
 
@@ -86,7 +88,7 @@ end
 
 -- Show the original option's numeric prefix at the icon's top-right when enabled in settings.
 local function updateHotkey(marker, name, size, disabled, locked)
-    local hotkey = name:match("^%s*(%d+)%.")
+    local hotkey = text.Hotkey(name)
     if locked or not userSettings.Get("showTeleportHotkeys") or hotkey == nil then
         if marker.hotkey ~= nil then marker.hotkey.hidden = true end
         return
@@ -102,13 +104,8 @@ local function updateHotkey(marker, name, size, disabled, locked)
         background.rgba = 0x17120FCC
         background.clickthrough = true
 
-        local text = ui.Text.new(badge)
+        local text = components.CenteredLabel(badge, id.Font.MUSEO_SANS_13PT_BOLD)
         text:SetSize(0, 0, 1.0, 1.0)
-        text.font = id.Font.MUSEO_SANS_13PT_BOLD
-        text:AlignTo(ui.AlignMode.CENTRE)
-        text.isShadowed = true
-        text.maxLines = 1
-        text.clickthrough = true
 
         marker.hotkey, marker.hotkeyText = badge, text
     end
@@ -164,15 +161,28 @@ function buttonIcon:Destroy()
     self.markers = {}
 end
 
+-- Use the same artwork precedence for map markers and slot navigation controls.
+function buttonIcon.Source(icons, highlighted, disabled, locked)
+    local normal = icons.normal or icons
+
+    if locked then
+        return icons.locked or normal
+    end
+
+    if highlighted and not disabled then
+        return icons.hovered or normal
+    end
+
+    return normal
+end
+
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
 function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
     local marker = self.markers[name]
     local size = icons.size or 48
-    local normal = icons.normal or icons
-    local source = locked and (icons.locked or normal)
-        or (highlighted and (icons.hovered or normal) or normal)
+    local source = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local kind = objectID ~= nil and "item" or "sprite"
     local image
@@ -202,12 +212,8 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         marker = {layer = layer, artwork = artwork, kind = kind}
 
         if objectID ~= nil then
-            local sprite = ui.Sprite.new(artwork)
+            local sprite = components.ItemSprite(artwork, objectID)
             sprite:SetSize(size, size)
-            sprite.associatedObjectID = objectID
-            sprite.associatedObjectQuantity = 1
-            sprite.associatedObjectQuantityMode = ui.ObjectQuantityDisplayMode.NEVER
-            sprite.clickthrough = true
             marker.itemSprite, marker.objectID = sprite, objectID
         else
             marker.bounds = iconBounds(source, icons, size)

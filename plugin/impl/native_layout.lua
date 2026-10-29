@@ -1,14 +1,6 @@
+local components = require("impl/components")
 local NativeLayout = {}
 NativeLayout.__index = NativeLayout
-
-local collections = {
-    [ui.ComponentType.LAYER]          = true,
-    [ui.ComponentType.PANEL]          = true,
-    [ui.ComponentType.GRID]           = true,
-    [ui.ComponentType.PAGED_LAYER]    = true,
-    [ui.ComponentType.PAGED_CAROUSEL] = true,
-    [ui.ComponentType.GROUP_BOX]      = true,
-}
 
 local positionFields = { "x", "y", "xParentPc", "yParentPc", "xSelfPc", "ySelfPc" }
 local sizeFields     = { "width", "height", "widthParentPc", "heightParentPc" }
@@ -57,32 +49,13 @@ end
 
 -- Capture a complete subtree when the caller does not already have explicit controls.
 function NativeLayout.New(root)
-    local self = setmetatable({ controls = {}, changes = {} }, NativeLayout)
-    local visited = {}
+    local controls = {}
 
-    local function visit(control)
-        local key = table.concat({control.interfaceID, control.staticID, control.categoryID, control.dynamicID}, ":")
-        if visited[key] then
-            return false
-        end
+    components.Walk(root, function(control)
+        controls[#controls + 1] = control
+    end)
 
-        visited[key] = true
-        self.controls[#self.controls + 1] = {
-            control = control,
-            parent = control.parent,
-        }
-
-        if collections[control.type] then
-            control:IterateStaticComponents(visit)
-            control:IterateDynamicComponents(visit)
-        end
-        
-        return false
-    end
-
-    visit(root)
-
-    return self
+    return NativeLayout.FromControls(controls)
 end
 
 -- Track only fields changed by this layout pass, including partial changes if rendering fails.

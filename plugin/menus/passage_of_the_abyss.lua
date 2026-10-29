@@ -1,8 +1,9 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local SlotMenu = require("impl/interfaces/slot_menu")
 local userSettings = require("impl/settings")
 local NativeLayout = require("impl/native_layout")
+local components = require("impl/components")
 
-local PassageOfTheAbyss = ModalChoiceMenu:Extend("passageOfTheAbyss")
+local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
 
 local slotCount, slotSize, slotGap, slotPadding = 6, 36, 4, 6
 
@@ -101,17 +102,17 @@ end
 
 -- Invalidate the selection if the same rows are reused for a different native prompt.
 function PassageOfTheAbyss:Matches(snapshot)
-    return isItemPicker(snapshot) and ModalChoiceMenu.Matches(self, snapshot)
+    return isItemPicker(snapshot) and SlotMenu.Matches(self, snapshot)
 end
 
 -- Empty slots have no destination while filled slots retain native availability checks.
 function PassageOfTheAbyss:IsDisabled(row)
-    return row.destination.empty == true or ModalChoiceMenu.IsDisabled(self, row)
+    return row.destination.empty == true or SlotMenu.IsDisabled(self, row)
 end
 
 -- Track native overrides so unsupported jewellery menus can return to their original list.
 function PassageOfTheAbyss:BeginInterface(placement)
-    ModalChoiceMenu.BeginInterface(self, placement)
+    SlotMenu.BeginInterface(self, placement)
 
     self.session.nativeLayout = NativeLayout.New(self.session.window)
 end
@@ -121,7 +122,7 @@ function PassageOfTheAbyss:UpdateTitle()
     local prompt = self.session.title and self.session.title.control
     local text = prompt and prompt.content
 
-    ModalChoiceMenu.UpdateTitle(self)
+    SlotMenu.UpdateTitle(self)
 
     if prompt ~= nil then
         prompt.content = text
@@ -131,42 +132,19 @@ end
 
 -- Create six click-through inventory visuals over the original native input controls.
 function PassageOfTheAbyss:BeginVisuals()
-    self.slotLayer = ui.Layer.new(self.session.content)
-    self.slotLayer.clickthrough = true
-    self.slots = {}
+    SlotMenu.BeginVisuals(self)
 
     for index = 1, slotCount do
         local row   = self.session.rows[index]
-        local layer = ui.Layer.new(self.slotLayer)
-        layer.clickthrough = true
-
-        local background = ui.Sprite.new(layer)
-        background.spriteID = id.Sprite.RS3_INV_ICON_SLOT
-        background.clickthrough = true
-
-        local slot = {
-            row = row,
-            layer = layer,
-            background = background,
-        }
-
-        self.slots[index] = slot
+        local slot  = self:CreateSlot(row, true)
+        local layer = slot.layer
 
         if not row.destination.empty then
-            local item = ui.Sprite.new(layer)
-            item.associatedObjectID = row.destination.objectID
-            item.associatedObjectQuantity = 1
-            item.associatedObjectQuantityMode = ui.ObjectQuantityDisplayMode.NEVER
-            item.clickthrough = true
+            local item = components.ItemSprite(layer, row.destination.objectID)
 
-            local hotkey = ui.Text.new(layer)
+            local hotkey = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_BOLD)
             hotkey:SetSize(18, 18)
-            hotkey.font = id.Font.MUSEO_SANS_13PT_BOLD
             hotkey.content = tostring(index)
-            hotkey:AlignTo(ui.AlignMode.CENTRE)
-            hotkey.isShadowed = true
-            hotkey.maxLines = 1
-            hotkey.clickthrough = true
 
             slot.item, slot.hotkey = item, hotkey
         end
@@ -236,7 +214,7 @@ function PassageOfTheAbyss:GetHovered()
 end
 
 -- Refresh item icons, hover outlines, slot hotkeys and native-context tooltips.
-function PassageOfTheAbyss:UpdateVisuals(_, hovered)
+function PassageOfTheAbyss:UpdateVisuals(layout, hovered)
     local showHotkeys = userSettings.Get("showTeleportHotkeys")
 
     for _, slot in ipairs(self.slots) do
@@ -256,26 +234,7 @@ function PassageOfTheAbyss:UpdateVisuals(_, hovered)
         end
     end
 
-    self.slotLayer:MoveToFront()
-
-    for name, tooltip in pairs(self.session.tooltips) do
-        if name == hovered then
-            tooltip:Show()
-        else
-            tooltip:Hide()
-        end
-    end
-end
-
--- Destroy the selector visuals when entering a jewellery destination menu or closing the modal.
-function PassageOfTheAbyss:ReleaseVisuals()
-    if self.slotLayer ~= nil then 
-        pcall(function() 
-            self.slotLayer:Destroy() 
-        end) 
-    end
-    
-    self.slotLayer, self.slots = nil, nil
+    SlotMenu.UpdateVisuals(self, layout, hovered)
 end
 
 -- Undo the selector's layout and artwork overrides before returning control to the client.
@@ -284,7 +243,7 @@ function PassageOfTheAbyss:ReleaseInterface()
         self.session.nativeLayout:Restore()
     end
 
-    ModalChoiceMenu.ReleaseInterface(self)
+    SlotMenu.ReleaseInterface(self)
 end
 
 return PassageOfTheAbyss

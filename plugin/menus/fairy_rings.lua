@@ -1,5 +1,6 @@
 local TeleportMenu = require("impl/teleport_menu")
 local NativeLayout = require("impl/native_layout")
+local text = require("impl/text")
 local FairyRings = TeleportMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
 FairyRings.interfaceName = "FAIRYRINGS (" .. id.Interface.FAIRYRINGS .. ")"
@@ -26,8 +27,8 @@ local function component(name, category, index)
     return ui.Interfaces:GetComponent(id.Component["FAIRYRINGS__" .. name])
 end
 
-local function plainText(text)
-    return (text or ""):gsub("<[^>]*>", ""):lower():gsub("%s+", " ")
+local function plainText(value)
+    return text.StripFormatting(value):lower():gsub("%s+", " ")
 end
 
 -- The named columns share a category and dynamic ID for each destination.
@@ -271,7 +272,7 @@ end
 function FairyRings:FilterLog()
     local session = self.session
 
-    local query = plainText(self.search:GetText()):match("^%s*(.-)%s*$")
+    local query = text.Trim(plainText(self.search:GetText()))
     local snapshot = session.menu.snapshot
     local content = snapshot.logContent
 

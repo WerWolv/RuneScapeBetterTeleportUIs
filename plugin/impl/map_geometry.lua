@@ -1,14 +1,10 @@
+local utils = require("impl/utils")
 local geometry = {}
-
--- Reject non-numeric values, NaN, and infinities before doing map calculations.
-local function finite(value)
-    return type(value) == "number" and value == value and math.abs(value) < math.huge
-end
 
 -- Validate and return the crop rectangle, defaulting to the full background.
 function geometry.Bounds(background)
     assert(
-        finite(background.width) and finite(background.height) and
+        utils.IsFinite(background.width) and utils.IsFinite(background.height) and
         background.width > 0 and background.height > 0, 
         "Background dimensions must be positive numbers"
     )
@@ -16,10 +12,10 @@ function geometry.Bounds(background)
     local crop = background.crop or {x = 0, y = 0, width = background.width, height = background.height}
     assert(
         type(crop) == "table" and
-        finite(crop.x) and
-        finite(crop.y) and
-        finite(crop.width) and
-        finite(crop.height), 
+        utils.IsFinite(crop.x) and
+        utils.IsFinite(crop.y) and
+        utils.IsFinite(crop.width) and
+        utils.IsFinite(crop.height),
         "Crop requires numeric x, y, width and height"
     )
 

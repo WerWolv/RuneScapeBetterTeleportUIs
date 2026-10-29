@@ -44,6 +44,11 @@ function TeleportMenu:IsDisabled(row)
     return row.native.disabled == true
 end
 
+-- Display labels omit native shortcuts unless a view explicitly adds them back.
+function TeleportMenu:GetDisplayName(row)
+    return row.destination.nameOverride or (row.name:gsub("^%d+%.%s*", ""))
+end
+
 -- Refresh availability independently from cached definitions and display callbacks.
 function TeleportMenu:RefreshAvailability(snapshot)
     for index, row in ipairs(self.session.menu.rows) do
