@@ -118,17 +118,17 @@ function NpcSlotMenu:ApplyLayout(layout)
             slot.label:SetPos(0, scaled(slotSize))
             slot.label:SetSize(scaled(width), scaled(labelHeight))
         else
-            local size = destination.icons.size or 48
+            local iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
 
-            slot.icon:SetSize(scaled(size), scaled(size))
+            slot.icon:SetSize(scaled(iconWidth), scaled(iconHeight))
 
             if destination.anchor == "bottomRight" then
-                x = gridWidth - inset - size
-                y = gridHeight - inset - size
-                width, height = size, size
+                x = gridWidth - inset - iconWidth
+                y = gridHeight - inset - iconHeight
+                width, height = iconWidth, iconHeight
                 slot.icon:SetPos(0, 0)
             else
-                slot.icon:SetPos(scaled((slotSize - size) / 2), scaled((slotSize - size) / 2))
+                slot.icon:SetPos(scaled((slotSize - iconWidth) / 2), scaled((slotSize - iconHeight) / 2))
             end
         end
 

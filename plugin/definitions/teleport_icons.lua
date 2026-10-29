@@ -3,28 +3,36 @@ return {
         imperial = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_0},
             hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_1},
-            size = 32,
+            size = 40,
+            imageWidth = 32,
+            imageHeight = 20,
             shadowColor = 0x00000099,
             shadowColorHovered = 0x00000099
         },
         merchant = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_0},
             hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_1},
-            size = 32,
+            size = 40,
+            imageWidth = 32,
+            imageHeight = 20,
             shadowColor = 0x00000099,
             shadowColorHovered = 0x00000099
         },
         port = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_0},
             hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_1},
-            size = 32,
+            size = 40,
+            imageWidth = 32,
+            imageHeight = 20,
             shadowColor = 0x00000099,
             shadowColorHovered = 0x00000099
         },
         worker = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_0},
             hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_1},
-            size = 32,
+            size = 40,
+            imageWidth = 32,
+            imageHeight = 20,
             shadowColor = 0x400000FF,
             shadowColorHovered = 0x400000FF,
         },
@@ -197,6 +205,8 @@ return {
     shiftingTombs = {
         sprite = id.Sprite.MENAPHOS_TOMBS_ICON_SARCOPHAGUS,
         size = 32,
+        imageWidth = 32,
+        imageHeight = 32,
         shadowColor = 0x000000FF,
         shadowColorHovered = 0x9A4521CC
     },
@@ -204,6 +214,8 @@ return {
         normal = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_LOCKED},
         hovered = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_ACTIVE},
         size = 32,
+        imageWidth = 64,
+        imageHeight = 64,
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521C
     },

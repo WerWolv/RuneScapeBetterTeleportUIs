@@ -382,13 +382,23 @@ function ModalChoiceMenu:ApplyLayout(layout)
     local imagePosition = self.backgroundView.layer.xyGlobal
     for _, entry in ipairs(session.rows) do
         local destination = entry.destination
-        local size, x, y = 0, nil, nil
+        local hitWidth, hitHeight = 0, 0
+        local x, y
+
         if not destination.hidden then
-            size = math.max(1, math.floor((destination.icons.size or 48) * hitboxScale))
+            local iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
+            hitWidth = math.max(1, math.floor(iconWidth * hitboxScale))
+            hitHeight = math.max(1, math.floor(iconHeight * hitboxScale))
             x, y = geometry.Project(destination.background, destination.point, width, height)
         end
-        if x == nil then x, y, size = 0, 0, 0 else x, y = x - size / 2, y - size / 2 end
-        self:LayoutRow(entry, imagePosition.x + x, imagePosition.y + y, size, size)
+
+        if x == nil then
+            x, y, hitWidth, hitHeight = 0, 0, 0, 0
+        else
+            x, y = x - hitWidth / 2, y - hitHeight / 2
+        end
+
+        self:LayoutRow(entry, imagePosition.x + x, imagePosition.y + y, hitWidth, hitHeight)
     end
 end
 
