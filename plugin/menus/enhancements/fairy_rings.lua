@@ -192,6 +192,20 @@ function FairyRings:BeginInterface()
     end
 
     session.nativeLayout = NativeLayout.FromControls(controls)
+
+    for name, color in pairs({
+        LINE_DARK_TOP = 0x24180F,
+        LINE_LIGHT_TOP = 0x3D2B1B,
+        LINE_DARK_BOTTOM = 0x24180F,
+        LINE_LIGHT_BOTTOM = 0x3D2B1B,
+    }) do
+        local line = component(name)
+
+        if line ~= nil then
+            line.rgb = color
+            line.alpha = 1
+        end
+    end
 end
 
 function FairyRings:Matches(snapshot)
