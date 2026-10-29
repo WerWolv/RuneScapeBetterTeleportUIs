@@ -19,6 +19,7 @@ local function readState(control)
     local state = {
         alpha = control.alpha,
         clickthrough = control.clickthrough,
+        hidden = control.hidden,
     }
 
     for _, field in ipairs(positionFields) do
@@ -41,6 +42,20 @@ local function readState(control)
 end
 
 -- Capture native control identities before plugin-owned visuals are added to the window.
+function NativeLayout.FromControls(controls)
+    local self = setmetatable({ controls = {}, changes = {} }, NativeLayout)
+
+    for _, control in ipairs(controls) do
+        self.controls[#self.controls + 1] = {
+            control = control,
+            parent = control.parent,
+        }
+    end
+
+    return self
+end
+
+-- Capture a complete subtree when the caller does not already have explicit controls.
 function NativeLayout.New(root)
     local self = setmetatable({ controls = {}, changes = {} }, NativeLayout)
     local visited = {}
@@ -153,6 +168,10 @@ local function restore(control, change)
 
     if restored.clickthrough then
         control.clickthrough = state.clickthrough
+    end
+
+    if restored.hidden then
+        control.hidden = state.hidden
     end
 
     if restored.content then

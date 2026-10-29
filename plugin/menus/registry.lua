@@ -23,6 +23,7 @@ local modules = {
     require("menus/skills_necklace"),
     require("menus/delvers_anklet"),
     require("menus/dungeoneering_cape"),
+    require("menus/fairy_rings"),
     (require("menus/slayer_cape")),
 }
 
