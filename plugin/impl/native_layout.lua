@@ -9,6 +9,7 @@ local sizeFields     = { "width", "height", "widthParentPc", "heightParentPc" }
 local function readState(control)
     local position, size = control.position, control.size
     local state = {
+        rgb = control.rgb,
         alpha = control.alpha,
         clickthrough = control.clickthrough,
         hidden = control.hidden,
@@ -133,6 +134,10 @@ local function restore(control, change)
             state.xParentPc, state.yParentPc,
             state.xSelfPc, state.ySelfPc
         )
+    end
+
+    if restored.rgb then
+        control.rgb = state.rgb
     end
 
     if restored.alpha then
