@@ -10,6 +10,7 @@ local text = require("impl/text")
 local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
+ModalChoiceMenu.supportsOriginalUI = true
 local knownTitles = setmetatable({}, {__mode = "k"})
 local frameInset, hitboxScale = 5, 0.75
 
@@ -89,7 +90,13 @@ function ModalChoiceMenu:ReadInterface()
     end
     local title = component("TITLE")
     local prompt = title ~= nil and title.type == ui.ComponentType.LABEL and text.Clean(title.content) or nil
-    return {window = window, content = content, nativeRows = rows, prompt = prompt}
+    return {
+        window = window,
+        content = content,
+        nativeRows = rows,
+        prompt = prompt,
+        closeButton = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON"),
+    }
 end
 
 -- Require visible map destinations to have artwork, coordinates and a shared background.

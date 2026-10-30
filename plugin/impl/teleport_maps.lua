@@ -2,6 +2,7 @@ local registry = require("menus/registry")
 local matcher = require("impl/destination_matcher")
 local settings = require("definitions/constants")
 local userSettings = require("impl/settings")
+local MenuUIToggle = require("impl/menu_ui_toggle")
 local teleportMaps = {}
 local interfaces
 
@@ -9,6 +10,18 @@ local interfaces
 local function releaseActive(entry)
     if entry.active ~= nil then entry.active:Release() end
     entry.active = nil
+end
+
+local function releaseToggle(entry)
+    if entry.toggle ~= nil then
+        entry.toggle:Destroy()
+        entry.toggle = nil
+    end
+end
+
+local function releaseInterface(entry)
+    releaseActive(entry)
+    releaseToggle(entry)
 end
 
 -- Rank read-only candidates and resolve only the winner for an interface snapshot.
@@ -61,12 +74,27 @@ end
 local function updateInterface(entry)
     local ok, message = pcall(function()
         if entry.active ~= nil and not userSettings.Get(entry.active.enabledSetting) then
-            releaseActive(entry)
+            releaseInterface(entry)
         end
         local snapshot = entry.interface:ReadInterface()
         local winner, match
         if snapshot ~= nil then winner, match = selectMenu(entry, snapshot) end
-        if winner == nil then releaseActive(entry); return end
+        if winner == nil then
+            releaseInterface(entry)
+            return
+        end
+
+        if entry.toggle ~= nil and (not winner.supportsOriginalUI or not entry.toggle:Matches(winner, snapshot)) then
+            releaseToggle(entry)
+        end
+
+        if entry.toggle ~= nil and entry.toggle.original then
+            releaseActive(entry)
+            entry.toggle:Update(snapshot)
+            entry.lastLayoutError = nil
+            return
+        end
+
         local active = entry.active
         if active ~= winner or active.session == nil or active.session.menu ~= match then
             local transition = active and active:GetTransitionState(winner, match)
@@ -75,10 +103,19 @@ local function updateInterface(entry)
             winner:Begin(match, transition)
         end
         winner:Update(snapshot)
+
+        if winner.supportsOriginalUI and entry.toggle == nil then
+            entry.toggle = MenuUIToggle:New(winner, snapshot)
+            entry.toggle:Attach()
+        end
+
+        if entry.toggle ~= nil then
+            entry.toggle:Update(snapshot)
+        end
         entry.lastLayoutError = nil
     end)
     if not ok then
-        releaseActive(entry)
+        releaseInterface(entry)
         message = tostring(message)
         if message ~= entry.lastLayoutError then
             print("Unable to embed teleport map: " .. message)
@@ -120,7 +157,9 @@ end
 -- Stop rendering and discard all menu instances and active session resources.
 function teleportMaps.Stop()
     Event.Draw.Unsubscribe("destinationPreview")
-    for _, entry in ipairs(interfaces or {}) do releaseActive(entry) end
+    for _, entry in ipairs(interfaces or {}) do
+        releaseInterface(entry)
+    end
     interfaces = nil
 end
 

@@ -31,6 +31,13 @@ return {
                 description = "When enabled, zooms in on the destination buttons on each of the teleport maps",
                 default = false,
             },
+            {
+                key = "showOriginalUIToggle",
+                type = "boolean",
+                label = "Show original UI toggle",
+                description = "Displays a button to temporarily switch between the original and enhanced menus",
+                default = false,
+            },
         },
     },
     {
