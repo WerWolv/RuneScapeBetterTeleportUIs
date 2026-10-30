@@ -7,6 +7,8 @@ local FairyRings = TeleportMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
 FairyRings.interfaceName = "FAIRYRINGS (" .. id.Interface.FAIRYRINGS .. ")"
 
+-- Taken with permission from https://github.com/PrettyRS/fairyrings/blob/main/aliases.lua
+-- Original code is licensed under BSD 3-Clause which may be found under licenses/PRETTYRS_FAIRYRINGS_LICENSE
 local searchAliases = {
     AIQ = {
         "port sarim",
