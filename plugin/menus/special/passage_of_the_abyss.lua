@@ -1,29 +1,143 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local userSettings = require("impl/settings")
 local components = require("impl/components")
+local descriptions = require("definitions/descriptions")
 
 local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
 
 local slotCount, slotSize, slotGap, slotPadding = 6, 36, 4, 6
+
+local function destinations(destinations)
+    local result = descriptions.Location("Destinations:")
+
+    for _, dest in ipairs(destinations) do
+        result = result .. "        " .. dest .. "<br>"
+    end
+
+    return result
+end
 
 -- Define every compactable jewellery type independently of the player's six slot assignments.
 function PassageOfTheAbyss:Define()
     return {
         title = "Passage of the Abyss",
         items = {
-            ["amulet of glory"]         = id.Obj.AMULET_OF_GLORY_4,
-            ["combat bracelet"]         = id.Obj.JEWL_BRACELET_OF_COMBAT_4,
-            ["delver's anklet"]         = id.Obj.PLATINUM_DELVERS_ANKLET,
-            ["dig site pendant"]        = id.Obj.NECKLACE_OF_DIGSITE_5,
-            ["enlightened amulet"]      = id.Obj.ENCHANTED_TOPAZ_AMULET_NEW,
-            ["ferocious ring"]          = id.Obj.SLAYGUILD_RING_5,
-            ["games necklace"]          = id.Obj.NECKLACE_OF_MINIGAMES_8,
-            ["ring of duelling"]        = id.Obj.RING_OF_DUELING_8,
-            ["ring of respawn"]         = id.Obj.ENCHANTED_JADE_RING_NEW,
-            ["ring of slaying"]         = id.Obj.SMKI_RING_OF_SLAYING_8,
-            ["ring of wealth"]          = id.Obj.RING_OF_WEALTH_4,
-            ["skills necklace"]         = id.Obj.JEWL_NECKLACE_OF_SKILLS_4,
-            ["traveller's necklace"]    = id.Obj.ENCHANTED_JADE_NECKLACE_NEW,
+            ["amulet of glory"] = {
+                item = id.Obj.AMULET_OF_GLORY_4,
+                description = destinations({
+                    "Edgeville",
+                    "Karamja",
+                    "Draynor Village",
+                    "Al Kharid",
+                }),
+            },
+            ["combat bracelet"] = {
+                item = id.Obj.JEWL_BRACELET_OF_COMBAT_4,
+                description = destinations({
+                    "Warriors' Guild",
+                    "Champions' Guild",
+                    "Edgeville Monastery",
+                    "Ranging Guild",
+                }),
+            },
+            ["delver's anklet"] = {
+                item = id.Obj.PLATINUM_DELVERS_ANKLET,
+                description = destinations({
+                    "Brimhaven Dungeon",
+                    "Fremennik Slayer Dungeon",
+                    "Polypore Dungeon",
+                }),
+            },
+            ["dig site pendant"] = {
+                item = id.Obj.NECKLACE_OF_DIGSITE_5,
+                description = destinations({
+                    "Varrock Dig Site",
+                    "Senntisten Temple",
+                    "Exam Centre",
+                }),
+            },
+            ["enlightened amulet"] = {
+                item = id.Obj.ENCHANTED_TOPAZ_AMULET_NEW,
+                description = destinations({
+                    "Lumbridge Swamp",
+                    "South of the Graveyard of Shadows",
+                    "Desert bandit camp entrance",
+                }),
+            },
+            ["ferocious ring"] = {
+                item = id.Obj.SLAYGUILD_RING_5,
+                description = destinations({
+                    "Kuradal",
+                    "Morvran",
+                }),
+            },
+            ["games necklace"] = {
+                item = id.Obj.NECKLACE_OF_MINIGAMES_8,
+                description = destinations({
+                    "Troll Invasion",
+                    "Barbarian Outpost",
+                    "Gamers' Grotto",
+                    "Agoroth",
+                    "Corporeal Beast",
+                    "Burgh de Rott",
+                    "Tears of Guthix",
+                }),
+            },
+            ["ring of duelling"] = {
+                item = id.Obj.RING_OF_DUELING_8,
+                description = destinations({
+                    "Het's Oasis",
+                    "Castle Wars Arena",
+                    "Warforge Dig Site",
+                    "Fist of Guthix",
+                }),
+            },
+            ["ring of respawn"] = {
+                item = id.Obj.ENCHANTED_JADE_RING_NEW,
+                description = destinations({
+                    "Lumbridge",
+                    "Falador",
+                    "Camelot",
+                    "Soul Wars",
+                    "Burthorpe",
+                }),
+            },
+            ["ring of slaying"] = {
+                item = id.Obj.SMKI_RING_OF_SLAYING_8,
+                description = destinations({
+                    "Pollnivneach (Sumona)",
+                    "Morytania Slayer Tower",
+                    "Fremennik Slayer Dungeon",
+                    "Tarn's Lair",
+                }),
+            },
+            ["ring of wealth"] = {
+                item = id.Obj.RING_OF_WEALTH_4,
+                description = destinations({
+                    "Miscellania throne room",
+                    "Grand Exchange",
+                }),
+            },
+            ["skills necklace"] = {
+                item = id.Obj.JEWL_NECKLACE_OF_SKILLS_4,
+                description = destinations({
+                    "Fishing Guild",
+                    "Mining Guild",
+                    "Crafting Guild",
+                    "Cooking Guild",
+                    "Invention Guild",
+                    "Farming Guild",
+                    "Runecrafting Guild",
+                }),
+            },
+            ["traveller's necklace"] = {
+                item = id.Obj.ENCHANTED_JADE_NECKLACE_NEW,
+                description = destinations({
+                    "Wizards' Tower",
+                    "Outpost",
+                    "South of the desert eagle's eyrie",
+                }),
+            },
         },
     }
 end
@@ -67,15 +181,16 @@ function PassageOfTheAbyss:Match(snapshot)
         elseif normalized == "empty slot" then
             group.entries[name] = { empty = true, hidden = true }
         else
-            local objectID = self.definition.items[normalized]
+            local item = self.definition.items[normalized]
 
-            if objectID == nil then 
+            if item == nil then
                 return nil, "unknown Passage jewellery: " .. itemName 
             end
 
             group.entries[name] = {
-                objectID = objectID,
+                objectID = item.item,
                 nameOverride = itemName,
+                description = item.description,
             }
         end
 
