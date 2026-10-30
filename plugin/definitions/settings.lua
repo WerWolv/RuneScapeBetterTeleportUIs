@@ -3,9 +3,9 @@
 local interfaces = {}
 for _, interface in ipairs(require("definitions/teleport_interfaces")) do
     interfaces[#interfaces + 1] = {
-        key = interface.key,
+        key = interface.module,
         type = "boolean",
-        label = interface.label,
+        label = interface.name,
         default = true,
     }
 end
