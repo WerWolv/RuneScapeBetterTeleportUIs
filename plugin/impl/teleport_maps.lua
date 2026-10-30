@@ -1,6 +1,7 @@
 local registry = require("menus/registry")
 local matcher = require("impl/destination_matcher")
 local settings = require("definitions/constants")
+local userSettings = require("impl/settings")
 local teleportMaps = {}
 local interfaces, active
 local lastLayoutError
@@ -50,12 +51,16 @@ local function selectMenu(interface, menus, snapshot)
     else
         interface:ReportMatch(nil)
     end
+    -- Identify the best match before checking its toggle, so a disabled menu cannot
+    -- fall back to a less-specific replacement sharing the same native interface.
+    if winner ~= nil and not userSettings.Get(winner.enabledSetting) then return nil end
     return winner, match
 end
 
 -- Read each interface once and update only its selected concrete menu instance.
 local function draw()
     local ok, message = pcall(function()
+        if active ~= nil and not userSettings.Get(active.enabledSetting) then releaseActive() end
         local winner, match, selectedSnapshot
         for _, entry in ipairs(interfaces) do
             local snapshot = entry.interface:ReadInterface()

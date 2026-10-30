@@ -1,4 +1,5 @@
 local TeleportMenu = require("impl/teleport_menu")
+local NativeLayout = require("impl/native_layout")
 local teleportTooltip = require("impl/teleport_tooltip")
 local geometry = require("impl/map_geometry")
 local constants = require("definitions/constants")
@@ -198,6 +199,18 @@ function ModalChoiceMenu:BeginInterface(placement)
     local session = self.session
     local menu = session.menu
     local window, content = menu.window, menu.content
+    -- Include headings outside the window, which UpdateTitle can also modify.
+    local controls, visited = {}, {}
+    local function capture(control)
+        if control.interfaceID ~= id.Interface.MODAL_CHOICE then return false end
+        controls[#controls + 1] = control
+    end
+    components.Walk(window, capture, visited)
+    for staticID = 0, 45 do
+        local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
+        if control ~= nil then components.Walk(control, capture, visited) end
+    end
+    session.nativeLayout = NativeLayout.FromControls(controls)
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
     session.window, session.content = window, content
     session.parent = window.parent
@@ -260,20 +273,29 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.tooltipLayer:SetSize(0, 0, 1.0, 1.0)
     session.tooltipLayer.clickthrough = true
 
-    for _, entry in ipairs(session.rows) do
-        if not entry.destination.hidden then
-            local parent = entry.click.parent
-            if not session.tooltipContexts[parent] then
-                prettyui.Tooltip.registerContext(parent, session.tooltipLayer, function(target)
-                    local targetPosition, overlayPosition = target.xyGlobal, session.tooltipLayer.xyGlobal
-                    return targetPosition.x - overlayPosition.x, targetPosition.y - overlayPosition.y
-                end)
-                session.tooltipContexts[parent] = true
+    session.nativeLayout:Apply(function()
+        for _, entry in ipairs(session.rows) do
+            if not entry.destination.hidden then
+                local parent = entry.click.parent
+                if not session.tooltipContexts[parent] then
+                    prettyui.Tooltip.registerContext(parent, session.tooltipLayer, function(target)
+                        local targetPosition, overlayPosition = target.xyGlobal, session.tooltipLayer.xyGlobal
+                        return targetPosition.x - overlayPosition.x, targetPosition.y - overlayPosition.y
+                    end)
+                    session.tooltipContexts[parent] = true
+                end
+                session.tooltips[entry.name] = teleportTooltip.Attach(entry.click, parent,
+                    self:GetDisplayName(entry), entry.destination.description)
             end
-            session.tooltips[entry.name] = teleportTooltip.Attach(entry.click, parent,
-                self:GetDisplayName(entry), entry.destination.description)
         end
-    end
+    end)
+end
+
+-- Track overrides for maps and every modal subclass, including partially failed updates.
+function ModalChoiceMenu:Update(snapshot)
+    self.session.nativeLayout:Apply(function()
+        TeleportMenu.Update(self, snapshot)
+    end)
 end
 
 -- Create the map's plugin-owned background and marker views for this menu instance.
@@ -436,7 +458,7 @@ function ModalChoiceMenu:ReleaseVisuals()
     self.iconView, self.backgroundView = nil, nil
 end
 
--- Remove plugin hooks without restoring native positions, sizes, alpha or headings.
+-- Remove plugin hooks before restoring surviving native controls to their client layout.
 function ModalChoiceMenu:ReleaseInterface()
     if self.session == nil then return end
     for _, tooltip in pairs(self.session.tooltips or {}) do pcall(function() tooltip:Destroy() end) end
@@ -447,6 +469,7 @@ function ModalChoiceMenu:ReleaseInterface()
         pcall(function() self.session.tooltipLayer:Destroy() end)
         self.session.tooltipLayer = nil
     end
+    if self.session.nativeLayout ~= nil then self.session.nativeLayout:Restore() end
 end
 
 return ModalChoiceMenu
