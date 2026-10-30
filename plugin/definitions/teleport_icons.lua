@@ -903,6 +903,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    enlightenedAmulet = {
+        objectID = id.Obj.ENCHANTED_TOPAZ_AMULET_NEW,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
     ringOfRespawn = {
         objectID = id.Obj.ENCHANTED_JADE_RING_NEW,
         size = 32,
