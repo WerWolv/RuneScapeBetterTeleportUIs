@@ -4,16 +4,41 @@ local maxWidth = 240
 local paddingX, paddingY = 8, 5
 local separatorGap = 7
 
-local function textWidth(font, text)
-    local ok, width = pcall(function() return font:GetStringWidth(text, false) end)
-    return ok and width or #text * 7
+local function lines(value)
+    local normalized = value:gsub("<br%s*/?>", "\n"):gsub("\n$", "")
+    return (normalized .. "\n"):gmatch("(.-)\n")
 end
 
-local function textHeight(font, text, width)
+local function textWidth(font, value)
+    local width = 0
+
+    for line in lines(value) do
+        local ok, measured = pcall(function()
+            return font:GetStringWidth(line, false)
+        end)
+
+        width = math.max(width, ok and measured or #text.StripFormatting(line) * 7)
+    end
+
+    return width
+end
+
+local function textHeight(font, value, width)
     local ok, height = pcall(function()
-        return font:GetStringHeightAndLineCount(text, width, font.baseline, false, false, false)
+        return font:GetStringHeightAndLineCount(value, width, font.baseline, false, false, false)
     end)
-    return ok and math.max(18, height) or math.max(1, math.ceil(#text * 7 / width)) * 18
+
+    if ok then
+        return math.max(18, height)
+    end
+
+    local lineCount = 0
+
+    for line in lines(value) do
+        lineCount = lineCount + math.max(1, math.ceil(textWidth(font, line) / width))
+    end
+
+    return lineCount * (font.baseline or 18)
 end
 
 
@@ -28,12 +53,8 @@ function teleportTooltip.Attach(target, parent, title, description)
 
     local font = config.Font.MUSEO_SANS_15PT_REGULAR
     local width = math.max(
-        40, math.min(maxWidth,
-            math.max(
-                textWidth(font, title), 
-                textWidth(font, description)
-            ) + paddingX * 2
-        )
+        40,
+        math.max(textWidth(font, title), textWidth(font, description)) + paddingX * 4
     )
 
     -- Reserve separate regions so the title, divider, and wrapped description cannot overlap.
