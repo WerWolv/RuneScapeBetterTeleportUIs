@@ -52,7 +52,7 @@ return {
         },
     },
     {
-        tab = "Teleport Interfaces",
+        tab = "Interfaces",
         label = "Available UI improvements",
         description = "Options to toggle each of the available UI enhancements on or off",
         settings = interfaces,
