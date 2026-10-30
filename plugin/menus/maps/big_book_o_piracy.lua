@@ -11,19 +11,19 @@ function BigBookOPiracy:Define()
         entries = {
             ["1. Mos Le'Harmless."] = {
                 nameOverride = "Mos Le'Harmless",
-                point = {x = 120, y = 426},
+                point = {x = 145, y = 451},
             },
             ["2. Braindeath Island."] = {
                 nameOverride = "Braindeath Island",
-                point = {x = 710, y = 487},
+                point = {x = 765, y = 512},
             },
             ["3. Dragontooth Isle."] = {
                 nameOverride = "Dragontooth Isle",
-                point = {x = 550, y = 58},
+                point = {x = 575, y = 83},
             },
             ["4. Harmony Island."] = {
                 nameOverride = "Harmony Island",
-                point = {x = 377, y = 728},
+                point = {x = 402, y = 753},
             },
         },
     }

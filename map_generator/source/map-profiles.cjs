@@ -47,8 +47,8 @@ module.exports = {
     pirate_islands: {
         input: 'pirate_islands.png',
         output: 'pirate_islands.png',
-        width: 805,
-        height: 785,
+        width: 855,
+        height: 834,
         oceanTolerance: 10,
         shorelineScale: 1.4,
         lava: false,

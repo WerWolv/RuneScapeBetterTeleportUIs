@@ -10,8 +10,8 @@
 return {
     pirateIslands = {
         image = Plugin.resources.backgrounds.pirate_islands,
-        width = 805,
-        height = 785,
+        width = 855,
+        height = 834,
     },
     menaphos = {
         image = Plugin.resources.backgrounds.menaphos,
