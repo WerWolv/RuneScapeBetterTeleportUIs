@@ -1,7 +1,8 @@
 local AtelfTeleportsMenu = require("impl/interfaces/atelf_teleports_menu")
 local textUtils = require("impl/text")
 local componentUtils = require("impl/components")
-local userSettings = require("impl/settings")
+local HotkeyBadge = require("impl/hotkey_badge")
+local NativeLayout = require("impl/native_layout")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
 
 -- Native shortcut order differs from the component order in the interface.
@@ -45,14 +46,9 @@ function TirannwnQuiver:BeginVisuals()
     for hotkey, componentID in ipairs(hotkeyButtons) do
         local button = components:GetComponent(componentID)
         if button ~= nil then
-            local badge, label = componentUtils.HotkeyBadge(button.parent)
-            label.content = tostring(hotkey)
-            badge.hidden = true
-
             session.hotkeys[#session.hotkeys + 1] = {
                 button = button,
-                badge = badge,
-                label = label,
+                badge = HotkeyBadge.New(button.parent, hotkey),
             }
         end
     end
@@ -73,6 +69,14 @@ function TirannwnQuiver:BeginVisuals()
         return
     end
 
+    session.deathLayout = NativeLayout.FromControls({ session.deathButton })
+
+    local icon = ui.Sprite.new(session.deathButton.parent)
+    session.deathDisabledIcon = icon
+    icon.spriteID = id.Sprite.ELFCITY_ICON_TELEPORT_4_2
+    icon.clickthrough = false
+    icon.hidden = true
+
     local text = componentUtils.CenteredLabel(session.deathButton.parent, id.Font.MUSEO_SANS_13PT_BOLD)
     text:SetSize(51, 18)
     text.rgba = 0xFFFFFFC0
@@ -81,44 +85,65 @@ function TirannwnQuiver:BeginVisuals()
 end
 
 function TirannwnQuiver:UpdateVisuals()
+    self:UpdateCharges()
+
     local session = self.session
-    local showHotkeys = userSettings.Get("showTeleportHotkeys")
 
     for _, hotkey in ipairs(session.hotkeys) do
         local button = hotkey.button
-        local badge = hotkey.badge
-        badge.hidden = not showHotkeys or not button.visibleGlobal
+        local anchor = button
 
-        if not badge.hidden then
-            local position = button.xyGlobal
-            local parentPosition = badge.parent.xyGlobal
-            local disabled = button.enabled == false
-
-            badge:SetPos(
-                position.x - parentPosition.x + button.width - badge.width / 2,
-                position.y - parentPosition.y - badge.height / 2
-            )
-            badge.alpha = disabled and 0.6 or 1
-            hotkey.label.rgba = disabled and 0x9D978AFF or 0xFFE3A3FF
-            badge:MoveToFront()
+        if button == session.deathButton and session.deathDisabledIcon ~= nil
+            and not session.deathDisabledIcon.hidden then
+            anchor = session.deathDisabledIcon
         end
-    end
 
+        hotkey.badge:Update(anchor, { disabled = button.enabled == false })
+    end
+end
+
+function TirannwnQuiver:UpdateCharges()
+    local session = self.session
     local text = session.chargesText
     if text == nil then return end
+
+    session.deathLayout:Restore()
 
     local button = session.deathButton
     local source = (session.chargesSource.content or ""):gsub("<br%s*/?>", " ")
     source = textUtils.StripFormatting(source):lower()
     local count = source:match("death%s+altar%s+(%d+)%s+more%s+times?%s+today")
-    text.content = count or ""
-    text.hidden = not button.visibleGlobal or count == nil
-    -- Only replace the native text when a visible charge counter is available.
-    session.chargesHolder.hidden = not text.hidden
-    if text.hidden then return end
+    local exhausted = tonumber(count) == 0
+    local visible = button.visibleGlobal and count ~= nil
+    local icon = session.deathDisabledIcon
+
+    text.content = not exhausted and count or ""
+    text.hidden = not visible or exhausted
+    icon.hidden = not visible or not exhausted
+    -- Replace recognized charge information with a count or the exhausted icon.
+    session.chargesHolder.hidden = visible
+
+    if exhausted then
+        session.deathLayout:Apply(function()
+            button.enabled = false
+            -- Native actions can ignore enabled; remove the original hit target as well.
+            button.hidden = true
+        end)
+    end
+
+    if not visible then
+        return
+    end
 
     local position = button.xyGlobal
     local parentPosition = text.parent.xyGlobal
+
+    if exhausted then
+        icon:SetPos(position.x - parentPosition.x, position.y - parentPosition.y)
+        icon:SetSize(button.width, button.height)
+        icon:MoveToFront()
+        return
+    end
 
     -- Centre the count along the bottom of the button.
     text:SetPos(
@@ -131,6 +156,17 @@ end
 
 function TirannwnQuiver:ReleaseVisuals()
     if self.session ~= nil then
+        if self.session.deathLayout ~= nil then
+            self.session.deathLayout:Restore()
+        end
+
+        if self.session.deathDisabledIcon ~= nil then
+            pcall(function()
+                self.session.deathDisabledIcon:Destroy()
+            end)
+            self.session.deathDisabledIcon = nil
+        end
+
         for _, hotkey in ipairs(self.session.hotkeys or {}) do
             pcall(function()
                 hotkey.badge:Destroy()
