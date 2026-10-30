@@ -1,6 +1,5 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local userSettings = require("impl/settings")
-local NativeLayout = require("impl/native_layout")
 local components = require("impl/components")
 
 local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
@@ -110,13 +109,6 @@ function PassageOfTheAbyss:IsDisabled(row)
     return row.destination.empty == true or SlotMenu.IsDisabled(self, row)
 end
 
--- Track native overrides so unsupported jewellery menus can return to their original list.
-function PassageOfTheAbyss:BeginInterface(placement)
-    SlotMenu.BeginInterface(self, placement)
-
-    self.session.nativeLayout = NativeLayout.New(self.session.window)
-end
-
 -- Hide Pick an item without changing the text used to recognize this interface.
 function PassageOfTheAbyss:UpdateTitle()
     local prompt = self.session.title and self.session.title.control
@@ -171,35 +163,33 @@ end
 
 -- Move each filled slot's original click target over its item without changing native actions.
 function PassageOfTheAbyss:ApplyLayout(layout)
-    self.session.nativeLayout:Apply(function()
-        self:LayoutWindow(layout.width, layout.height)
-        self.slotLayer:SetSize(layout.width, layout.height)
+    self:LayoutWindow(layout.width, layout.height)
+    self.slotLayer:SetSize(layout.width, layout.height)
 
-        local origin = self.slotLayer.xyGlobal
+    local origin = self.slotLayer.xyGlobal
 
-        for index, row in ipairs(self.session.rows) do
-            local slot = self.slots[index]
-            local x    = layout.inset + (index - 1) * (layout.slotSize + layout.gap)
-            local size = slot and slot.item and layout.slotSize or 0
+    for index, row in ipairs(self.session.rows) do
+        local slot = self.slots[index]
+        local x    = layout.inset + (index - 1) * (layout.slotSize + layout.gap)
+        local size = slot and slot.item and layout.slotSize or 0
 
-            self:HideRowArtwork(row)
-            self:LayoutRow(row, origin.x + x, origin.y + layout.inset, size, size)
+        self:HideRowArtwork(row)
+        self:LayoutRow(row, origin.x + x, origin.y + layout.inset, size, size)
 
-            if slot ~= nil then
-                slot.layer:SetPos(x, layout.inset)
-                slot.layer:SetSize(layout.slotSize, layout.slotSize)
-                slot.background:SetSize(layout.slotSize, layout.slotSize)
+        if slot ~= nil then
+            slot.layer:SetPos(x, layout.inset)
+            slot.layer:SetSize(layout.slotSize, layout.slotSize)
+            slot.background:SetSize(layout.slotSize, layout.slotSize)
 
-                if slot.item ~= nil then
-                    local inset = math.floor(layout.slotSize * 2 / slotSize)
+            if slot.item ~= nil then
+                local inset = math.floor(layout.slotSize * 2 / slotSize)
 
-                    slot.item:SetPos(inset, inset)
-                    slot.item:SetSize(layout.slotSize - inset * 2, layout.slotSize - inset * 2)
-                    slot.hotkey:SetPos(math.max(0, layout.slotSize - 18), 0)
-                end
+                slot.item:SetPos(inset, inset)
+                slot.item:SetSize(layout.slotSize - inset * 2, layout.slotSize - inset * 2)
+                slot.hotkey:SetPos(math.max(0, layout.slotSize - 18), 0)
             end
         end
-    end)
+    end
 end
 
 -- Determine hover using the original item-slot controls instead of map coordinates.
@@ -235,15 +225,6 @@ function PassageOfTheAbyss:UpdateVisuals(layout, hovered)
     end
 
     SlotMenu.UpdateVisuals(self, layout, hovered)
-end
-
--- Undo the selector's layout and artwork overrides before returning control to the client.
-function PassageOfTheAbyss:ReleaseInterface()
-    if self.session ~= nil and self.session.nativeLayout ~= nil then
-        self.session.nativeLayout:Restore()
-    end
-
-    SlotMenu.ReleaseInterface(self)
 end
 
 return PassageOfTheAbyss

@@ -1,29 +1,60 @@
--- Listed in UI order. Keys are also the PersistentDB keys; keep them stable.
--- Built-in types: boolean, number (min/max/step), string. Custom types use a module path.
--- Widgets choose label/description placement using the shared styling helpers.
+-- Groups are listed in UI order within their tab. Setting keys are persistent; keep them stable.
+-- Built-in types: boolean, number (min/max/step), string, label. Custom types use a module path.
+local interfaces = {}
+for _, interface in ipairs(require("definitions/teleport_interfaces")) do
+    interfaces[#interfaces + 1] = {
+        key = interface.key,
+        type = "boolean",
+        label = interface.label,
+        default = true,
+    }
+end
+table.sort(interfaces, function(a, b) return a.label < b.label end)
+
 return {
     {
-        key = "showTeleportHotkeys",
         tab = "General",
-        type = "boolean",
-        label = "Show teleport hotkeys",
-        description = "Displays the keyboard shortcut of each teleport next to its icon",
-        default = false,
+        label = "Display",
+        description = "Control how teleport destinations are displayed",
+        settings = {
+            {
+                key = "showTeleportHotkeys",
+                type = "boolean",
+                label = "Show teleport hotkeys",
+                description = "Displays the keyboard shortcut of each teleport next to its icon",
+                default = false,
+            },
+        },
     },
     {
-        key = "fuzzyFairyRingSearch",
         tab = "Fairy Rings",
-        type = "boolean",
-        label = "Fuzzy Fairy Ring search",
+        label = "Search",
         description = "Allows minor typos when searching Fairy Ring destinations",
-        default = true,
+        settings = {
+            {
+                key = "fuzzyFairyRingSearch",
+                type = "boolean",
+                label = "Enable fuzzy search",
+                default = true,
+            },
+        },
     },
     {
-        key = "fairyRingAliases",
         tab = "Fairy Rings",
-        type = "impl/settings/fairy_ring_aliases",
         label = "Custom search aliases",
         description = "Register custom aliases for each teleport destination",
-        default = "",
+        settings = {
+            {
+                key = "fairyRingAliases",
+                type = "impl/settings/fairy_ring_aliases",
+                default = "",
+            },
+        },
+    },
+    {
+        tab = "Teleport Interfaces",
+        label = "Available UI improvements",
+        description = "Options to toggle each of the available UI enhancements on or off",
+        settings = interfaces,
     },
 }

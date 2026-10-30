@@ -72,7 +72,7 @@ function Setting:AddDescription(host, description)
             colour = 0xAFA79AFF,
             shadowed = false,
             marginTop = 0,
-            marginBottom = 12,
+            marginBottom = 6,
         })
     end
 end
