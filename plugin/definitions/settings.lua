@@ -29,12 +29,12 @@ return {
     {
         tab = "Fairy Rings",
         label = "Search",
-        description = "Allows minor typos when searching Fairy Ring destinations",
         settings = {
             {
                 key = "fuzzyFairyRingSearch",
                 type = "boolean",
-                label = "Enable fuzzy search",
+                label = "Fuzzy destination search",
+                description = "When enabled, typo-ing the search text will still try to find the right destination",
                 default = true,
             },
         },
@@ -53,8 +53,8 @@ return {
     },
     {
         tab = "Interfaces",
-        label = "Available UI improvements",
-        description = "Options to toggle each of the available UI enhancements on or off",
+        label = "Available UI enhancements",
+        description = "Options to enable or disable each UI change individually",
         settings = interfaces,
     },
 }
