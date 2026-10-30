@@ -1,7 +1,20 @@
 local AtelfTeleportsMenu = require("impl/interfaces/atelf_teleports_menu")
 local textUtils = require("impl/text")
 local componentUtils = require("impl/components")
+local userSettings = require("impl/settings")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
+
+-- Native shortcut order differs from the component order in the interface.
+local hotkeyButtons = {
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_LLETYA,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_ELUNED,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_TYRAS,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_POISON,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_DEATH,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_ELFCAMP,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_MUSHROOM,
+    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_RESOURCE,
+}
 
 function TirannwnQuiver:Define()
     return {
@@ -26,6 +39,23 @@ end
 function TirannwnQuiver:BeginVisuals()
     local components = ui.Interfaces
     local session = self.session
+
+    session.hotkeys = {}
+
+    for hotkey, componentID in ipairs(hotkeyButtons) do
+        local button = components:GetComponent(componentID)
+        if button ~= nil then
+            local badge, label = componentUtils.HotkeyBadge(button.parent)
+            label.content = tostring(hotkey)
+            badge.hidden = true
+
+            session.hotkeys[#session.hotkeys + 1] = {
+                button = button,
+                badge = badge,
+                label = label,
+            }
+        end
+    end
 
     session.chargesHolder = components:GetComponent(
         id.Component.ATELF_TELEPORTS__INFO_HOLDER_CHARGES
@@ -52,6 +82,28 @@ end
 
 function TirannwnQuiver:UpdateVisuals()
     local session = self.session
+    local showHotkeys = userSettings.Get("showTeleportHotkeys")
+
+    for _, hotkey in ipairs(session.hotkeys) do
+        local button = hotkey.button
+        local badge = hotkey.badge
+        badge.hidden = not showHotkeys or not button.visibleGlobal
+
+        if not badge.hidden then
+            local position = button.xyGlobal
+            local parentPosition = badge.parent.xyGlobal
+            local disabled = button.enabled == false
+
+            badge:SetPos(
+                position.x - parentPosition.x + button.width - badge.width / 2,
+                position.y - parentPosition.y - badge.height / 2
+            )
+            badge.alpha = disabled and 0.6 or 1
+            hotkey.label.rgba = disabled and 0x9D978AFF or 0xFFE3A3FF
+            badge:MoveToFront()
+        end
+    end
+
     local text = session.chargesText
     if text == nil then return end
 
@@ -78,6 +130,16 @@ function TirannwnQuiver:UpdateVisuals()
 end
 
 function TirannwnQuiver:ReleaseVisuals()
+    if self.session ~= nil then
+        for _, hotkey in ipairs(self.session.hotkeys or {}) do
+            pcall(function()
+                hotkey.badge:Destroy()
+            end)
+        end
+
+        self.session.hotkeys = nil
+    end
+
     local text = self.session and self.session.chargesText
     if text ~= nil then
         pcall(function() text:Destroy() end)

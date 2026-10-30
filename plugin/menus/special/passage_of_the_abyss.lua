@@ -1,6 +1,7 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local userSettings = require("impl/settings")
 local components = require("impl/components")
+local HotkeyBadge = require("impl/hotkey_badge")
 local descriptions = require("definitions/descriptions")
 
 local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
@@ -249,23 +250,23 @@ function PassageOfTheAbyss:BeginVisuals()
         if not row.destination.empty then
             local item = components.ItemSprite(layer, row.destination.objectID)
 
-            local hotkey = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_BOLD)
-            hotkey:SetSize(18, 18)
-            hotkey.content = tostring(index)
-
-            slot.item, slot.hotkey = item, hotkey
+            slot.item = item
+            slot.hotkey = HotkeyBadge.New(self.slotLayer, index)
         end
     end
 end
 
 -- Fit a compact row of standard-sized inventory slots without space for the hidden prompt.
 function PassageOfTheAbyss:CalculateLayout()
+    local showHotkeys = userSettings.Get("showTeleportHotkeys")
+    local padding = showHotkeys and 12 or slotPadding
+    local spacing = showHotkeys and 12 or slotGap
     local session   = self.session
     local available = math.max(1, session.parent.width - session.left - session.right - 16)
-    local scale     = math.min(1, available / (slotSize * slotCount + slotGap * (slotCount - 1) + slotPadding * 2))
+    local scale     = math.min(1, available / (slotSize * slotCount + spacing * (slotCount - 1) + padding * 2))
     local size      = math.max(1, math.floor(slotSize * scale))
-    local gap       = math.floor(slotGap * scale)
-    local inset     = math.floor(slotPadding * scale)
+    local gap       = math.floor(spacing * scale)
+    local inset     = math.floor(padding * scale)
     
     return {
         width = size * slotCount + gap * (slotCount - 1) + inset * 2,
@@ -301,7 +302,6 @@ function PassageOfTheAbyss:ApplyLayout(layout)
 
                 slot.item:SetPos(inset, inset)
                 slot.item:SetSize(layout.slotSize - inset * 2, layout.slotSize - inset * 2)
-                slot.hotkey:SetPos(math.max(0, layout.slotSize - 18), 0)
             end
         end
     end
@@ -320,8 +320,6 @@ end
 
 -- Refresh item icons, hover outlines, slot hotkeys and native-context tooltips.
 function PassageOfTheAbyss:UpdateVisuals(layout, hovered)
-    local showHotkeys = userSettings.Get("showTeleportHotkeys")
-
     for _, slot in ipairs(self.slots) do
         local row = slot.row
 
@@ -334,8 +332,10 @@ function PassageOfTheAbyss:UpdateVisuals(layout, hovered)
             slot.item.shadowRGBA   = highlighted and 0xFFFFFFCC or 0x00000000
             slot.item.colour        = row.disabled and Vector4.new(0.45, 0.45, 0.45, 1) or Vector4.new(1, 1, 1, 1)
 
-            slot.hotkey.rgba   = row.disabled and 0x9D978AFF or 0xFFE3A3FF
-            slot.hotkey.hidden = not showHotkeys
+            slot.hotkey:Update(slot.layer, {
+                disabled = row.disabled,
+                scale = layout.slotSize / slotSize,
+            })
         end
     end
 
