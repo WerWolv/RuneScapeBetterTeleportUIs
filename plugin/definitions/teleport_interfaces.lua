@@ -100,7 +100,7 @@ return {
         label = "Delver's Anklet", 
         module = "maps/delvers_anklet" 
     },
-    { 
+    {
         key = "enableDungeoneeringCape", 
         label = "Dungeoneering Cape", 
         module = "maps/dungeoneering_cape" 
@@ -124,5 +124,10 @@ return {
         key = "enableSlayerCape", 
         label = "Slayer Cape", 
         module = "special/slayer_cape" 
+    },
+    {
+        key = "enableEnlightenedAmulet",
+        label = "Enlightened Amulet",
+        module = "maps/enlightened_amulet"
     },
 }
