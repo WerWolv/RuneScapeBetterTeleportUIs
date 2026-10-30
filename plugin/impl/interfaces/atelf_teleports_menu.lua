@@ -1,4 +1,5 @@
 local TeleportMenu = require("impl/teleport_menu")
+local NativeLayout = require("impl/native_layout")
 local AtelfTeleportsMenu = TeleportMenu:Extend()
 AtelfTeleportsMenu.interface = AtelfTeleportsMenu
 AtelfTeleportsMenu.interfaceName = "ATELF_TELEPORTS (" .. id.Interface.ATELF_TELEPORTS .. ")"
@@ -27,6 +28,24 @@ function AtelfTeleportsMenu:ReadInterface()
             disabled = not button.visibleGlobal,
         }},
     }
+end
+
+-- Capture native controls before the quiver adds its replacement charge label.
+function AtelfTeleportsMenu:BeginInterface()
+    self.session.nativeLayout = NativeLayout.New(self.session.menu.window)
+end
+
+-- Track both button positioning and native artwork hidden by concrete menus.
+function AtelfTeleportsMenu:Update(snapshot)
+    self.session.nativeLayout:Apply(function()
+        TeleportMenu.Update(self, snapshot)
+    end)
+end
+
+function AtelfTeleportsMenu:ReleaseInterface()
+    if self.session ~= nil and self.session.nativeLayout ~= nil then
+        self.session.nativeLayout:Restore()
+    end
 end
 
 -- Leave the client's layout untouched unless a concrete menu supplies an override.
