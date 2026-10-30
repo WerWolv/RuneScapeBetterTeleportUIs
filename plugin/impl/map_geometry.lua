@@ -9,7 +9,14 @@ function geometry.Bounds(background)
         "Background dimensions must be positive numbers"
     )
 
-    local crop = background.crop or {x = 0, y = 0, width = background.width, height = background.height}
+    local crop = background.crop
+
+    if type(crop) == "function" then
+        crop = crop()
+    end
+
+    crop = crop or {x = 0, y = 0, width = background.width, height = background.height}
+
     assert(
         type(crop) == "table" and
         utils.IsFinite(crop.x) and
