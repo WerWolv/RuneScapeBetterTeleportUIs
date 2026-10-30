@@ -909,6 +909,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    travellersNecklace = {
+        objectID = id.Obj.ENCHANTED_JADE_NECKLACE_NEW,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
     ringOfRespawn = {
         objectID = id.Obj.ENCHANTED_JADE_RING_NEW,
         size = 32,

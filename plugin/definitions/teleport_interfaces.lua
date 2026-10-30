@@ -130,4 +130,9 @@ return {
         label = "Enlightened Amulet",
         module = "maps/enlightened_amulet"
     },
+    {
+        key = "enableTravellersNecklace",
+        label = "Traveller's Necklace",
+        module = "maps/travellers_neckace"
+    }
 }
