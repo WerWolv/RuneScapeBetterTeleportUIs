@@ -1,5 +1,6 @@
 local TeleportMenu = require("impl/teleport_menu")
 local NativeLayout = require("impl/native_layout")
+local TextFieldAutofocus = require("impl/text_field_autofocus")
 local text = require("impl/text")
 local userSettings = require("impl/settings")
 local fairyRingAliases = require("impl/fairy_ring_aliases")
@@ -391,6 +392,7 @@ function FairyRings:ReadInterface()
         content = content,
         nativeRows = rows,
         searchParent = component("LOG_CONTAINER_TOP"),
+        keyboardListener = component("KEYBOARD_LISTENER"),
         logHolder = component("LOG_CONTENT_HOLDER"),
         logContent = component("LOG_CONTENT"),
         scrollbar = component("SCROLLBAR"),
@@ -445,6 +447,7 @@ function FairyRings:Matches(snapshot)
 
     return TeleportMenu.Matches(self, snapshot)
         and previous.searchParent == snapshot.searchParent
+        and previous.keyboardListener == snapshot.keyboardListener
         and previous.logHolder == snapshot.logHolder
         and previous.logContent == snapshot.logContent
         and previous.scrollbar == snapshot.scrollbar
@@ -460,16 +463,44 @@ function FairyRings:BeginVisuals()
     end
 
     self.search = prettyui.TextField.new(snapshot.searchParent, {
-        placeholder = "Search destinations or codes...",
+        placeholder = "Type to search destinations or codes...",
         height = searchHeight,
         maxLength = 80,
         contentMargin = ui.Margin.new(searchIconInset * 2 + searchIconSize, 3, 8, 0),
     })
 
+    self:UpdateSearchAutoFocus()
+
     self.searchIcon = ui.Sprite.new(snapshot.searchParent)
     self.searchIcon.spriteID = id.Sprite.AIF_SEARCH_ICON_0
     self.searchIcon:SetSize(searchIconSize, searchIconSize)
     self.searchIcon.clickthrough = true
+end
+
+function FairyRings:UpdateSearchAutoFocus()
+    local snapshot = self.session.menu.snapshot
+    local enabled = userSettings.Get("autoFocusFairyRingSearch")
+
+    if not enabled then
+        if self.searchInput ~= nil then
+            self.searchInput:Destroy()
+            self.searchInput = nil
+        end
+
+        return
+    end
+
+    if self.searchInput == nil and self.search ~= nil and snapshot.keyboardListener ~= nil then
+        self.searchInput = TextFieldAutofocus:New(self.search, snapshot.keyboardListener, {
+            hookID = "teleportMapsSearchInput",
+            font = config.Font.MUSEO_SANS_15PT_REGULAR,
+            -- Leave 1–9 to the native favourite shortcuts.
+            forwardKey = function(_, character)
+                return character ~= nil and character >= 49 and character <= 57
+            end,
+        })
+        self.searchInput:Attach()
+    end
 end
 
 -- Reserve a dedicated search row below the client's existing log controls.
@@ -872,6 +903,8 @@ end
 
 -- Replace unselected star artwork on the native sprites so favourite actions stay live.
 function FairyRings:UpdateVisuals()
+    self:UpdateSearchAutoFocus()
+
     local favourites = component("FAVOURITE_BUILD")
 
     if favourites == nil then
@@ -900,6 +933,11 @@ function FairyRings:UpdateVisuals()
 end
 
 function FairyRings:ReleaseVisuals()
+    if self.searchInput ~= nil then
+        self.searchInput:Destroy()
+        self.searchInput = nil
+    end
+
     if self.searchIcon ~= nil then
         self.searchIcon:Destroy()
         self.searchIcon = nil

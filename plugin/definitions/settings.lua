@@ -31,6 +31,13 @@ return {
         label = "Search",
         settings = {
             {
+                key = "autoFocusFairyRingSearch",
+                type = "boolean",
+                label = "Automatically focus search",
+                description = "Allows typing to search without clicking the search box first",
+                default = true,
+            },
+            {
                 key = "fuzzyFairyRingSearch",
                 type = "boolean",
                 label = "Fuzzy destination search",
