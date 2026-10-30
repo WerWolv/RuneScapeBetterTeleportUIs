@@ -30,9 +30,15 @@ function AtelfTeleportsMenu:ReadInterface()
     }
 end
 
--- Capture native controls before the quiver adds its replacement charge label.
+-- These controls can live outside the window subtree; capture each override explicitly.
 function AtelfTeleportsMenu:BeginInterface()
-    self.session.nativeLayout = NativeLayout.New(self.session.menu.window)
+    local controls = {}
+    for _, row in ipairs(self.session.menu.rows) do
+        controls[#controls + 1] = row.click
+    end
+    local charges = ui.Interfaces:GetComponent(id.Component.ATELF_TELEPORTS__INFO_HOLDER_CHARGES)
+    if charges ~= nil then controls[#controls + 1] = charges end
+    self.session.nativeLayout = NativeLayout.FromControls(controls)
 end
 
 -- Track both button positioning and native artwork hidden by concrete menus.

@@ -55,9 +55,16 @@ function TirannwnQuiver:UpdateVisuals()
     local text = session.chargesText
     if text == nil then return end
 
-    session.chargesHolder.hidden = true
-
     local button = session.deathButton
+    local source = (session.chargesSource.content or ""):gsub("<br%s*/?>", " ")
+    source = textUtils.StripFormatting(source):lower()
+    local count = source:match("death%s+altar%s+(%d+)%s+more%s+times?%s+today")
+    text.content = count or ""
+    text.hidden = not button.visibleGlobal or count == nil
+    -- Only replace the native text when a visible charge counter is available.
+    session.chargesHolder.hidden = not text.hidden
+    if text.hidden then return end
+
     local position = button.xyGlobal
     local parentPosition = text.parent.xyGlobal
 
@@ -67,10 +74,6 @@ function TirannwnQuiver:UpdateVisuals()
         position.y - parentPosition.y + (button.height - 32) / 2
     )
 
-    local source = textUtils.StripFormatting(session.chargesSource.content)
-    local count = source:match("Death Altar%s+(%d+)%s+more times today%.")
-    text.content = count or ""
-    text.hidden = not button.visibleGlobal or count == nil
     text:MoveToFront()
 end
 
