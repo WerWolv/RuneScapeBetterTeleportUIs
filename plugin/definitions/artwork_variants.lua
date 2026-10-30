@@ -1,4 +1,5 @@
 local utils = require("impl/utils")
+local settings = require("impl/settings")
 local variants = {}
 
 -- Create a resized icon variant without modifying its shared definition.
@@ -8,10 +9,17 @@ function variants.Resize(icon, size)
     return result
 end
 
--- Create an independent background variant with the requested crop rectangle.
+-- Resolve optional cropping at layout time so settings changes apply to open maps.
 function variants.Cropped(background, crop)
     local result = utils.deepcopy(background)
-    result.crop = utils.deepcopy(crop)
+    local bounds = utils.deepcopy(crop)
+
+    result.crop = function()
+        if settings.Get("cropBackgroundMaps") then
+            return bounds
+        end
+    end
+
     return result
 end
 

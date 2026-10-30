@@ -5,7 +5,7 @@
 -- - height: The height of the image
 -- - image (only if sprites is not defined): A Plugin.resources.backgrounds resource object
 -- - sprites (only if image is not defined): A 2D Array of Sprite IDs. Use {{ id.Sprite.Something }} if the sprite contains the full image
--- - crop (optional): x, y, width and height of the crop area
+-- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
     pirateIslands = {

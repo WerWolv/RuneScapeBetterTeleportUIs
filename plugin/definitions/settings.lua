@@ -24,6 +24,13 @@ return {
                 description = "Displays the keyboard shortcut of each teleport next to its icon",
                 default = false,
             },
+            {
+                key = "cropBackgroundMaps",
+                type = "boolean",
+                label = "Zoom Maps to content",
+                description = "When enabled, zooms in on the destination buttons on each of the teleport maps",
+                default = false,
+            },
         },
     },
     {
