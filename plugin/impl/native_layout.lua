@@ -13,6 +13,7 @@ local function readState(control)
         alpha = control.alpha,
         clickthrough = control.clickthrough,
         hidden = control.hidden,
+        enabled = control.enabled,
     }
 
     for _, field in ipairs(positionFields) do
@@ -150,6 +151,10 @@ local function restore(control, change)
 
     if restored.hidden then
         control.hidden = state.hidden
+    end
+
+    if restored.enabled then
+        control.enabled = state.enabled
     end
 
     if restored.content then
