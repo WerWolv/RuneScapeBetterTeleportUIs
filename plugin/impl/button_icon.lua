@@ -1,7 +1,7 @@
 local constants = require("definitions/constants")
 local geometry = require("impl/map_geometry")
 local utils = require("impl/utils")
-local userSettings = require("impl/settings")
+local HotkeyBadge = require("impl/hotkey_badge")
 local components = require("impl/components")
 local text = require("impl/text")
 local buttonIcon = {}
@@ -79,39 +79,6 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 end
 
--- Show the original option's numeric prefix at the icon's top-right when enabled in settings.
-local function updateHotkey(marker, name, size, disabled, locked)
-    local hotkey = text.Hotkey(name)
-    if locked or not userSettings.Get("showTeleportHotkeys") or hotkey == nil then
-        if marker.hotkey ~= nil then marker.hotkey.hidden = true end
-        return
-    end
-
-    if marker.hotkey == nil then
-        local badge = ui.Layer.new(marker.layer)
-        badge.clickthrough = true
-
-        local background = ui.Rectangle.new(badge)
-        background:SetSize(0, 0, 1.0, 1.0)
-        background.fill = true
-        background.rgba = 0x17120FCC
-        background.clickthrough = true
-
-        local text = components.CenteredLabel(badge, id.Font.MUSEO_SANS_13PT_BOLD)
-        text:SetSize(0, 0, 1.0, 1.0)
-
-        marker.hotkey, marker.hotkeyText = badge, text
-    end
-
-    local width = math.min(size, 8 + #hotkey * 8)
-    marker.hotkey:SetSize(width, 18)
-    marker.hotkey:SetPos(size - width, 0)
-    marker.hotkeyText.content = hotkey
-    marker.hotkeyText.rgba = disabled and 0x9D978AFF or 0xFFE3A3FF
-    marker.hotkey.hidden = false
-    marker.hotkey:MoveToFront()
-end
-
 -- Overlay a small lock on destinations that have no corresponding native menu option.
 local function updateLock(marker, width, height, locked)
     if locked and marker.lock == nil then
@@ -138,6 +105,12 @@ local function destroyMarker(marker)
 
     if marker.sprite ~= nil then 
         pcall(function() marker.sprite:Destroy() end)
+    end
+
+    if marker.hotkey ~= nil then
+        pcall(function()
+            marker.hotkey:Destroy()
+        end)
     end
 
     pcall(function() marker.layer:Destroy() end)
@@ -229,6 +202,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         end
 
         self.markers[name] = marker
+        marker.hotkey = HotkeyBadge.New(self.parent, text.Hotkey(name))
     end
 
     if marker.itemSprite ~= nil and marker.objectID ~= objectID then
@@ -266,7 +240,6 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         marker.disabled = disabled
     end
 
-    updateHotkey(marker, name, width, disabled, locked)
     updateLock(marker, width, height, locked and (icons.locked == nil or icons.showLockIcon == true))
 
     return marker
@@ -276,6 +249,9 @@ end
 function buttonIcon:Update(menu, hovered)
     for _, marker in pairs(self.markers) do 
         marker.layer.hidden = true 
+        if marker.hotkey ~= nil then
+            marker.hotkey:Hide()
+        end
     end
 
     for _, row in ipairs(menu.rows) do
@@ -290,12 +266,23 @@ function buttonIcon:Update(menu, hovered)
                 marker.layer:SetPos(x - marker.width / 2, y - marker.height / 2)
                 marker.layer.hidden = false
                 marker.layer:MoveToFront()
+
+                marker.hotkey:Update(marker.layer, {
+                    width = marker.width,
+                    disabled = row.disabled,
+                    hidden = row.locked,
+                })
             end
         end
     end
 
     if hovered ~= nil and self.markers[hovered] ~= nil then
-        self.markers[hovered].layer:MoveToFront()
+        local marker = self.markers[hovered]
+        marker.layer:MoveToFront()
+
+        if marker.hotkey ~= nil then
+            marker.hotkey:MoveToFront()
+        end
     end
 end
 
