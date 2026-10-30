@@ -1,13 +1,234 @@
 local TeleportMenu = require("impl/teleport_menu")
 local NativeLayout = require("impl/native_layout")
 local text = require("impl/text")
+local userSettings = require("impl/settings")
+local fairyRingAliases = require("impl/fairy_ring_aliases")
 local FairyRings = TeleportMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
 FairyRings.interfaceName = "FAIRYRINGS (" .. id.Interface.FAIRYRINGS .. ")"
 
+local searchAliases = {
+    AIQ = {
+        "port sarim",
+        "rimmington",
+        "anvil",
+        "ice dungeon",
+        "frost dragons"
+    },
+    AIR = {
+        "clue",
+        "clue scroll",
+        "treasure trail"
+    },
+    AIS = {
+        "guthix"
+    },
+    ALR = {
+        "abby demons",
+        "abyssal demons"
+    },
+    AJR = {
+        "fremennik",
+        "mountain camp"
+    },
+    AKP = {
+        "home",
+        "poh"
+    },
+    AKQ = {
+        "falconry",
+        "phoenix lair",
+        "fishing colony",
+        "eternal magic trees",
+        "airuts"
+    },
+    AKS = {
+        "gnome glider",
+        "oo'glog",
+        "chompy birds"
+    },
+    ALP = {
+        "jiggig"
+    },
+    ALQ = {
+        "araxxor",
+        "port phasmatys"
+    },
+    ALS = {
+        "hemenster",
+        "seers village",
+        "fishing guild"
+    },
+    BIQ = {
+        "kq",
+        "bandit camp",
+        "mining camp",
+        "kalphite cave",
+        "kalphite queen"
+    },
+    BJP = {
+        "grove"
+    },
+    BJQ = {
+        "kuradal",
+        "slayer",
+        "mithril dragons",
+        "waterfiends"
+    },
+    BJR ={
+        "brimhaven"
+    },
+    BIP = {
+        "brilliant wisps",
+        "mta",
+        "mage training arena",
+        "het's oasis",
+        "slayer"
+    },
+    BJS = {
+        "solak",
+        "vinecrawlers",
+        "bulbous crawler",
+        "moss golem"
+    },
+    BIS = {
+        "ardy",
+        "ardougne"
+    },
+    BKP = {
+        "jiggig",
+        "incandescent wisps"
+    },
+    BKR = {
+        "nature spirit",
+        "nature grotto"
+    },
+    BKS = {
+        "wendlewick",
+        "eastfold farm",
+        "crabs"
+    },
+    BLP = {
+        "mor ul rek",
+        "volcano",
+        "karamja"
+    },
+    BLR = {
+        "witchaven",
+        "ardougne",
+        "keep le faye",
+        "pof",
+        "player owned farm"
+    },
+    BLQ = {
+        "bandos throne room"
+    },
+    CIQ = {
+        "tree gnome village",
+        "castle wars"
+    },
+    CJR = {
+        "camelot",
+        "seers village",
+        "rellekka"
+    },
+    CIS = {
+        "evil bob"
+    },
+    CJS = {
+        "karamja"
+    },
+    CKQ = {
+        "desert",
+        "soul altar",
+        "sophanem"
+    },
+    CKR = {
+        "nature altar",
+        "shilo village",
+        "cairn isle",
+        "karambwanji"
+    },
+    CKS = {
+        "temple trekking",
+        "paterdomus",
+        "slayer tower",
+        "mushroom patch"
+    },
+    CLR = {
+        "agility course",
+        "monkey"
+    },
+    CLS = {
+        "hazelmere"
+    },
+    DJP ={
+        "ardougne",
+        "port khazard",
+        "monastery"
+    },
+    DIP = {
+        "trouble brewing",
+        "cave horrors"    
+    },
+    DIS = {
+        "draynor village",
+        "runecrafting guild",
+        "lumbridge swamp"
+    },
+    DJR = {
+        "camelot",
+        "seers village",
+        "rellekka"
+    },
+    DJS = {
+        "summoning obelisk",
+        "amlodd",
+        "ithell"
+    },
+    DKP = {
+        "karambwans",
+        "gnome glider",
+        "shipyard"
+    },
+    DKQ = {
+        "rotm",
+        "ritual of the mahjarrat",
+        "mahjarrat",
+        "jas"
+    },
+    DKR = {
+        "varrock",
+        "grand exchange",
+        "wilderness",
+        "ge"
+    },
+    DKS = {
+        "keldagrim",
+        "rellekka",
+        "fremennik",
+        "fremmy",
+        "polar hunter area"
+    },
+    DLP = {
+        "bank"
+    },
+    DLQ ={
+        "hunter area",
+        "uzer"
+    },
+    DLS = {
+        "canifis",
+        "tunnel",
+        "barrows",
+        "morton",
+        "mort'ton"
+    }
+}
+
 local wheelControls = {
-    "LEFT_CW", "LEFT_ACW",
-    "MID_CW", "MID_ACW",
+    "LEFT_CW",  "LEFT_ACW",
+    "MID_CW",   "MID_ACW",
     "RIGHT_CW", "RIGHT_ACW",
 }
 
@@ -43,12 +264,14 @@ local function logRows()
         return rows
     end
 
+    local customAliases = fairyRingAliases.Parse(userSettings.Get("fairyRingAliases"))
+
     locations:IterateDynamicComponents(function(location)
-        local text = plainText(location.content)
+        local locationText = plainText(location.content)
         local background = component("BG_BUILD", location.categoryID, location.dynamicID)
 
         if location.categoryID < 0 or location.hidden or not location.visible
-            or not text:find("%S") or background == nil
+            or not locationText:find("%S") or background == nil
             or background.hidden or not background.visible or background.height <= 0 then
             return false
         end
@@ -58,8 +281,9 @@ local function logRows()
             top = background.y,
             height = background.height,
             background = background,
-            location = text,
-            text = {},
+            location = locationText,
+            text = { locationText },
+            codes = {},
             controls = {},
         }
 
@@ -73,18 +297,24 @@ local function logRows()
                     row.star = control
                 end
 
-                if name == "CODE_TEXT_BUILD" or name == "LOCATION_TEXT_BUILD" then
-                    local text = plainText(control.content)
-                    row.text[#row.text + 1] = text
+                if name == "CODE_TEXT_BUILD" then
+                    local codes = plainText(control.content):gsub("[%s%-]", "")
 
-                    if name == "CODE_TEXT_BUILD" then
-                        row.text[#row.text + 1] = text:gsub("[%s%-]", "")
+                    for code in codes:gmatch("%a%a%a") do
+                        row.codes[#row.codes + 1] = code
+
+                        for _, alias in ipairs(searchAliases[code:upper()] or {}) do
+                            row.text[#row.text + 1] = plainText(alias)
+                        end
+
+                        for _, alias in ipairs(customAliases[code:upper()] or {}) do
+                            row.text[#row.text + 1] = text.Trim(plainText(alias))
+                        end
                     end
                 end
             end
         end
 
-        row.text = table.concat(row.text, " ")
         rows[#rows + 1] = row
         return false
     end)
@@ -401,6 +631,43 @@ function FairyRings:FilterLog()
     end
 
     gap = gap or 0
+
+    local codeQuery = query:gsub("[%s%-]", "")
+    local exactCode = false
+    local allowTypos = userSettings.Get("fuzzyFairyRingSearch")
+
+    -- A complete native code selects only that code; names and aliases stay separate.
+    for _, row in ipairs(rows) do
+        for _, code in ipairs(row.codes) do
+            if code == codeQuery then
+                exactCode = true
+            end
+        end
+    end
+
+    for order, row in ipairs(rows) do
+        row.order = order
+
+        if not exactCode then
+            row.score = text.FuzzyScore(row.text, query, allowTypos)
+        end
+
+        for _, code in ipairs(row.codes) do
+            if code == codeQuery
+                or not exactCode and codeQuery ~= "" and code:sub(1, #codeQuery) == codeQuery then
+                row.score = math.huge
+            end
+        end
+    end
+
+    table.sort(rows, function(a, b)
+        if a.score == b.score then
+            return a.order < b.order
+        end
+
+        return (a.score or -math.huge) > (b.score or -math.huge)
+    end)
+
     local nextY, bottom, visibleRows = 0, 0, 0
     local height
 
@@ -411,14 +678,7 @@ function FairyRings:FilterLog()
         end
 
         for _, row in ipairs(rows) do
-            local matches = true
-
-            for word in query:gmatch("%S+") do
-                if not row.text:find(word, 1, true) then
-                    matches = false
-                    break
-                end
-            end
+            local matches = row.score ~= nil
 
             for _, control in ipairs(row.controls) do
                 if matches then
