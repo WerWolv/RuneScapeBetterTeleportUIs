@@ -3,11 +3,11 @@ local registry = {}
 for _, definition in ipairs(require("definitions/teleport_interfaces")) do
     local exported = require("menus/" .. definition.module)
     if type(exported.New) == "function" then
-        exported.enabledSetting = definition.key
+        exported.enabledSetting = definition.module
         registry[#registry + 1] = exported
     else
         for _, class in ipairs(exported) do
-            class.enabledSetting = definition.key
+            class.enabledSetting = definition.module
             -- Pages exported together share placement while navigating an open menu.
             class.pageGroup = exported
             registry[#registry + 1] = class
