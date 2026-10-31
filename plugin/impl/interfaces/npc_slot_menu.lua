@@ -5,9 +5,7 @@ local text = require("impl/text")
 local userSettings = require("impl/settings")
 local NpcSlotMenu = SlotMenu:Extend()
 
-local columns, slotSize, labelHeight, gap, inset = 5, 112, 24, 8, 8
-local gridWidth = columns * slotSize + (columns - 1) * gap + inset * 2
-local gridHeight = 2 * (slotSize + labelHeight) + gap + inset * 2
+local slotSize, labelHeight, gap, inset = 112, 24, 8, 8
 local modelInset = 6
 
 -- The model cards identify the choices without the native selection prompt.
@@ -36,42 +34,48 @@ function NpcSlotMenu:BeginVisuals()
 
     for _, row in ipairs(self.session.menu.rows) do
         local destination = row.destination
-        local slot = self:CreateSlot(row, destination.npcID ~= nil)
-        local layer = slot.layer
+        if not destination.hidden then
+            local slot = self:CreateSlot(row, destination.npcID ~= nil)
+            local layer = slot.layer
 
-        if destination.npcID ~= nil then
-            -- Clip model drawing to the slot interior, excluding its border and name label.
-            local viewport = ui.Layer.new(layer)
-            viewport.clickthrough = true
-            slot.viewport = viewport
+            if destination.npcID ~= nil then
+                -- Clip model drawing to the slot interior, excluding its border and name label.
+                local viewport = ui.Layer.new(layer)
+                viewport.clickthrough = true
+                slot.viewport = viewport
 
-            local model = ui.Model.new(viewport)
-            model.clickthrough = true
-            model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
-            model.modelWidth = slotSize
-            model.modelHeight = slotSize
-            model.viewDistance = destination.viewDistance or 600
+                local model = ui.Model.new(viewport)
+                model.clickthrough = true
+                model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
+                model.modelWidth = slotSize
+                model.modelHeight = slotSize
+                model.viewDistance = destination.viewDistance or 600
 
-            if destination.animID ~= nil then
-                model.animID = destination.animID
+                if destination.animID ~= nil then
+                    model.animID = destination.animID
+                end
+
+                slot.model = model
+
+                slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_REGULAR)
+            else
+                local sprite = ui.Sprite.new(layer)
+                local icons = destination.icons
+                sprite.spriteID = ButtonIcon.Source(icons, false, row.disabled, row.locked).sprite
+                sprite.clickthrough = true
+                slot.icon = sprite
             end
-
-            slot.model = model
-
-            slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_REGULAR)
-        else
-            local sprite = ui.Sprite.new(layer)
-            local icons = destination.icons
-            sprite.spriteID = ButtonIcon.Source(icons, false, row.disabled, row.locked).sprite
-            sprite.clickthrough = true
-            slot.icon = sprite
         end
     end
 end
 
--- Keep both pages the same size, shrinking the complete card layout for smaller viewports.
+-- Menus can set columns and rows; the default keeps both Slayer Cape pages the same size.
 function NpcSlotMenu:CalculateLayout()
     local session = self.session
+    local columns = self.definition.columns or 5
+    local rows = self.definition.rows or 2
+    local gridWidth = columns * slotSize + (columns - 1) * gap + inset * 2
+    local gridHeight = rows * (slotSize + labelHeight) + (rows - 1) * gap + inset * 2
     local scale = math.max(0.01, math.min(1,
         (session.parent.width - session.left - session.right - 16) / gridWidth,
         (session.parent.height - session.top - session.bottom - 16) / gridHeight))
@@ -80,6 +84,9 @@ function NpcSlotMenu:CalculateLayout()
         width = math.max(1, math.floor(gridWidth * scale)),
         height = math.max(1, math.floor(gridHeight * scale)),
         scale = scale,
+        columns = columns,
+        gridWidth = gridWidth,
+        gridHeight = gridHeight,
     }
 end
 
@@ -89,6 +96,13 @@ function NpcSlotMenu:ApplyLayout(layout)
     self.slotLayer:SetSize(layout.width, layout.height)
 
     local origin = self.slotLayer.xyGlobal
+    for _, row in ipairs(self.session.rows) do
+        if row.destination.hidden then
+            self:HideRowArtwork(row)
+            self:LayoutRow(row, origin.x, origin.y, 0, 0)
+        end
+    end
+
     local function scaled(value)
         return math.floor(value * layout.scale)
     end
@@ -97,8 +111,8 @@ function NpcSlotMenu:ApplyLayout(layout)
         local row = slot.row
         local destination = row.destination
         local index = slotIndex - 1
-        local x = inset + (index % columns) * (slotSize + gap)
-        local y = inset + math.floor(index / columns) * (slotSize + labelHeight + gap)
+        local x = inset + (index % layout.columns) * (slotSize + gap)
+        local y = inset + math.floor(index / layout.columns) * (slotSize + labelHeight + gap)
         local width, height = slotSize, slotSize + labelHeight
 
         if slot.model ~= nil then
@@ -123,8 +137,8 @@ function NpcSlotMenu:ApplyLayout(layout)
             slot.icon:SetSize(scaled(iconWidth), scaled(iconHeight))
 
             if destination.anchor == "bottomRight" then
-                x = gridWidth - inset - iconWidth
-                y = gridHeight - inset - iconHeight
+                x = layout.gridWidth - inset - iconWidth
+                y = layout.gridHeight - inset - iconHeight
                 width, height = iconWidth, iconHeight
                 slot.icon:SetPos(0, 0)
             else
@@ -144,7 +158,7 @@ end
 
 function NpcSlotMenu:GetHovered()
     for _, row in ipairs(self.session.rows) do
-        if row.click.visibleGlobal and row.click.isMouseOver then
+        if not row.destination.hidden and row.click.visibleGlobal and row.click.isMouseOver then
             return row.name
         end
     end
