@@ -45,6 +45,10 @@ function HotkeyBadge:Update(anchor, options)
         size = math.max(1, math.min(size, width - inset * 2, anchor.height - inset * 2))
         x, y = width - size - inset, inset
     end
+    if options.offset ~= nil then
+        x = (width - size) / 2 + (options.offset.x or 0)
+        y = ((options.height or anchor.height) - size) / 2 + (options.offset.y or 0)
+    end
 
     local position = anchor.xyGlobal
     local parentPosition = root.parent.xyGlobal
