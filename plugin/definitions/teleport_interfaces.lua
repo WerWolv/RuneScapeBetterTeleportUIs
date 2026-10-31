@@ -111,4 +111,8 @@ return {
         name = "Ring of Slaying",
         module = "maps/ring_of_slaying",
     },
+    {
+        name = "Ferocious Ring",
+        module = "special/ferocious_ring",
+    },
 }
