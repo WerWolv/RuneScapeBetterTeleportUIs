@@ -7,6 +7,7 @@ function DrakansMedallion:Define()
     return {
         title = "Drakan's Medallion",
         background = backgrounds.morytaniaSouth,
+        noBackgroundCrop = true,
         icons = teleportIcons.drakansMedallion,
         entries = {
             ["1. Barrows"] = {point = {x = 408, y = 284}},

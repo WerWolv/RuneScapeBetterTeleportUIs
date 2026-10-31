@@ -1,16 +1,12 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local EnlightenedAmulet = ModalChoiceMenu:Extend("enlightenedAmulet")
 
 function EnlightenedAmulet:Define()
     return {
         title = "Enlightened Amulet",
-        background = cropped(
-            backgrounds.runescapeSurface,
-            {x = 240, y = 0, width = 210, height = 250}
-        ),
+        background = backgrounds.runescapeSurface,
         icons = teleportIcons.enlightenedAmulet,
         entries = {
             ["1. Lumbridge Swamp"] = {

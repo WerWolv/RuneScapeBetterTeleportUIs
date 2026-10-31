@@ -26,6 +26,7 @@ local function readState(control)
 
     if control.type == ui.ComponentType.LABEL then
         state.content = control.content
+        state.maxLines = control.maxLines
     end
 
     if control.type == ui.ComponentType.GROUP_BOX then
@@ -159,6 +160,10 @@ local function restore(control, change)
 
     if restored.content then
         control.content = state.content
+    end
+
+    if restored.maxLines then
+        control.maxLines = state.maxLines
     end
 
     if restored.header then

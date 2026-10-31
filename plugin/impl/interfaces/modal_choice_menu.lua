@@ -2,6 +2,8 @@ local TeleportMenu = require("impl/teleport_menu")
 local NativeLayout = require("impl/native_layout")
 local teleportTooltip = require("impl/teleport_tooltip")
 local geometry = require("impl/map_geometry")
+local mapCrop = require("impl/map_crop")
+local MenuUIToggle = require("impl/menu_ui_toggle")
 local constants = require("definitions/constants")
 local BackgroundView = require("impl/background_view")
 local ButtonIcon = require("impl/button_icon")
@@ -307,18 +309,48 @@ end
 
 -- Create the map's plugin-owned background and marker views for this menu instance.
 function ModalChoiceMenu:BeginVisuals()
+    mapCrop.Attach(self.session.menu)
     self.backgroundView = BackgroundView.New(self.session.content)
     self.iconView = ButtonIcon.New(self.backgroundView.layer)
 end
 
--- Fit the cropped map into the native window's available space.
+-- Measure only horizontal header clearance; retain the native title-bar height.
+function ModalChoiceMenu:HeaderLayout()
+    local session = self.session
+    local title, close = session.title, session.close
+    local left = self.supportsOriginalUI and MenuUIToggle.HeaderInset() or 8
+    local right = 8
+    if close ~= nil and close.control.visibleGlobal then
+        right = math.max(right, close.right + close.width + 8)
+    end
+    if title ~= nil then
+        left = math.max(left, title.left)
+    end
+    local measured, width = pcall(function()
+        local font = config.Font.FromID(title.control.font)
+        return math.max(font:GetStringWidth(session.menu.title, false),
+            font:GetStringWidth(title.control.content, false))
+    end)
+    width = measured and width or #text.StripFormatting(session.menu.title) * 8
+    return {left = left, right = right, width = left + width + right}
+end
+
+-- Supply the header's minimum width to the crop, then use the original uniform map scaling.
 function ModalChoiceMenu:CalculateLayout()
     local session = self.session
+    self:UpdateTitle()
+    local header = self:HeaderLayout()
+    local minWidth = math.max(1, header.width - session.left - session.right)
+    session.menu.cropMinWidth = nil
     local crop = geometry.Bounds(session.menu.background)
     local parent = session.window.parent
-    local scale = math.min(constants.maxWidth / crop.width,
-        (parent.width - session.left - session.right - 16) / crop.width,
+    local maxWidth = math.min(math.max(constants.maxWidth, minWidth),
+        parent.width - session.left - session.right - 16)
+    local scale = math.min(maxWidth / crop.width,
         (parent.height - session.top - session.bottom - 16) / crop.height)
+    session.menu.cropMinWidth = math.ceil(minWidth / scale)
+    crop = geometry.Bounds(session.menu.background)
+    scale = math.min(scale, maxWidth / crop.width)
     return {width = math.max(1, math.floor(crop.width * scale)), height = math.max(1, math.floor(crop.height * scale))}
 end
 
@@ -355,8 +387,10 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     end
     local title = session.title
     if title ~= nil then
-        setRect(title.control, origin.x + title.left, origin.y + title.top,
-            math.max(1, windowWidth - title.left - title.right), title.height)
+        local header = self:HeaderLayout()
+        title.control.maxLines = 1
+        setRect(title.control, origin.x + header.left, origin.y + title.top,
+            math.max(1, windowWidth - header.left - header.right), title.height)
     end
     -- Expand intermediate clipping containers before moving their individual rows.
     local expanded = {}

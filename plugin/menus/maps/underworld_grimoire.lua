@@ -7,6 +7,7 @@ function UnderworldGrimoire:Define()
     return {
         title = "Underworld",
         background = backgrounds.cityOfUm,
+        noBackgroundCrop = true,
         entries = {
             ["1. Teleport to Um Smithy"] = {
                 nameOverride = "Um Smithy",

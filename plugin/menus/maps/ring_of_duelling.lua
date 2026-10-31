@@ -1,16 +1,12 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local RingOfDuelling = ModalChoiceMenu:Extend("ringOfDuelling")
 
 function RingOfDuelling:Define()
     return {
         title = "Ring of Duelling",
-        background = cropped(
-            backgrounds.runescapeSurface, 
-            {x = 63, y = 81, width = 344, height = 213}
-        ),
+        background = backgrounds.runescapeSurface,
         icons = teleportIcons.ringOfDuelling,
         entries = {
             ["1. Het's Oasis"] = {

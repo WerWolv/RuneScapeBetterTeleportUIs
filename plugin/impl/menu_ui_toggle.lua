@@ -6,6 +6,10 @@ local buttonSize = 24
 local gap = 8
 local hookID = "teleportMapsUIToggle"
 
+function MenuUIToggle.HeaderInset()
+    return settings.Get("showOriginalUIToggle") and buttonSize + gap * 2 or gap
+end
+
 function MenuUIToggle:New(menu, snapshot)
     return setmetatable({
         window = snapshot.window,

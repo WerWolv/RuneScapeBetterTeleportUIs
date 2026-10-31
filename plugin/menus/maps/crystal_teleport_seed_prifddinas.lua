@@ -8,6 +8,7 @@ function CrystalTeleportSeedPrifddinas:Define()
     return {
         title = "Prifddinas",
         background = backgrounds.prifddinas,
+        noBackgroundCrop = true,
         entries = {
             ["1. Amlodd (Prifddinas)"] = {
                 point = {x = 230, y = 63},

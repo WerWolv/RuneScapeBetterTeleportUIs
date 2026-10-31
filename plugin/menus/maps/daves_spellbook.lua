@@ -2,7 +2,6 @@ local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local descriptions = require("definitions/descriptions")
-local cropped = require("definitions/artwork_variants").Cropped
 local DavesSpellbook = ModalChoiceMenu:Extend("davesSpellbook")
 
 -- Format the captured chipped tablet count using the appropriate plural form.
@@ -14,10 +13,7 @@ end
 function DavesSpellbook:Define()
     return {
         title = "'Chipped' Teleport Tablets",
-        background = cropped(
-            backgrounds.runescapeSurface, 
-            { x = 80, y = 60, width = 320, height = 170 }
-        ),
+        background = backgrounds.runescapeSurface,
         entries = {
             ["^1%. Watchtower %((%d+)%)$"] = {
                 nameOverride = "Observatory",

@@ -1,16 +1,12 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local SkillsNecklace = ModalChoiceMenu:Extend("skillsNecklace")
 
 function SkillsNecklace:Define()
     return {
         title = "Skilling Guilds",
-        background = cropped(
-            backgrounds.runescapeSurface,
-            { x = 147, y = 68, width = 210, height = 147 }
-        ),
+        background = backgrounds.runescapeSurface,
         entries = {
             ["1. Fishing Guild"] = {
                 point = {x = 175, y = 123},
