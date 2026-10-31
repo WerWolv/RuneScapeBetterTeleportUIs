@@ -107,4 +107,8 @@ return {
         name = "Traveller's Necklace",
         module = "maps/travellers_neckace",
     },
+    {
+        name = "Ring of Slaying",
+        module = "maps/ring_of_slaying",
+    },
 }

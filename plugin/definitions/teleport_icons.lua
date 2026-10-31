@@ -927,6 +927,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    ringOfSlaying = {
+        objectID = id.Obj.SMKI_RING_OF_SLAYING_8,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
