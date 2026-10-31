@@ -28,10 +28,6 @@ return {
         module = "maps/crystal_teleport_seed",
     },
     {
-        name = "Crystal Teleport Seed (Prifddinas)",
-        module = "maps/crystal_teleport_seed_prifddinas",
-    },
-    {
         name = "Passing Bracelet",
         module = "maps/passing_bracelet",
     },
