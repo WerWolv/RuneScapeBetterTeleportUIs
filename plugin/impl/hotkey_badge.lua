@@ -39,13 +39,19 @@ function HotkeyBadge:Update(anchor, options)
 
     local width = options.width or anchor.width
     local size = HotkeyBadge.Size(self.label.content, width, options.scale)
+    local x, y = width - size / 2, -size / 2
+    if options.inset ~= nil then
+        local inset = options.inset
+        size = math.max(1, math.min(size, width - inset * 2, anchor.height - inset * 2))
+        x, y = width - size - inset, inset
+    end
 
     local position = anchor.xyGlobal
     local parentPosition = root.parent.xyGlobal
     root:SetSize(size, size)
     root:SetPos(
-        position.x - parentPosition.x + width - size / 2,
-        position.y - parentPosition.y - size / 2
+        position.x - parentPosition.x + x,
+        position.y - parentPosition.y + y
     )
 
     local disabled = options.disabled

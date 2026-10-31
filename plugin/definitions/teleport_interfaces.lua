@@ -89,11 +89,11 @@ return {
     },
     {
         name = "Passage of the Abyss",
-        module = "special/passage_of_the_abyss",
+        module = "slots/passage_of_the_abyss",
     },
     {
         name = "Slayer Cape",
-        module = "special/slayer_cape",
+        module = "slots/slayer_cape",
     },
     {
         name = "Enlightened Amulet",
@@ -109,6 +109,14 @@ return {
     },
     {
         name = "Ferocious Ring",
-        module = "special/ferocious_ring",
+        module = "slots/ferocious_ring",
+    },
+    {
+        name = "Kethsi Ring",
+        module = "slots/kethsi_ring",
+    },
+    {
+        name = "Dragon Trinkets",
+        module = "slots/dragon_trinkets",
     },
 }

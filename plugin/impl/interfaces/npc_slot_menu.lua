@@ -1,11 +1,11 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local ButtonIcon = require("impl/button_icon")
+local HotkeyBadge = require("impl/hotkey_badge")
 local components = require("impl/components")
 local text = require("impl/text")
-local userSettings = require("impl/settings")
 local NpcSlotMenu = SlotMenu:Extend()
 
-local slotSize, labelHeight, gap, inset = 112, 24, 8, 8
+local slotSize, rowGap, inset = 112, 8, 12
 local modelInset = 6
 
 -- The model cards identify the choices without the native selection prompt.
@@ -37,6 +37,7 @@ function NpcSlotMenu:BeginVisuals()
         if not destination.hidden then
             local slot = self:CreateSlot(row, destination.npcID ~= nil)
             local layer = slot.layer
+            slot.hotkey = HotkeyBadge.New(self.slotLayer, text.Hotkey(row.name))
 
             if destination.npcID ~= nil then
                 -- Clip model drawing to the slot interior, excluding its border and name label.
@@ -57,7 +58,8 @@ function NpcSlotMenu:BeginVisuals()
 
                 slot.model = model
 
-                slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_13PT_REGULAR)
+                slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_11PT_REGULAR)
+                slot.label.maxLines = 0
             else
                 local sprite = ui.Sprite.new(layer)
                 local icons = destination.icons
@@ -74,11 +76,41 @@ function NpcSlotMenu:CalculateLayout()
     local session = self.session
     local columns = self.definition.columns or 5
     local rows = self.definition.rows or 2
-    local gridWidth = columns * slotSize + (columns - 1) * gap + inset * 2
-    local gridHeight = rows * (slotSize + labelHeight) + (rows - 1) * gap + inset * 2
+    local gridWidth = columns * slotSize + inset * 2
+    local availableHeight = session.parent.height - session.top - session.bottom - 16
     local scale = math.max(0.01, math.min(1,
-        (session.parent.width - session.left - session.right - 16) / gridWidth,
-        (session.parent.height - session.top - session.bottom - 16) / gridHeight))
+        (session.parent.width - session.left - session.right - 16) / gridWidth))
+    local nameHeight, artworkHeight, verticalGap
+
+    -- Text does not scale with the models. Wrap at the displayed width and reserve its full height.
+    while true do
+        local width = math.max(1, math.floor(slotSize * scale))
+        nameHeight, verticalGap = 0, 0
+        for _, slot in ipairs(self.slots) do
+            if slot.label ~= nil then
+                local font = config.Font.FromID(slot.label.font)
+                local lines = font:SplitString(self:GetDisplayName(slot.row), width, false, false, false)
+                slot.label.content = table.concat(lines, "<br>")
+                local height = font:GetStringHeightAndLineCount(slot.label.content, width,
+                    font.baseline, false, false, false)
+                local padding = 0
+                if #lines > 1 then
+                    padding = 4
+                    verticalGap = rowGap
+                end
+                nameHeight = math.max(nameHeight, height + padding)
+            end
+        end
+
+        artworkHeight = rows * slotSize + (rows - 1) * verticalGap + inset * 2
+        local fittedScale = math.max(0.01, math.min(scale,
+            (availableHeight - rows * nameHeight) / artworkHeight))
+        if fittedScale >= scale then
+            break
+        end
+        scale = fittedScale
+    end
+    local gridHeight = artworkHeight + rows * nameHeight / scale
 
     return {
         width = math.max(1, math.floor(gridWidth * scale)),
@@ -87,6 +119,8 @@ function NpcSlotMenu:CalculateLayout()
         columns = columns,
         gridWidth = gridWidth,
         gridHeight = gridHeight,
+        labelHeight = nameHeight / scale,
+        rowGap = verticalGap,
     }
 end
 
@@ -111,9 +145,9 @@ function NpcSlotMenu:ApplyLayout(layout)
         local row = slot.row
         local destination = row.destination
         local index = slotIndex - 1
-        local x = inset + (index % layout.columns) * (slotSize + gap)
-        local y = inset + math.floor(index / layout.columns) * (slotSize + labelHeight + gap)
-        local width, height = slotSize, slotSize + labelHeight
+        local x = inset + (index % layout.columns) * slotSize
+        local y = inset + math.floor(index / layout.columns) * (slotSize + layout.labelHeight + layout.rowGap)
+        local width, height = slotSize, slotSize + layout.labelHeight
 
         if slot.model ~= nil then
             slot.background:SetSize(scaled(slotSize), scaled(slotSize))
@@ -130,7 +164,7 @@ function NpcSlotMenu:ApplyLayout(layout)
             slot.model.screenOffset = screenOffset
 
             slot.label:SetPos(0, scaled(slotSize))
-            slot.label:SetSize(scaled(width), scaled(labelHeight))
+            slot.label:SetSize(scaled(width), scaled(layout.labelHeight))
         else
             local iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
 
@@ -169,14 +203,6 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
         if slot.label ~= nil then
-            local name = self:GetDisplayName(row)
-            local hotkey = text.Hotkey(row.name)
-
-            if not row.locked and hotkey ~= nil and userSettings.Get("showTeleportHotkeys") then
-                name = hotkey .. ". " .. name
-            end
-
-            slot.label.content = name
             slot.label.rgba = row.name == hovered and 0xFFFFFFFF or 0xFFE3A3FF
         else
             local icons = row.destination.icons
@@ -186,6 +212,12 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
         end
 
         slot.layer.alpha = row.disabled and 0.4 or 1
+        slot.hotkey:Update(slot.layer, {
+            scale = layout.scale,
+            inset = math.floor(4 * layout.scale),
+            disabled = row.disabled,
+            hidden = row.locked,
+        })
 
         if slot.background ~= nil then
             slot.background.rgb = row.name == hovered and 0xFFFFFF or 0xC0C0C0
