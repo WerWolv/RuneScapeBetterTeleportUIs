@@ -269,6 +269,8 @@ function buttonIcon:Update(menu, hovered)
 
                 marker.hotkey:Update(marker.layer, {
                     width = marker.width,
+                    height = marker.height,
+                    offset = destination.hotkeyOffset,
                     disabled = row.disabled,
                     hidden = row.locked,
                 })
