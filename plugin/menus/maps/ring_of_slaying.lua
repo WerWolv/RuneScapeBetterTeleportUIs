@@ -1,7 +1,6 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local RingOfSlaying = ModalChoiceMenu:Extend("ringOfSlaying")
 
 local slayerMasters = {
@@ -70,10 +69,7 @@ end
 function RingOfSlaying:Define()
     return {
         title = "Ring of Slaying",
-        background = cropped(
-            backgrounds.runescapeSurface, 
-            {x = 143, y = 0, width = 316, height = 260}
-        ),
+        background = backgrounds.runescapeSurface,
         icons = teleportIcons.ringOfSlaying,
         entries = {
             ["1. Sumona in Pollnivneach."] = {

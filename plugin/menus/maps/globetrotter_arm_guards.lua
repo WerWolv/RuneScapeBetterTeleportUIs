@@ -1,7 +1,6 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local GlobetrotterArmGuards = ModalChoiceMenu:Extend("globeTrotterArmGuards")
 local descriptions = require("definitions/descriptions")
 
@@ -14,10 +13,7 @@ end
 function GlobetrotterArmGuards:Define()
     return {
         title = "Teleport Scrolls",
-        background = cropped(
-            backgrounds.runescapeSurface, 
-            {x = 0, y = 0, width = 420, height = 270}
-        ),
+        background = backgrounds.runescapeSurface,
         entries = {
             ["^1%. Grand Exchange%. %((%d+)%)$"] = {
                 nameOverride = "Grand Exchange",
@@ -52,13 +48,13 @@ function GlobetrotterArmGuards:Define()
             ["^6%. Fort Forinthry%. %((%d+)%)$"] = {
                 nameOverride = "Fort Forinthry",
                 description = chargesRemaining,
-                point = {x = 372, y = 73},
+                point = {x = 380, y = 73},
                 icons = teleportIcons.teleportScrolls.fortForinthry,
             },
             ["^7%. Miscellania%. %((%d+)%)$"] = {
                 nameOverride = "Miscellania",
                 description = chargesRemaining,
-                point = {x = 30, y = 20},
+                point = {x = 30, y = 35},
                 icons = teleportIcons.teleportScrolls.miscellania,
             },
             ["^8%. Phoenix Lair%. %((%d+)%)$"] = {

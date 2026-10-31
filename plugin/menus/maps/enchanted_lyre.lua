@@ -1,16 +1,13 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local EnchantedLyre = ModalChoiceMenu:Extend("enchantedLyre")
 
 function EnchantedLyre:Define()
     return {
         title = "Fremennik Isles",
-        background = cropped(
-            backgrounds.fremennikIsles,
-            { x = 380, y = 60, width = 640, height = 453 }
-        ),
+        background = backgrounds.fremennikIsles,
+        noBackgroundCrop = true,
         entries = {
             ["^%d+%. Rellekka$"] = {
                 icons = teleportIcons.magicLyre,

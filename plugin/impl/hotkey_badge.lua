@@ -3,6 +3,11 @@ local userSettings = require("impl/settings")
 local HotkeyBadge = {}
 HotkeyBadge.__index = HotkeyBadge
 
+function HotkeyBadge.Size(key, width, scale)
+    local size = math.max(24, 12 + #tostring(key or "") * 8)
+    return math.max(1, math.floor(math.min(width, size * (scale or 1))))
+end
+
 -- Keep badges beside their anchors so the offset artwork is not clipped by the button.
 function HotkeyBadge.New(parent, key)
     local root = ui.Layer.new(parent)
@@ -33,8 +38,7 @@ function HotkeyBadge:Update(anchor, options)
     end
 
     local width = options.width or anchor.width
-    local size = math.max(24, 12 + #self.label.content * 8)
-    size = math.max(1, math.floor(math.min(width, size * (options.scale or 1))))
+    local size = HotkeyBadge.Size(self.label.content, width, options.scale)
 
     local position = anchor.xyGlobal
     local parentPosition = root.parent.xyGlobal

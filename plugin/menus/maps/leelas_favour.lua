@@ -7,6 +7,7 @@ function LeelasFavour:Define()
     return {
         title = "Menaphos",
         background = backgrounds.menaphos,
+        noBackgroundCrop = true,
         entries = {
             ["1. Imperial District"] = {
                 point = {x = 402, y = 409},

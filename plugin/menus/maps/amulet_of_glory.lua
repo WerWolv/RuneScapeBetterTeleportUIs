@@ -1,16 +1,12 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local AmuletOfGlory = ModalChoiceMenu:Extend("amuletOfGlory")
 
 function AmuletOfGlory:Define()
     return {
         title = "Amulet of Glory",
-        background = cropped(
-            backgrounds.runescapeSurface, 
-            {x = 194, y = 60, width = 241, height = 161}
-        ),
+        background = backgrounds.runescapeSurface,
         icons = teleportIcons.amuletOfGlory,
         entries = {
             ["1. Edgeville"] = {

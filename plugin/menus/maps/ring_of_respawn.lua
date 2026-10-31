@@ -1,16 +1,12 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local cropped = require("definitions/artwork_variants").Cropped
 local RingOfRespawn = ModalChoiceMenu:Extend("ringOfRespawn")
 
 function RingOfRespawn:Define()
     return {
         title = "Respawn Points",
-        background = cropped(
-            backgrounds.runescapeSurface,
-            { x = 0, y = 0, width = 400, height = 300 }
-        ),
+        background = backgrounds.runescapeSurface,
         icons = teleportIcons.ringOfRespawn,
         entries = {
             ["1. Lumbridge"] = {

@@ -7,6 +7,7 @@ function CrystalTeleportSeed:Define()
     return {
         title = "Tirannwn",
         background = backgrounds.tirannwn,
+        noBackgroundCrop = true,
         entries = {
             ["1. Lletya"] = {
                 point = {x = 348, y = 207},

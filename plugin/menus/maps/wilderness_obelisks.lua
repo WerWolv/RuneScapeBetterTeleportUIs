@@ -7,6 +7,7 @@ function WildernessObelisks:Define()
     return {
         title = "Wilderness Obelisks",
         background = backgrounds.wilderness,
+        noBackgroundCrop = true,
         icons = teleportIcons.obelisk,
         entries = {
             ["1. Level 13 Wilderness"] = {
