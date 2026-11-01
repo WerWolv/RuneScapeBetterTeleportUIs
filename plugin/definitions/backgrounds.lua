@@ -8,6 +8,11 @@
 -- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
+    parchment = {
+        sprites = {{ id.Sprite.CHRISTMAS_HUB_EVENT_INFO_PARCHMENT }},
+        width = 300,
+        height = 377,
+    },
     pirateIslands = {
         image = Plugin.resources.backgrounds.pirate_islands,
         width = 855,

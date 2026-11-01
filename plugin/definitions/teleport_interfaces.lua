@@ -123,4 +123,8 @@ return {
         name = "Dragon Trinkets",
         module = "slots/dragon_trinkets",
     },
+    {
+        name = "Dorgesh-kaan Sphere",
+        module = "maps/dorgesh_kaan_sphere",
+    },
 }
