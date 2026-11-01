@@ -232,6 +232,75 @@ async function renderMap(profile) {
         return distance;
     }
 
+    // Cave silhouettes, smoky surroundings and recessed brown walls ---------------
+
+    async function createCaveLandmarks(source, caveDistance, textures) {
+        const style = profile.cave.landmarks;
+        if (!style) return null;
+        const mask = Buffer.alloc(PIXEL_COUNT);
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            const color = readRgb(source, index);
+            const value = brightness(color);
+            if (caveDistance[index] > 5 && value > style.minBrightness && value < style.maxBrightness
+                && colorSpread(color) < style.maxColorSpread) {
+                mask[index] = 255;
+            }
+        }
+        // Bridge the small ladder symbols interrupting the grey building footprints.
+        const filled = await rawImage(mask, 1).dilate(12).erode(12).median(3).greyscale().raw().toBuffer();
+        const distance = measureCoastDistance(Uint8Array.from(filled, (value) => value >= 128 ? 1 : 0));
+        const outline = Buffer.alloc(PIXEL_COUNT);
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            outline[index] = distance[index] < 1 ? 255 : 0;
+        }
+        return { fill: await blurMask(filled, 0.7), ink: await drawLandmarkInk(outline, textures) };
+    }
+
+    async function createCaveShading(source, textures) {
+        // Ignore floor decoration and ladders: only the silhouette against black
+        // defines the cave. Small smoothing softens screenshot pixels, not passages.
+        const floor = Buffer.alloc(PIXEL_COUNT);
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            floor[index] = brightness(readRgb(source, index)) > profile.cave.floorThreshold ? 255 : 0;
+        }
+        // Remove tiny protruding ladder marks and soften stair-stepped screenshot edges.
+        const cleaned = await rawImage(floor, 1).median(7).greyscale().raw().toBuffer();
+        const coverage = await blurMask(cleaned, 1.1);
+        const outside = Uint8Array.from(coverage, (value) => value < 128 ? 1 : 0);
+        const distance = measureCoastDistance(outside);
+        const rock = Buffer.from(outside.map((value) => value * 255));
+        const shadow = await blurMask(rock, profile.cave.shadowRadius);
+        const outline = Buffer.alloc(PIXEL_COUNT);
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            outline[index] = Math.round(255 * Math.exp(-((distance[index] / 0.85) ** 2)));
+        }
+        const ink = await blurMask(outline, 0.5);
+        const landmarks = await createCaveLandmarks(source, distance, textures);
+        return { coverage, distance, shadow, ink, landmarks };
+    }
+
+    function paintCave(index, cave, textures) {
+        const style = profile.cave;
+        const distance = cave.distance[index];
+        const pigment = 0.94 + (textures.medium[index] - 128) / 128 * 0.12;
+        // The rock wash follows the entire silhouette, including enclosed voids.
+        const exterior = mixColors(PALETTE.paper, style.exterior,
+            (0.28 + 0.65 * Math.exp(-distance / style.exteriorRadius)) * pigment);
+        // Blurred rock coverage accumulates at corners and in narrow passages.
+        const cornerShadow = cave.shadow[index] / 255;
+        const wallShadow = Math.exp(-distance / 5) * 0.28 + cornerShadow * 1.05;
+        const interior = mixColors(PALETTE.paper, style.wall, wallShadow * pigment);
+        let color = mixColors(exterior, interior, cave.coverage[index] / 255);
+        color = mixColors(color, style.ink, cave.ink[index] / 255 * 0.94);
+        if (cave.landmarks) {
+            const { fill, ink } = cave.landmarks;
+            const coverage = Math.max(ink.strokes[index], ink.feathering[index] * 1.2) / 255;
+            color = mixColors(color, style.landmarks.color, fill[index] / 255 * 0.14);
+            color = mixColors(color, style.landmarks.color, coverage * 0.72);
+        }
+        return color;
+    }
+
     // Lava channels and hand-inked landmarks --------------------------------------
 
     async function createLavaMasks(source, ocean) {
@@ -414,18 +483,18 @@ async function renderMap(profile) {
         return color;
     }
 
-    function paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts }) {
+    function paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts, cave }) {
         const output = Buffer.alloc(PIXEL_COUNT * RGB_CHANNELS);
         for (let y = 0; y < HEIGHT; y++) {
             for (let x = 0; x < WIDTH; x++) {
                 const index = y * WIDTH + x;
-                let color = ocean[index]
+                let color = cave ? paintCave(index, cave, textures) : ocean[index]
                     ? paintOcean(coastDistance[index])
                     : paintLand(index, source, smoothed, coastDistance, lava, ink, textures, districts);
 
                 // Thin pigment lets the paper supply the colour and texture beneath
                 // the drawing. Low-frequency variation avoids a uniform digital tint.
-                if (!ocean[index] && profile.inkWash > 0) {
+                if (!cave && !ocean[index] && profile.inkWash > 0) {
                     const variation = ((textures.broad[index] - 128) / 128) * 0.10
                         + ((textures.medium[index] - 128) / 128) * 0.04;
                     color = mixColors(color, PALETTE.paper, clamp(profile.inkWash + variation, 0, 1));
@@ -434,7 +503,8 @@ async function renderMap(profile) {
 
                 // Age the paper edges and add fibres last, over both sea and land.
                 const edgeDistance = Math.min(x, WIDTH - 1 - x, y, HEIGHT - 1 - y);
-                const age = 0.2 * Math.exp(-edgeDistance / 20) + 0.075 * Math.exp(-edgeDistance / 90);
+                const age = (cave ? 0.48 : 0.2) * Math.exp(-edgeDistance / 20)
+                    + 0.075 * Math.exp(-edgeDistance / 90);
                 color = mixColors(color, PALETTE.agedEdge, age);
                 const fiber =
                     ((textures.fine[index] - 128) / 128) * 5 +
@@ -537,18 +607,23 @@ async function renderMap(profile) {
     // Rendering pipeline ----------------------------------------------------------
 
     const source = await sharp(INPUT_PATH).resize(WIDTH, HEIGHT).removeAlpha().raw().toBuffer();
-    const smoothed = await rawImage(source, RGB_CHANNELS).median(3).blur(2).raw().toBuffer();
     const textures = await createTextures();
-    const districts = await createDistrictWashes();
-
-    const bridgeWater = await createBridgeWaterMask();
-    const ocean = findOcean(source, bridgeWater);
-    const coastDistance = measureCoastDistance(ocean);
-    const lava = await createLavaMasks(source, ocean);
-    const landmarks = extractLandmarks(source, smoothed, ocean, coastDistance, lava);
-    const ink = await drawLandmarkInk(landmarks, textures);
-
-    const parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts });
+    let ocean;
+    let parchment;
+    if (profile.cave) {
+        const cave = await createCaveShading(source, textures);
+        parchment = paintMap({ cave, textures });
+    } else {
+        const smoothed = await rawImage(source, RGB_CHANNELS).median(3).blur(2).raw().toBuffer();
+        const districts = await createDistrictWashes();
+        const bridgeWater = await createBridgeWaterMask();
+        ocean = findOcean(source, bridgeWater);
+        const coastDistance = measureCoastDistance(ocean);
+        const lava = await createLavaMasks(source, ocean);
+        const landmarks = extractLandmarks(source, smoothed, ocean, coastDistance, lava);
+        const ink = await drawLandmarkInk(landmarks, textures);
+        parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts });
+    }
     let output = rawImage(parchment, RGB_CHANNELS);
     const overlays = [];
     if (profile.bridges?.length) overlays.push({ input: createBridgesSvg() });

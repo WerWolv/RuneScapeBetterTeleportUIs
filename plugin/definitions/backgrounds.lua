@@ -1,13 +1,18 @@
 -- This file contains definitions of backgrounds used in the teleport interfaces
 -- 
 -- Each entry of this table has the following fields
--- - width: The width of the image
--- - height: The height of the image
+-- - width: The width of the map coordinate space (usually the image width)
+-- - height: The height of the map coordinate space (usually the image height)
 -- - image (only if sprites is not defined): A Plugin.resources.backgrounds resource object
 -- - sprites (only if image is not defined): A 2D Array of Sprite IDs. Use {{ id.Sprite.Something }} if the sprite contains the full image
 -- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
+    dorgeshKaan = {
+        image = Plugin.resources.backgrounds.dorgesh_kaan,
+        width = 418,
+        height = 629,
+    },
     havenhythe = {
         image = Plugin.resources.backgrounds.havenhythe,
         width = 1024,

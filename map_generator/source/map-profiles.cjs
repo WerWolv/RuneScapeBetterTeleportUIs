@@ -1,4 +1,27 @@
 module.exports = {
+    dorgesh_kaan: {
+        input: 'dorgesh_kaan.png',
+        output: 'dorgesh_kaan.png',
+        // Source: 418x629. Preserve the screenshot's proportions and coordinates.
+        width: 680,
+        height: 1024,
+        cave: {
+            floorThreshold: 32,
+            shadowRadius: 15,
+            exteriorRadius: 90,
+            exterior: [118, 96, 78],
+            wall: [128, 82, 40],
+            ink: [48, 32, 20],
+            landmarks: {
+                minBrightness: 40,
+                maxBrightness: 70,
+                maxColorSpread: 8,
+                color: [105, 82, 48],
+            },
+        },
+        palette: { paper: [239, 214, 166], agedEdge: [89, 56, 29] },
+        compass: null,
+    },
     havenhythe: {
         input: 'havenhythe.png',
         output: 'havenhythe.png',

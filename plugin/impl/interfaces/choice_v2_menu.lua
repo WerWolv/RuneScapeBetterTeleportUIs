@@ -30,14 +30,19 @@ function ChoiceV2Menu:GetLayoutHost(window)
 end
 
 -- Match the modal's available area without overwriting the client's drag offsets.
-function ChoiceV2Menu:UpdateLayoutHost(session)
+function ChoiceV2Menu:UpdateLayoutHost(session, sizeMultiplier)
     local frame, content = session.hostContainers[1], session.layoutParent
-    local modal = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__MODAL_WINDOW_CONTENT)
+    local baseWidth, baseHeight = ModalChoiceMenu:GetModalHostSize()
     local viewport = assert(ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT))
     -- Dragging may reset only the frame's size; retain the original margins.
     local paddingX, paddingY = session.hostPadding.width, session.hostPadding.height
-    local width = math.max(1, math.min(modal and modal.width or 512, viewport.width - paddingX))
-    local height = math.max(1, math.min(modal and modal.height or 334, viewport.height - paddingY))
+    local multiplier = sizeMultiplier or 1
+    local insetX = session.left + session.right + 16
+    local insetY = session.top + session.bottom + 16
+    local width = (baseWidth - insetX) * multiplier + insetX
+    local height = (baseHeight - insetY) * multiplier + insetY
+    width = math.max(1, math.floor(math.min(width, viewport.width - paddingX)))
+    height = math.max(1, math.floor(math.min(height, viewport.height - paddingY)))
     frame:SetSize(width + paddingX, height + paddingY)
     content:SetSize(width, height)
 end
