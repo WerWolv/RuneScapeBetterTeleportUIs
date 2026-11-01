@@ -933,6 +933,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    sixthAgeCircuit = {
+        objectID = id.Obj.TSD_RING,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },

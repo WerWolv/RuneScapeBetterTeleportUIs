@@ -108,6 +108,10 @@ return {
         module = "maps/ring_of_slaying",
     },
     {
+        name = "Sixth-Age Circuit",
+        module = "maps/sixth_age_circuit",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },

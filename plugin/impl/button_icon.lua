@@ -79,7 +79,7 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 end
 
--- Overlay a small lock on destinations that have no corresponding native menu option.
+-- Overlay a small lock on missing destinations or explicitly marked disabled ones.
 local function updateLock(marker, width, height, locked)
     if locked and marker.lock == nil then
         local lock = ui.Sprite.new(marker.layer)
@@ -143,7 +143,7 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
-function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
+function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
     local marker = self.markers[name]
@@ -240,7 +240,9 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked)
         marker.disabled = disabled
     end
 
-    updateLock(marker, width, height, locked and (icons.locked == nil or icons.showLockIcon == true))
+    local showLock = (locked and (icons.locked == nil or icons.showLockIcon == true))
+        or (disabled and showLockWhenDisabled == true)
+    updateLock(marker, width, height, showLock)
 
     return marker
 end
@@ -259,7 +261,8 @@ function buttonIcon:Update(menu, hovered)
         local icons, point = destination.icons, destination.point
 
         if not destination.hidden and icons ~= nil and point ~= nil and geometry.Contains(menu.background, point) then
-            local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked)
+            local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked,
+                destination.showLockWhenDisabled)
 
             if marker ~= nil then
                 local x, y = geometry.Project(menu.background, point, self.parent.width, self.parent.height)
