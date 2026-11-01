@@ -1,4 +1,41 @@
 module.exports = {
+    havenhythe: {
+        input: 'havenhythe.png',
+        output: 'havenhythe.png',
+        // Source: 1524x1078. Keep the geography aligned at the 1024px output limit.
+        width: 1024,
+        height: 724,
+        oceanTolerance: 10,
+        includeInlandWater: true,
+        shorelineScale: 0.85,
+        lava: false,
+        snow: true,
+        landmarkOpacity: 0.72,
+        inkWash: 0.12,
+        // Preserve the source's regional greens, ochres, reds and stone greys as pigment.
+        sourceColorWash: { paper: 0.35, opacity: 0.95 },
+        marsh: null,
+        palette: {
+            lowTerrain: [169, 151, 112],
+            highTerrain: [220, 204, 163],
+            vegetation: [106, 139, 80],
+            terrainShadow: [105, 90, 65],
+            landmarkInk: [89, 70, 47],
+            snow: [236, 232, 212],
+        },
+        compass: {
+            scale: 0.65,
+            outerRadius: 73,
+            oceanMargin: 10,
+            preferredX: 940,
+            preferredY: 650,
+            searchLeft: 850,
+            searchTop: 590,
+            searchBottom: 660,
+            searchStep: 2,
+            tickCount: 64,
+        },
+    },
     fremennik_isles: {
         input: 'fremennik_isles.png',
         output: 'fremennik_isles.png',

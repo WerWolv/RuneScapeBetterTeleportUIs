@@ -11,6 +11,7 @@
     "render:menaphos": "node source/render-parchment.cjs menaphos",
     "render:pirate-islands": "node source/render-parchment.cjs pirate_islands",
     "render:city-of-um": "node source/render-parchment.cjs city_of_um",
+    "render:havenhythe": "node source/render-parchment.cjs havenhythe",
     "check": "node --check source/render-parchment.cjs && node --check source/map-profiles.cjs && node --check source/parchment-renderer.cjs"
   },
   "dependencies": {

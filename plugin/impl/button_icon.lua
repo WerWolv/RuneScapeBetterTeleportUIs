@@ -150,6 +150,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     local width, height = buttonIcon.Dimensions(icons)
     local source = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
+    local objectCount = source.objectCount or icons.objectCount or 1
     local kind = objectID ~= nil and "item" or "sprite"
     local image
 
@@ -187,9 +188,9 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         }
 
         if objectID ~= nil then
-            local sprite = components.ItemSprite(artwork, objectID)
+            local sprite = components.ItemSprite(artwork, objectID, objectCount)
             sprite:SetSize(width, height)
-            marker.itemSprite, marker.objectID = sprite, objectID
+            marker.itemSprite, marker.objectID, marker.objectCount = sprite, objectID, objectCount
         else
             marker.bounds = {
                 x = 0,
@@ -205,9 +206,10 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         marker.hotkey = HotkeyBadge.New(self.parent, text.Hotkey(name))
     end
 
-    if marker.itemSprite ~= nil and marker.objectID ~= objectID then
+    if marker.itemSprite ~= nil and (marker.objectID ~= objectID or marker.objectCount ~= objectCount) then
         marker.itemSprite.associatedObjectID = objectID
-        marker.objectID = objectID
+        marker.itemSprite.associatedObjectQuantity = objectCount
+        marker.objectID, marker.objectCount = objectID, objectCount
         marker.highlighted, marker.disabled = nil, nil
     end
 

@@ -112,6 +112,14 @@ return {
         module = "maps/sixth_age_circuit",
     },
     {
+        name = "Dorgesh-kaan Sphere",
+        module = "maps/dorgesh_kaan_sphere",
+    },
+    {
+        name = "Stonevein Amulet",
+        module = "maps/stonevein_amulet",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
@@ -122,9 +130,5 @@ return {
     {
         name = "Dragon Trinkets",
         module = "slots/dragon_trinkets",
-    },
-    {
-        name = "Dorgesh-kaan Sphere",
-        module = "maps/dorgesh_kaan_sphere",
     },
 }
