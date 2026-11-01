@@ -7,6 +7,7 @@ function BigBookOPiracy:Define()
     return {
         title = "Pirate Islands",
         background = backgrounds.pirateIslands,
+        noBackgroundCrop = true,
         icons = teleportIcons.bigBookOPiracy,
         entries = {
             ["1. Mos Le'Harmless."] = {
