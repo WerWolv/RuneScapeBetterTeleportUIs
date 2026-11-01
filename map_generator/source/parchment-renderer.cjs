@@ -276,7 +276,8 @@ async function renderMap(profile) {
         }
         const ink = await blurMask(outline, 0.5);
         const landmarks = await createCaveLandmarks(source, distance, textures);
-        return { coverage, distance, shadow, ink, landmarks };
+        const lava = profile.lava ? await createLavaMasks(source, outside) : null;
+        return { coverage, distance, shadow, ink, landmarks, lava };
     }
 
     function paintCave(index, cave, textures) {
@@ -291,6 +292,7 @@ async function renderMap(profile) {
         const wallShadow = Math.exp(-distance / 5) * 0.28 + cornerShadow * 1.05;
         const interior = mixColors(PALETTE.paper, style.wall, wallShadow * pigment);
         let color = mixColors(exterior, interior, cave.coverage[index] / 255);
+        if (cave.lava) color = paintLava(color, index, cave.lava, textures);
         color = mixColors(color, style.ink, cave.ink[index] / 255 * 0.94);
         if (cave.landmarks) {
             const { fill, ink } = cave.landmarks;

@@ -1,4 +1,29 @@
 module.exports = {
+    tzhaar_city: {
+        input: 'tzhaar_city.png',
+        output: 'tzhaar_city.png',
+        width: 1024,
+        height: 520,
+        lava: true,
+        cave: {
+            floorThreshold: 32,
+            shadowRadius: 15,
+            exteriorRadius: 90,
+            exterior: [118, 96, 78],
+            wall: [128, 82, 40],
+            ink: [48, 32, 20],
+        },
+        palette: {
+            paper: [239, 214, 166],
+            agedEdge: [89, 56, 29],
+            scorch: [112, 67, 35],
+            lavaOutline: [103, 47, 24],
+            lavaBank: [158, 69, 30],
+            lavaCenter: [232, 132, 39],
+            lavaHighlight: [255, 200, 80],
+        },
+        compass: null,
+    },
     dorgesh_kaan: {
         input: 'dorgesh_kaan.png',
         output: 'dorgesh_kaan.png',

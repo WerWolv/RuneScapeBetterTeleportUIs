@@ -120,6 +120,10 @@ return {
         module = "maps/stonevein_amulet",
     },
     {
+        name = "TokKul-Zo",
+        module = "maps/tokkul_zo",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
