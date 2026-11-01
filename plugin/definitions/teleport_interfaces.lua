@@ -1,5 +1,9 @@
 return {
     {
+        name = "Teleport Nexus",
+        module = "maps/teleport_nexus",
+    },
+    {
         name = "Wilderness Obelisks",
         module = "maps/wilderness_obelisks",
     },

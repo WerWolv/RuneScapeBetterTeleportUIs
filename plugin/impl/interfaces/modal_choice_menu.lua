@@ -258,6 +258,8 @@ function ModalChoiceMenu:GetLayoutHost(window)
         height = frame.height - content.height,
         contentWidth = content.width,
         contentHeight = content.height,
+        left = content.xyGlobal.x - frame.xyGlobal.x,
+        top = content.xyGlobal.y - frame.xyGlobal.y,
     }
     return content, {frame, content}, modalHost
 end
@@ -284,7 +286,10 @@ function ModalChoiceMenu:UpdateLayoutHost(session, sizeMultiplier)
     width = math.max(1, math.floor(math.min(width, viewport.width - padding.width)))
     height = math.max(1, math.floor(math.min(height, viewport.height - padding.height)))
     frame:SetSize(width + padding.width, height + padding.height)
-    content:SetSize(width, height)
+    -- Keep the interior attached to the frame's top-left during native drag
+    -- relayouts. A centered, absolute-sized child shifts when only the frame resets.
+    content:SetPos(padding.left, padding.top)
+    content:SetSize(-padding.width, -padding.height, 1.0, 1.0)
     session.hostResized = true
 end
 
@@ -375,21 +380,30 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.tooltipLayer.clickthrough = true
 
     session.nativeLayout:Apply(function()
-        for _, entry in ipairs(session.rows) do
+        for index, entry in ipairs(session.rows) do
             if not entry.destination.hidden then
-                local parent = entry.click.parent
-                if not session.tooltipContexts[parent] then
-                    prettyui.Tooltip.registerContext(parent, session.tooltipLayer, function(target)
-                        local targetPosition, overlayPosition = target.xyGlobal, session.tooltipLayer.xyGlobal
-                        return targetPosition.x - overlayPosition.x, targetPosition.y - overlayPosition.y
-                    end)
-                    session.tooltipContexts[parent] = true
-                end
-                session.tooltips[entry.name] = teleportTooltip.Attach(entry.click, parent,
-                    self:GetDisplayName(entry), entry.destination.description)
+                local target = self:GetTooltipTarget(entry, index)
+                if target ~= nil then self:AttachTooltip(entry, target) end
             end
         end
     end)
+end
+
+function ModalChoiceMenu:GetTooltipTarget(entry)
+    return entry.click
+end
+
+function ModalChoiceMenu:AttachTooltip(entry, target)
+    local session, parent = self.session, target.parent
+    if not session.tooltipContexts[parent] then
+        prettyui.Tooltip.registerContext(parent, session.tooltipLayer, function(control)
+            local position, overlay = control.xyGlobal, session.tooltipLayer.xyGlobal
+            return position.x - overlay.x, position.y - overlay.y
+        end)
+        session.tooltipContexts[parent] = true
+    end
+    session.tooltips[entry.name] = teleportTooltip.Attach(target, parent,
+        self:GetDisplayName(entry), entry.destination.description)
 end
 
 -- Track overrides for maps and every modal subclass, including partially failed updates.
@@ -597,22 +611,29 @@ end
 
 -- Destroy this menu's artwork even if the native interface has already closed.
 function ModalChoiceMenu:ReleaseVisuals()
+    self:ReleaseTooltips()
     if self.iconView ~= nil then pcall(function() self.iconView:Destroy() end) end
     if self.backgroundView ~= nil then pcall(function() self.backgroundView:Destroy() end) end
     self.iconView, self.backgroundView = nil, nil
 end
 
 -- Remove plugin hooks before restoring surviving native controls to their client layout.
-function ModalChoiceMenu:ReleaseInterface()
+function ModalChoiceMenu:ReleaseTooltips()
     if self.session == nil then return end
     for _, tooltip in pairs(self.session.tooltips or {}) do pcall(function() tooltip:Destroy() end) end
     for parent in pairs(self.session.tooltipContexts or {}) do
         pcall(function() prettyui.Tooltip.unregisterContext(parent) end)
     end
+    self.session.tooltips, self.session.tooltipContexts = {}, {}
     if self.session.tooltipLayer ~= nil then
         pcall(function() self.session.tooltipLayer:Destroy() end)
         self.session.tooltipLayer = nil
     end
+end
+
+function ModalChoiceMenu:ReleaseInterface()
+    if self.session == nil then return end
+    self:ReleaseTooltips()
     if self.session.nativeLayout ~= nil then self.session.nativeLayout:Restore() end
     if modalHost == self.session.hostPadding then modalHost = nil end
 end

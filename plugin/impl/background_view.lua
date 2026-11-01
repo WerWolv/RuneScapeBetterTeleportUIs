@@ -21,28 +21,34 @@ function backgroundView:ShowVignette(option, width, height)
         return
     end
 
-    if self.vignette ~= nil then
-        self.vignette:Destroy()
-        self.vignette = nil
-    end
-
-    self.vignetteKey = key
-
     if depth == 0 or opacity == 0 then
+        if self.vignette ~= nil then self.vignette.hidden = true end
+        self.vignetteKey = key
         return
     end
 
-    self.vignette = ui.Layer.new(self.artwork)
+    if self.vignette == nil then
+        self.vignette = ui.Layer.new(self.artwork)
+        self.vignette.clickthrough = true
+        self.vignetteStrips = {}
+    end
     self.vignette:SetSize(width, height)
-    self.vignette.clickthrough = true
+    self.vignette.hidden = false
 
+    local index = 0
     local function strip(x, y, stripWidth, stripHeight, alpha)
-        local rectangle = ui.Rectangle.new(self.vignette)
+        index = index + 1
+        local rectangle = self.vignetteStrips[index]
+        if rectangle == nil then
+            rectangle = ui.Rectangle.new(self.vignette)
+            self.vignetteStrips[index] = rectangle
+            rectangle.fill = true
+            rectangle.clickthrough = true
+        end
         rectangle:SetPos(x, y)
         rectangle:SetSize(stripWidth, stripHeight)
-        rectangle.fill = true
         rectangle.rgba = alpha
-        rectangle.clickthrough = true
+        rectangle.hidden = false
     end
 
     -- Blend independent edge fades so corners darken smoothly without diagonal ring creases.
@@ -55,6 +61,10 @@ function backgroundView:ShowVignette(option, width, height)
         strip(inset, 0, 1, height, alpha)
         strip(width - inset - 1, 0, 1, height, alpha)
     end
+    for unused = index + 1, #self.vignetteStrips do
+        self.vignetteStrips[unused].hidden = true
+    end
+    self.vignetteKey = key
 end
 
 -- Destroy explicit sprite wrappers before their containing artwork layer.
@@ -65,6 +75,9 @@ function backgroundView:Clear()
     end
 
     self.vignetteKey = nil
+    self.vignetteStrips = nil
+    self.tiles = nil
+    self.image, self.view = nil, nil
 
     if self.sprite ~= nil then
         self.sprite:Destroy()
@@ -83,7 +96,7 @@ function backgroundView:Destroy()
     pcall(function() self.layer:Destroy() end)
 end
 
--- Load and display a background, rebuilding artwork only when its source or geometry changes.
+-- Resize existing artwork when cropping or dragging changes the map geometry.
 function backgroundView:Show(background, width, height, vignette)
     local image = background.sprites or background.sprite or background.image
     if image == nil then
@@ -109,7 +122,7 @@ function backgroundView:Show(background, width, height, vignette)
         height
     }, ":")
 
-    if self.image ~= image or self.view ~= view then
+    if self.image ~= image then
         self:Clear()
     end
 
@@ -117,7 +130,6 @@ function backgroundView:Show(background, width, height, vignette)
 
     if self.artwork == nil then
         self.artwork = ui.Layer.new(self.layer)
-        self.artwork:SetSize(width, height)
         self.artwork.clickthrough = true
 
         if background.sprites ~= nil then
@@ -134,25 +146,36 @@ function backgroundView:Show(background, width, height, vignette)
                 end
             end
 
-            -- Shared rounded tile boundaries prevent seams, including across cropped maps.
+            self.tiles = {}
             for rowIndex, row in ipairs(grid) do
                 for columnIndex, spriteID in ipairs(row) do
-                    local x, y, tileWidth, tileHeight = geometry.Rectangle(
-                        background,
-                        (columnIndex - 1) * background.width / columns,
-                        (rowIndex - 1) * background.height / #grid,
-                        background.width / columns, 
-                        background.height / #grid, 
-                        width, 
-                        height
-                    )
-
                     local tile = ui.Sprite.new(self.artwork)
-                    tile:SetPos(x, y)
-                    tile:SetSize(tileWidth, tileHeight)
                     tile.spriteID = spriteID
                     tile.clickthrough = true
+                    self.tiles[#self.tiles + 1] = {
+                        control = tile, column = columnIndex, row = rowIndex,
+                        columns = columns, rows = #grid,
+                    }
                 end
+            end
+        else
+            self.sprite = prettyui.Sprite.new(self.artwork, image, {width = width, height = height})
+        end
+
+        self.artwork:MoveToBack()
+    end
+
+    if self.view ~= view then
+        self.artwork:SetSize(width, height)
+        if self.tiles ~= nil then
+            -- Shared rounded tile boundaries prevent seams, including across cropped maps.
+            for _, tile in ipairs(self.tiles) do
+                local x, y, tileWidth, tileHeight = geometry.Rectangle(background,
+                    (tile.column - 1) * background.width / tile.columns,
+                    (tile.row - 1) * background.height / tile.rows,
+                    background.width / tile.columns, background.height / tile.rows, width, height)
+                tile.control:SetPos(x, y)
+                tile.control:SetSize(tileWidth, tileHeight)
             end
         else
             local x, y, fullWidth, fullHeight = geometry.Rectangle(
@@ -162,19 +185,9 @@ function backgroundView:Show(background, width, height, vignette)
                 width, height
             )
 
-            self.sprite = prettyui.Sprite.new(
-                self.artwork, 
-                image, 
-                {
-                    x = x, 
-                    y = y, 
-                    width = fullWidth, 
-                    height = fullHeight,
-                }
-            )
+            self.sprite.root:SetPos(x, y)
+            self.sprite.root:SetSize(fullWidth, fullHeight)
         end
-        
-        self.artwork:MoveToBack()
     end
 
     if vignette == nil then

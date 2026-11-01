@@ -8,9 +8,9 @@ local buttonIcon = {}
 buttonIcon.__index = buttonIcon
 
 -- Explicit dimensions take precedence; size specifies width when source proportions are known.
-function buttonIcon.Dimensions(icons)
+function buttonIcon.Dimensions(icons, highlighted)
     local source = icons.normal or icons
-    local width = math.max(1, math.floor(icons.width or icons.size or 48))
+    local width = math.max(1, math.floor((highlighted and icons.hoveredSize) or icons.width or icons.size or 48))
     local height = icons.height
     local sourceWidth = source.imageWidth or icons.imageWidth
     local sourceHeight = source.imageHeight or icons.imageHeight
@@ -48,6 +48,13 @@ local function getShadowColor(icons, highlighted, disabled)
     return icons.shadowColor or constants.defaultShadowColor
 end
 
+local function shadowPadding(icons, kind)
+    if kind == "sprite" and (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) then
+        return 2
+    end
+    return 0
+end
+
 -- Maintain a tinted, offset copy behind non-item icons for their current shadow state.
 local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     if icons.shadowColor == nil and icons.shadowColorHovered == nil then
@@ -68,14 +75,20 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 
     local offset = highlighted and 2 or 1
+    local width, height = marker.bounds.width, marker.bounds.height
     if marker.shadow == nil or marker.shadowImage ~= image or marker.shadowTint ~= color
-        or marker.shadowOffset ~= offset then
-        if marker.shadow ~= nil then marker.shadow:Destroy() end
-        local options = utils.deepcopy(marker.bounds)
-        options.x, options.y = options.x + offset, options.y + offset
-        options.colour = color
-        marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, options)
+        or marker.shadowOffset ~= offset or marker.shadowWidth ~= width or marker.shadowHeight ~= height then
+        if marker.shadow == nil then
+            marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, utils.deepcopy(marker.bounds))
+        elseif marker.shadowImage ~= image then
+            marker.shadow:SetSprite(image)
+        end
+        local root = marker.shadow.root
+        root:SetPos(marker.bounds.x + offset, marker.bounds.y + offset)
+        root:SetSize(width, height)
+        root.rgba = color
         marker.shadowImage, marker.shadowTint, marker.shadowOffset = image, color, offset
+        marker.shadowWidth, marker.shadowHeight = width, height
     end
 end
 
@@ -143,11 +156,11 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
-function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled)
+function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
     local marker = self.markers[name]
-    local width, height = buttonIcon.Dimensions(icons)
+    local width, height = buttonIcon.Dimensions(icons, highlighted)
     local source = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
@@ -163,21 +176,20 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         end
     end
 
-    if marker ~= nil and (marker.kind ~= kind or marker.width ~= width or marker.height ~= height) then
-        -- Rebuild artwork and its overlays when the component type or dimensions change.
+    if marker ~= nil and marker.kind ~= kind then
+        -- Only a different native component type needs a fresh subtree.
         destroyMarker(marker)
         self.markers[name], marker = nil, nil
     end
 
     if marker == nil then
         -- Shadows extend right and down; grow clipping containers rather than shrinking artwork.
-        local shadowPadding = kind == "sprite"
-            and (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) and 2 or 0
+        local padding = shadowPadding(icons, kind)
         local layer = ui.Layer.new(self.parent)
-        layer:SetSize(width + shadowPadding, height + shadowPadding)
+        layer:SetSize(width + padding, height + padding)
         layer.clickthrough = true
         local artwork = ui.Layer.new(layer)
-        artwork:SetSize(width + shadowPadding, height + shadowPadding)
+        artwork:SetSize(width + padding, height + padding)
         artwork.clickthrough = true
         marker = {
             layer = layer,
@@ -203,7 +215,23 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         end
 
         self.markers[name] = marker
-        marker.hotkey = HotkeyBadge.New(self.parent, text.Hotkey(name))
+        marker.hotkey = HotkeyBadge.New(self.parent, hotkey or text.Hotkey(name))
+    end
+
+    -- Hover enlargement reuses the same controls instead of consuming dynamic IDs.
+    if marker.width ~= width or marker.height ~= height then
+        local padding = shadowPadding(icons, kind)
+        marker.layer:SetSize(width + padding, height + padding)
+        marker.artwork:SetSize(width + padding, height + padding)
+        if marker.itemSprite ~= nil then
+            marker.itemSprite:SetSize(width, height)
+        else
+            marker.sprite.root:SetSize(width, height)
+            marker.bounds.width, marker.bounds.height = width, height
+            if marker.shadowLayer ~= nil then marker.shadowLayer:SetSize(width + padding, height + padding) end
+        end
+        marker.width, marker.height = width, height
+        if marker.lock ~= nil then marker.lock:Destroy(); marker.lock = nil end
     end
 
     if marker.itemSprite ~= nil and (marker.objectID ~= objectID or marker.objectCount ~= objectCount) then
@@ -264,7 +292,7 @@ function buttonIcon:Update(menu, hovered)
 
         if not destination.hidden and icons ~= nil and point ~= nil and geometry.Contains(menu.background, point) then
             local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked,
-                destination.showLockWhenDisabled)
+                destination.showLockWhenDisabled, destination.hotkey)
 
             if marker ~= nil then
                 local x, y = geometry.Project(menu.background, point, self.parent.width, self.parent.height)
@@ -277,7 +305,7 @@ function buttonIcon:Update(menu, hovered)
                     height = marker.height,
                     offset = destination.hotkeyOffset,
                     disabled = row.disabled,
-                    hidden = row.locked,
+                    hidden = row.locked or (icons.hotkeyOnHover and row.name ~= hovered),
                 })
             end
         end

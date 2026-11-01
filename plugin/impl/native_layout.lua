@@ -24,6 +24,13 @@ local function readState(control)
         state[field] = size[field]
     end
 
+    if components.IsCollection(control) and control.scrollable then
+        state.scrollX, state.scrollY = control.scrollX, control.scrollY
+        state.scrollWidth, state.scrollHeight = control.scrollWidth, control.scrollHeight
+    end
+
+    if control.type == ui.ComponentType.PANEL then state.spacing = control.spacing end
+
     if control.type == ui.ComponentType.LABEL then
         state.content = control.content
         state.font = control.font
@@ -138,6 +145,15 @@ local function restore(control, change)
             state.xSelfPc, state.ySelfPc
         )
     end
+
+    if restored.scrollWidth or restored.scrollHeight then
+        control:SetScrollSize(state.scrollWidth, state.scrollHeight)
+    end
+    if restored.scrollX or restored.scrollY then
+        control:SetScrollPos(state.scrollX, state.scrollY)
+    end
+
+    if restored.spacing then control.spacing = state.spacing end
 
     if restored.rgb then
         control.rgb = state.rgb

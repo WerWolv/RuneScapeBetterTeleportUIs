@@ -3,6 +3,32 @@ local teleportTooltip = {}
 local maxWidth = 240
 local paddingX, paddingY = 8, 5
 local separatorGap = 7
+local cursorHookID = "teleportMapsTooltipCursor"
+
+-- PrettyUI otherwise falls back to target-adjacent placement before ONMOUSEOVER.
+local function attachAtCursor(target, parent, options)
+    local tooltip = prettyui.Tooltip.attach(target, parent, options, {followCursor = true})
+    local show = tooltip.Show
+    function tooltip:Show()
+        if self.cursorX == nil or self.cursorY == nil then return end
+        return show(self)
+    end
+    -- PrettyUI ignores repeat events while hidden, but menu hover arbitration can
+    -- hide a newly entered tooltip before it becomes the selected destination.
+    -- Refresh coordinates regardless of visibility; the menu decides what to show.
+    target:Subscribe(ui.Hook.ONMOUSEREPEAT, cursorHookID, function(_, x, y)
+        tooltip.cursorX, tooltip.cursorY = x, y
+        return true
+    end)
+    local destroy = tooltip.Destroy
+    function tooltip:Destroy()
+        if self.target ~= nil then
+            pcall(function() self.target:Unsubscribe(ui.Hook.ONMOUSEREPEAT, cursorHookID) end)
+        end
+        return destroy(self)
+    end
+    return tooltip
+end
 
 local function lines(value)
     local normalized = value:gsub("<br%s*/?>", "\n"):gsub("\n$", "")
@@ -45,10 +71,10 @@ end
 -- Attach a tooltip with title and optional description to the cursor
 function teleportTooltip.Attach(target, parent, title, description)
     if text.IsBlank(description) then
-        return prettyui.Tooltip.attach(target, parent, {
+        return attachAtCursor(target, parent, {
             text = title,
             maxWidth = maxWidth,
-        }, {followCursor = true})
+        })
     end
 
     local font = config.Font.MUSEO_SANS_15PT_REGULAR
@@ -64,11 +90,11 @@ function teleportTooltip.Attach(target, parent, title, description)
     local separatorY = paddingY + titleHeight + separatorGap
     local descriptionY = separatorY + 1 + separatorGap
 
-    local tooltip = prettyui.Tooltip.attach(target, parent, {
+    local tooltip = attachAtCursor(target, parent, {
         text = title,
         width = width,
         height = descriptionY + descriptionHeight + paddingY,
-    }, {followCursor = true})
+    })
 
     tooltip.label:SetPos(paddingX, paddingY)
     tooltip.label:SetSize(contentWidth, titleHeight)
