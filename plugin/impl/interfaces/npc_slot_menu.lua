@@ -77,9 +77,9 @@ function NpcSlotMenu:CalculateLayout()
     local columns = self.definition.columns or 5
     local rows = self.definition.rows or 2
     local gridWidth = columns * slotSize + inset * 2
-    local availableHeight = session.parent.height - session.top - session.bottom - 16
+    local availableHeight = session.layoutParent.height - session.top - session.bottom - 16
     local scale = math.max(0.01, math.min(1,
-        (session.parent.width - session.left - session.right - 16) / gridWidth))
+        (session.layoutParent.width - session.left - session.right - 16) / gridWidth))
     local nameHeight, artworkHeight, verticalGap
 
     -- Text does not scale with the models. Wrap at the displayed width and reserve its full height.
