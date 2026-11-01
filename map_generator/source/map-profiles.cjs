@@ -1,4 +1,71 @@
 module.exports = {
+    digsite: {
+        input: 'digsite.png',
+        output: 'digsite.png',
+        // Source: 413x547. Preserve its proportions within the 1024px output limit.
+        width: 773,
+        height: 1024,
+        oceanTolerance: 10,
+        shorelineScale: 1,
+        lava: false,
+        snow: false,
+        landmarkOpacity: 0.95,
+        inkWash: 0.2,
+        sourceColorWash: { paper: 0.6, opacity: 0.5 },
+        marsh: null,
+        // Earth washes make the excavation floors and building footprints readable.
+        // Coordinates are in the rendered 773x1024 map; linework is drawn over these fills.
+        districtWashes: [
+            {
+                name: 'Northern excavation',
+                color: [143, 104, 57], opacity: 0.42, feather: 12,
+                points: [[532, 19], [606, 19], [668, 80], [668, 140], [582, 140], [532, 94]],
+            },
+            {
+                name: 'Central excavation',
+                color: [143, 104, 57], opacity: 0.42, feather: 8,
+                points: [[290, 154], [331, 154], [395, 101], [449, 101], [496, 150], [496, 253],
+                    [468, 300], [399, 326], [346, 271], [324, 219], [309, 193], [290, 193]],
+            },
+            {
+                name: 'Western excavation',
+                color: [143, 104, 57], opacity: 0.42, feather: 5,
+                points: [[153, 322], [180, 290], [236, 290], [271, 326], [275, 399], [256, 434],
+                    [197, 434], [153, 384]],
+            },
+            {
+                name: 'Western building',
+                color: [139, 91, 61], opacity: 0.55, feather: 1.5,
+                points: [[37, 586], [101, 586], [101, 560], [150, 560], [150, 586], [172, 586],
+                    [172, 719], [153, 719], [153, 747], [66, 747], [66, 724], [37, 724]],
+            },
+            {
+                name: 'Southern building',
+                color: [139, 91, 61], opacity: 0.55, feather: 1.5,
+                points: [[352, 908], [432, 908], [432, 818], [496, 818], [496, 983], [352, 983]],
+            },
+            {
+                name: 'Northern hut',
+                color: [139, 91, 61], opacity: 0.55, feather: 1.5,
+                points: [[378, 416], [434, 416], [434, 451], [378, 451]],
+            },
+            {
+                name: 'Riverside hut',
+                color: [139, 91, 61], opacity: 0.55, feather: 1.5,
+                points: [[576, 676], [612, 676], [612, 738], [576, 738]],
+            },
+        ],
+        palette: {
+            paper: [239, 214, 166],
+            lowTerrain: [181, 159, 110],
+            highTerrain: [226, 204, 157],
+            vegetation: [141, 147, 89],
+            terrainShadow: [116, 91, 53],
+            landmarkInk: [79, 53, 30],
+        },
+        // The narrow river leaves no unobstructed space for a compass.
+        compass: null,
+    },
     tzhaar_city: {
         input: 'tzhaar_city.png',
         output: 'tzhaar_city.png',
