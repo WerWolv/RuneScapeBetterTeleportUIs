@@ -132,6 +132,10 @@ return {
         module = "maps/bogolin_telepearl",
     },
     {
+        name = "Luck Rings",
+        module = "maps/luck_rings",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },

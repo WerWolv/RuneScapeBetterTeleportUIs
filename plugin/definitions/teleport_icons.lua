@@ -972,6 +972,24 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    ringOfFortune = {
+        objectID = id.Obj.LUCKY_ONYX_RING,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
+    luckOfTheDwarves = {
+        objectID = id.Obj.LUCKY_RING_DWARVES,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
+    hazelmeresSignetRing = {
+        objectID = id.Obj.LUCKY_HAZELMERES_RING,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
