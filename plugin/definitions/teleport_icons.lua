@@ -223,6 +223,10 @@ return {
         objectID = id.Obj.FEVER_PIRACY_BOOK,
         size = 40
     },
+    pirateSpellSheet = {
+        objectID = id.Obj.ACS_PIRATE_SPELL_SHEET,
+        size = 40
+    },
     lupeTeleport = {
         normal = { image = Plugin.resources.icons.lupe_teleport },
         hovered = { image = Plugin.resources.icons.lupe_teleport },
