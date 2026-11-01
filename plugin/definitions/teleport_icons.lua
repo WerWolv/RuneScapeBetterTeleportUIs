@@ -966,6 +966,12 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    bogolinTelepearl = {
+        objectID = id.Obj.FENMOOR_TELEPORT_PEARL,
+        size = 48,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },

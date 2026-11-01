@@ -128,6 +128,10 @@ return {
         module = "maps/digsite_pendant",
     },
     {
+        name = "Bogolin Telepearl",
+        module = "maps/bogolin_telepearl",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
