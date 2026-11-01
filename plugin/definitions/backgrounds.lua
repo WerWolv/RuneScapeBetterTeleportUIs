@@ -8,6 +8,11 @@
 -- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
+    tzhaarCity = {
+        image = Plugin.resources.backgrounds.tzhaar_city,
+        width = 1024,
+        height = 520,
+    },
     dorgeshKaan = {
         image = Plugin.resources.backgrounds.dorgesh_kaan,
         width = 418,
