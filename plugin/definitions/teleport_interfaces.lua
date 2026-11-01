@@ -124,6 +124,10 @@ return {
         module = "maps/tokkul_zo",
     },
     {
+        name = "Digsite Pendant",
+        module = "maps/digsite_pendant",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },

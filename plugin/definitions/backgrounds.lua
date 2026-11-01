@@ -8,6 +8,12 @@
 -- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
+    digsite = {
+        image = Plugin.resources.backgrounds.digsite,
+        -- Destination points can be measured directly on the original screenshot.
+        width = 413,
+        height = 547,
+    },
     tzhaarCity = {
         image = Plugin.resources.backgrounds.tzhaar_city,
         width = 1024,

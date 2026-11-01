@@ -14,6 +14,7 @@
     "render:havenhythe": "node source/render-parchment.cjs havenhythe",
     "render:dorgesh-kaan": "node source/render-parchment.cjs dorgesh_kaan",
     "render:tzhaar-city": "node source/render-parchment.cjs tzhaar_city",
+    "render:digsite": "node source/render-parchment.cjs digsite",
     "check": "node --check source/render-parchment.cjs && node --check source/map-profiles.cjs && node --check source/parchment-renderer.cjs"
   },
   "dependencies": {
