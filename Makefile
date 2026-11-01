@@ -2,26 +2,48 @@
 
 PACKAGE_NAME    := BetterTeleportUIs
 VERSION         := 1.0.0
+PREVIEW         := 1
 
 BASE_DIR    := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 SOURCE_DIR  := $(BASE_DIR)plugin
 BUILD_DIR   := $(BASE_DIR)build
+STAGE_DIR   := $(BUILD_DIR)/package
 
 SOURCE_FILES := $(shell find $(SOURCE_DIR) -type f)
-OUTPUT_NAME  := $(PACKAGE_NAME)_$(VERSION).zip
-ZIP_FILE     := $(BUILD_DIR)/$(OUTPUT_NAME)
+PACKAGE_DOCS := $(BASE_DIR)README.md $(BASE_DIR)LICENSE.md
 
-.PHONY: all package
+ifeq ($(PREVIEW),1)
+	VERSION_FULL := $(VERSION)-WIP
+else
+	VERSION_FULL := $(VERSION)
+endif
+
+OUTPUT_NAME  := $(PACKAGE_NAME)_$(VERSION_FULL).zip
+ZIP_FILE     := $(BUILD_DIR)/$(OUTPUT_NAME)
+STUBS_PATH   := $(BUILD_DIR)/stubs
+
+.PHONY: all package stubs
 
 all:
-	@echo "Available goals: package"
+	@echo "Available goals: package, stubs"
 
 $(BUILD_DIR):
 	@mkdir -p "$@"
 
-$(ZIP_FILE): $(SOURCE_FILES) | $(BUILD_DIR)
-	@cd "$(SOURCE_DIR)" && \
+$(ZIP_FILE):$(SOURCE_FILES) $(PACKAGE_DOCS) $(BASE_DIR)/Makefile | $(BUILD_DIR)
+	@rm -rf "$(STAGE_DIR)"
+	@mkdir -p "$(STAGE_DIR)/licenses"
+	@cp -a "$(SOURCE_DIR)/." "$(STAGE_DIR)/"
+	@cp "$(BASE_DIR)README.md" "$(STAGE_DIR)/README.md"
+	@cp "$(BASE_DIR)LICENSE.md" "$(STAGE_DIR)/licenses/LICENSE.md"
+
+	@cd "$(STAGE_DIR)" && \
 		zip -qr -FS "$@" .
 	@echo "Packaged plugin into $(OUTPUT_NAME)"
 
 package: $(ZIP_FILE)
+
+stubs:
+	@rm -rf $(STUBS_PATH)
+	@git clone https://github.com/FriendlyDevelopment/runescape-api-stubs $(STUBS_PATH)
+	$(shell jq '."workspace.library" = [ "$(STUBS_PATH)/types.lua", "$(STUBS_PATH)/generated/" ]' $(STUBS_PATH)/.luarc.json > $(BASE_DIR)/.luarc.json)

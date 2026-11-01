@@ -1,0 +1,29 @@
+name: Package pre-release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make package
+      - name: Write release notes
+        run: |
+          printf 'Latest automated build.\n\nCommit: %s\n\n' "$GITHUB_SHA" > build/release-notes.md
+          git log -1 --format=%B >> build/release-notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: prerelease
+          name: Pre-release
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          body_path: build/release-notes.md
+          overwrite_files: true
+          files: build/*.zip
