@@ -9,6 +9,7 @@ local BackgroundView = require("impl/background_view")
 local ButtonIcon = require("impl/button_icon")
 local components = require("impl/components")
 local text = require("impl/text")
+local utils = require("impl/utils")
 local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
@@ -26,6 +27,7 @@ ModalChoiceMenu.nativeInterface = {
 }
 local knownTitles = setmetatable({}, {__mode = "k"})
 local frameInset, hitboxScale = 5, 0.75
+local modalHost
 
 -- Gather visible text without visiting a native component twice.
 function ModalChoiceMenu:ReadOptionLabels(root, index)
@@ -245,12 +247,46 @@ function ModalChoiceMenu:GetTransitionState(nextMenu, match)
     }
 end
 
--- Modal windows already have a host large enough for their replacement content.
+-- Capture the native modal host before resizing, including its outer-frame padding.
 function ModalChoiceMenu:GetLayoutHost(window)
-    return window.parent, {}
+    local frame = assert(ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__MODAL_WINDOW))
+    local content = assert(ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__MODAL_WINDOW_CONTENT))
+    assert(window.parent == content and content.parent == frame, "Unexpected modal host hierarchy")
+    modalHost = {
+        content = content,
+        width = frame.width - content.width,
+        height = frame.height - content.height,
+        contentWidth = content.width,
+        contentHeight = content.height,
+    }
+    return content, {frame, content}, modalHost
 end
 
-function ModalChoiceMenu:UpdateLayoutHost(session) end
+-- CHOICE_V2 shares the native size baseline, even while an enlarged modal is open.
+function ModalChoiceMenu:GetModalHostSize()
+    local content = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__MODAL_WINDOW_CONTENT)
+    if content ~= nil and modalHost ~= nil and components.Key(content) == components.Key(modalHost.content) then
+        return modalHost.contentWidth, modalHost.contentHeight
+    end
+    return content and content.width or 512, content and content.height or 334
+end
+
+function ModalChoiceMenu:UpdateLayoutHost(session, sizeMultiplier)
+    local multiplier = sizeMultiplier or 1
+    if multiplier == 1 and not session.hostResized then return end
+    local frame, content = session.hostContainers[1], session.layoutParent
+    local viewport = assert(ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT))
+    local padding = session.hostPadding
+    local insetX = session.left + session.right + 16
+    local insetY = session.top + session.bottom + 16
+    local width = (padding.contentWidth - insetX) * multiplier + insetX
+    local height = (padding.contentHeight - insetY) * multiplier + insetY
+    width = math.max(1, math.floor(math.min(width, viewport.width - padding.width)))
+    height = math.max(1, math.floor(math.min(height, viewport.height - padding.height)))
+    frame:SetSize(width + padding.width, height + padding.height)
+    content:SetSize(width, height)
+    session.hostResized = true
+end
 
 -- Measure native margins or reuse the current page group's placement before attaching tooltips.
 function ModalChoiceMenu:BeginInterface(placement)
@@ -359,7 +395,7 @@ end
 -- Track overrides for maps and every modal subclass, including partially failed updates.
 function ModalChoiceMenu:Update(snapshot)
     self.session.nativeLayout:Apply(function()
-        self.interface:UpdateLayoutHost(self.session)
+        self.interface:UpdateLayoutHost(self.session, self:GetSizeMultiplier())
         TeleportMenu.Update(self, snapshot)
     end)
 end
@@ -392,7 +428,14 @@ function ModalChoiceMenu:HeaderLayout()
     return {left = left, right = right, width = left + width + right}
 end
 
--- Supply the header's minimum width to the crop, then use the original uniform map scaling.
+-- Definitions can enlarge or shrink a map while keeping its native header and icons readable.
+function ModalChoiceMenu:GetSizeMultiplier()
+    local multiplier = self.session.menu.group.sizeMultiplier or 1
+    assert(utils.IsFinite(multiplier) and multiplier > 0, "Map sizeMultiplier must be a positive number")
+    return multiplier
+end
+
+-- Supply the header's minimum width to the crop, then scale uniformly within the host.
 function ModalChoiceMenu:CalculateLayout()
     local session = self.session
     self:UpdateTitle()
@@ -401,7 +444,7 @@ function ModalChoiceMenu:CalculateLayout()
     session.menu.cropMinWidth = nil
     local crop = geometry.Bounds(session.menu.background)
     local parent = session.layoutParent
-    local maxWidth = math.min(math.max(constants.maxWidth, minWidth),
+    local maxWidth = math.min(math.max(constants.maxWidth * self:GetSizeMultiplier(), minWidth),
         parent.width - session.left - session.right - 16)
     local scale = math.min(maxWidth / crop.width,
         (parent.height - session.top - session.bottom - 16) / crop.height)
@@ -571,6 +614,7 @@ function ModalChoiceMenu:ReleaseInterface()
         self.session.tooltipLayer = nil
     end
     if self.session.nativeLayout ~= nil then self.session.nativeLayout:Restore() end
+    if modalHost == self.session.hostPadding then modalHost = nil end
 end
 
 return ModalChoiceMenu
