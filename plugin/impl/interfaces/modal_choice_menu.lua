@@ -13,11 +13,22 @@ local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
 ModalChoiceMenu.supportsOriginalUI = true
+ModalChoiceMenu.nativeInterface = {
+    id = id.Interface.MODAL_CHOICE,
+    prefix = "MODAL_CHOICE__",
+    window = "MODAL_DIALOG_WINDOW",
+    content = "MODAL_DIALOG_WINDOW_CONTENT",
+    title = "TITLE",
+    close = "MODAL_DIALOG_WINDOW_CLOSE_BUTTON",
+    frame = {"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"},
+    optionCount = 10,
+    lastStaticID = 45,
+}
 local knownTitles = setmetatable({}, {__mode = "k"})
 local frameInset, hitboxScale = 5, 0.75
 
 -- Gather visible text without visiting a native component twice.
-local function collectLabels(root)
+function ModalChoiceMenu:ReadOptionLabels(root, index)
     local labels = {}
 
     components.Walk(root, function(control)
@@ -43,44 +54,68 @@ local function collectLabels(root)
     return labels
 end
 
--- Look up a named component belonging to MODAL_CHOICE.
-local function component(name)
-    local componentID = id.Component["MODAL_CHOICE__" .. name]
+-- Look up a named component in this menu's native interface.
+local function component(menu, name)
+    if name == nil then return nil end
+    local componentID = id.Component[menu.interface.nativeInterface.prefix .. name]
     return componentID and ui.Interfaces:GetComponent(componentID) or nil
 end
 
--- Read the interface once for all registered modal-choice menu candidates.
+-- Some choice dialogs create their heading dynamically inside the border.
+local function titleComponent(menu)
+    local native = menu.interface.nativeInterface
+    local title = component(menu, native.title)
+    local parent = component(menu, native.titleParent)
+    if title == nil and parent ~= nil then
+        components.Walk(parent, function(control)
+            if title == nil and control.type == ui.ComponentType.LABEL
+                and control.dynamicID >= 0 and control.visibleGlobal then
+                title = control
+            end
+        end)
+    end
+    return title
+end
+
+local function isWithin(control, parent)
+    while control ~= nil and control ~= parent do control = control.parent end
+    return control ~= nil
+end
+
+-- Read the interface once for all registered choice-menu candidates.
 function ModalChoiceMenu:ReadInterface()
-    local window = component("MODAL_DIALOG_WINDOW")
-    local content = component("MODAL_DIALOG_WINDOW_CONTENT")
+    local native = self.interface.nativeInterface
+    local window = component(self, native.window)
+    local content = component(self, native.content)
     if window == nil or not window.visibleGlobal then
         self:ReportMatch(nil)
         return nil
     end
-    if content == nil then
-        self:ReportMatch({"Not matched: missing MODAL_DIALOG_WINDOW_CONTENT."})
+    if content == nil or not isWithin(content, window) then
+        self:ReportMatch({"Not matched: missing " .. native.content .. " inside " .. native.window .. "."})
+        return nil
+    end
+    local options = native.options and component(self, native.options) or window
+    if options == nil or (native.options ~= nil and options.parent ~= content) then
+        self:ReportMatch({"Not matched: missing OPTIONS inside " .. native.content .. "."})
         return nil
     end
     local rows = {}
-    for index = 1, 10 do
-        local row = component("OPTION_" .. index)
-        local click = component("OPTION_CLICK_" .. index)
+    for index = 1, native.optionCount do
+        local row = component(self, "OPTION_" .. index)
+        local click = native.directButtons and row or component(self, "OPTION_CLICK_" .. index)
         if row ~= nil and row.visibleGlobal then
             if click == nil then
                 self:ReportMatch({"Not matched: visible OPTION_" .. index .. " has no OPTION_CLICK_" .. index .. "."})
                 return nil
             end
-            local labels = collectLabels(row)
-            local ancestor = click
-            while ancestor ~= nil and ancestor ~= row do ancestor = ancestor.parent end
-            if ancestor == nil then
+            local labels = self.interface:ReadOptionLabels(row, index)
+            if not isWithin(click, row) then
                 self:ReportMatch({"Not matched: OPTION_CLICK_" .. index .. " is not a child of OPTION_" .. index .. "."})
                 return nil
             end
-            ancestor = row
-            while ancestor ~= nil and ancestor ~= window do ancestor = ancestor.parent end
-            if ancestor == nil then
-                self:ReportMatch({"Not matched: OPTION_" .. index .. " is outside MODAL_DIALOG_WINDOW."})
+            if not isWithin(row, options) then
+                self:ReportMatch({"Not matched: OPTION_" .. index .. " is outside " .. (native.options or native.window) .. "."})
                 return nil
             end
             rows[#rows + 1] = {row = row, click = click, labels = labels, index = index}
@@ -90,14 +125,14 @@ function ModalChoiceMenu:ReadInterface()
         self:ReportMatch({"Not matched: no visible option rows were found."})
         return nil
     end
-    local title = component("TITLE")
+    local title = titleComponent(self)
     local prompt = title ~= nil and title.type == ui.ComponentType.LABEL and text.Clean(title.content) or nil
     return {
         window = window,
         content = content,
         nativeRows = rows,
         prompt = prompt,
-        closeButton = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON"),
+        closeButton = component(self, native.close),
     }
 end
 
@@ -135,20 +170,27 @@ function ModalChoiceMenu:IsDisabled(row)
 end
 
 -- Resolve a cached heading against the currently loaded interface.
-local function currentTitle(title)
+local function currentTitle(interfaceID, title)
     if title.categoryID >= 0 and title.dynamicID >= 0 then
-        return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID, title.categoryID, title.dynamicID)
+        return ui.Interfaces:GetComponent(interfaceID, title.staticID, title.categoryID, title.dynamicID)
     end
-    return ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, title.staticID)
+    return ui.Interfaces:GetComponent(interfaceID, title.staticID)
 end
 
 -- Replace generic headings while remembering renamed controls across menu sessions.
 function ModalChoiceMenu:UpdateTitle()
     local session = self.session
+    local native = self.interface.nativeInterface
+    -- The identified heading may use a menu-specific prompt such as "Teleport to where?".
+    if session.title ~= nil then
+        session.title.control.content = session.menu.title
+        if native.titleFont ~= nil then session.title.control.font = native.titleFont end
+        knownTitles[session.title.control] = true
+    end
     if #session.titles > 0 then
         local valid = true
         for _, title in ipairs(session.titles) do
-            local control = currentTitle(title)
+            local control = currentTitle(native.id, title)
             if control ~= title.control then valid = false; break end
             if title.header then control.headerText.content = session.menu.title
             else control.content = session.menu.title end
@@ -158,7 +200,7 @@ function ModalChoiceMenu:UpdateTitle()
     end
     local visited = {}
     local function inspect(control)
-        if control.interfaceID ~= id.Interface.MODAL_CHOICE then
+        if control.interfaceID ~= native.id then
             return false
         end
 
@@ -180,8 +222,8 @@ function ModalChoiceMenu:UpdateTitle()
         end
     end
     -- Generic headings can live outside the named TITLE component.
-    for staticID = 0, 45 do
-        local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
+    for staticID = 0, native.lastStaticID do
+        local control = ui.Interfaces:GetComponent(native.id, staticID)
         if control ~= nil then
             components.Walk(control, inspect, visited)
         end
@@ -203,21 +245,33 @@ function ModalChoiceMenu:GetTransitionState(nextMenu, match)
     }
 end
 
+-- Modal windows already have a host large enough for their replacement content.
+function ModalChoiceMenu:GetLayoutHost(window)
+    return window.parent, {}
+end
+
+function ModalChoiceMenu:UpdateLayoutHost(session) end
+
 -- Measure native margins or reuse the current page group's placement before attaching tooltips.
 function ModalChoiceMenu:BeginInterface(placement)
     local session = self.session
+    local native = self.interface.nativeInterface
     local menu = session.menu
     local window, content = menu.window, menu.content
+    session.layoutParent, session.hostContainers, session.hostPadding = self.interface:GetLayoutHost(window)
     -- Include headings outside the window, which UpdateTitle can also modify.
     local controls, visited = {}, {}
     local function capture(control)
-        if control.interfaceID ~= id.Interface.MODAL_CHOICE then return false end
+        if control.interfaceID ~= native.id then return false end
         controls[#controls + 1] = control
     end
     components.Walk(window, capture, visited)
-    for staticID = 0, 45 do
-        local control = ui.Interfaces:GetComponent(id.Interface.MODAL_CHOICE, staticID)
+    for staticID = 0, native.lastStaticID do
+        local control = ui.Interfaces:GetComponent(native.id, staticID)
         if control ~= nil then components.Walk(control, capture, visited) end
+    end
+    for _, control in ipairs(session.hostContainers) do
+        controls[#controls + 1] = control
     end
     session.nativeLayout = NativeLayout.FromControls(controls)
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
@@ -228,7 +282,9 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.top = math.max(32, contentPos.y - windowPos.y)
     session.right = frameInset
     session.bottom = frameInset
-    session.centerX, session.centerY = window.x + window.width / 2, window.y + window.height / 2
+    local layoutOrigin = session.layoutParent.xyGlobal
+    session.centerX = windowPos.x - layoutOrigin.x + window.width / 2
+    session.centerY = windowPos.y - layoutOrigin.y + window.height / 2
     if placement ~= nil then
         session.left, session.top = placement.left, placement.top
         session.right, session.bottom = placement.right, placement.bottom
@@ -238,8 +294,8 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.frame = {}
 
     -- Frame artwork can be inset from the window bounds, especially the background fill.
-    for _, name in ipairs({"MODAL_DIALOG_WINDOW_BACKGROUND", "MODAL_DIALOG_WINDOW_BORDER"}) do
-        local control = component(name)
+    for _, name in ipairs(native.frame) do
+        local control = component(self, name)
 
         if control ~= nil then
             local position = control.xyGlobal
@@ -257,7 +313,7 @@ function ModalChoiceMenu:BeginInterface(placement)
     for _, row in ipairs(menu.rows) do
         if not row.locked then session.rows[#session.rows + 1] = row end
     end
-    local close = component("MODAL_DIALOG_WINDOW_CLOSE_BUTTON")
+    local close = component(self, native.close)
     if close ~= nil then
         local position = close.xyGlobal
         session.close = {
@@ -265,7 +321,7 @@ function ModalChoiceMenu:BeginInterface(placement)
             top = position.y - windowPos.y, width = close.width, height = close.height,
         }
     end
-    local title = component("TITLE")
+    local title = titleComponent(self)
     if title ~= nil and title.type == ui.ComponentType.LABEL then
         local position = title.xyGlobal
         session.title = {
@@ -303,6 +359,7 @@ end
 -- Track overrides for maps and every modal subclass, including partially failed updates.
 function ModalChoiceMenu:Update(snapshot)
     self.session.nativeLayout:Apply(function()
+        self.interface:UpdateLayoutHost(self.session)
         TeleportMenu.Update(self, snapshot)
     end)
 end
@@ -343,7 +400,7 @@ function ModalChoiceMenu:CalculateLayout()
     local minWidth = math.max(1, header.width - session.left - session.right)
     session.menu.cropMinWidth = nil
     local crop = geometry.Bounds(session.menu.background)
-    local parent = session.window.parent
+    local parent = session.layoutParent
     local maxWidth = math.min(math.max(constants.maxWidth, minWidth),
         parent.width - session.left - session.right - 16)
     local scale = math.min(maxWidth / crop.width,
@@ -366,12 +423,14 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     local session = self.session
     self:UpdateTitle()
     local window, content = session.window, session.content
-    local parent = window.parent
+    local parent = session.layoutParent
     local windowWidth, windowHeight = width + session.left + session.right, height + session.top + session.bottom
-    window:SetSize(windowWidth, windowHeight)
-    window:SetPos(
-        math.max(8, math.min(math.floor(session.centerX - windowWidth / 2), parent.width - windowWidth - 8)),
-        math.max(8, math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8)))
+    local parentPosition = parent.xyGlobal
+    local x = parentPosition.x + math.max(8,
+        math.min(math.floor(session.centerX - windowWidth / 2), parent.width - windowWidth - 8))
+    local y = parentPosition.y + math.max(8,
+        math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8))
+    setRect(window, x, y, windowWidth, windowHeight)
     local origin = window.xyGlobal
     setRect(content, origin.x + session.left, origin.y + session.top, width, height)
     for _, frame in ipairs(session.frame) do
@@ -422,7 +481,8 @@ end
 function ModalChoiceMenu:LayoutRow(entry, x, y, width, height)
     setRect(entry.row, x, y, width, height)
     entry.row.alpha = 0
-    entry.row.clickthrough = true
+    entry.row.clickthrough = entry.row ~= entry.click
+    if entry.row == entry.click then self:HideRowArtwork(entry) end
     local chain, control = {}, entry.click
     while control ~= entry.row do
         chain[#chain + 1] = control

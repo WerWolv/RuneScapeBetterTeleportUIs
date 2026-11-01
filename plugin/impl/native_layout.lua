@@ -26,6 +26,7 @@ local function readState(control)
 
     if control.type == ui.ComponentType.LABEL then
         state.content = control.content
+        state.font = control.font
         state.maxLines = control.maxLines
     end
 
@@ -160,6 +161,10 @@ local function restore(control, change)
 
     if restored.content then
         control.content = state.content
+    end
+
+    if restored.font then
+        control.font = state.font
     end
 
     if restored.maxLines then

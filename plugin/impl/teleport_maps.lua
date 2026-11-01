@@ -3,6 +3,8 @@ local matcher = require("impl/destination_matcher")
 local settings = require("definitions/constants")
 local userSettings = require("impl/settings")
 local MenuUIToggle = require("impl/menu_ui_toggle")
+local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
 local teleportMaps = {}
 local interfaces
 
@@ -133,11 +135,7 @@ function teleportMaps.Start()
     if interfaces ~= nil then return end
     local discovered = {}
     local byInterface, keys = {}, {}
-    for _, class in ipairs(registry) do
-        local menu = class:New()
-        assert(type(menu.key) == "string", "Teleport menu key must be a string, got " .. tostring(menu.key))
-        assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
-        keys[menu.key] = true
+    local function register(menu)
         local interface = assert(menu.interface, "Teleport menu must inherit an interface class")
         local entry = byInterface[interface]
         if entry == nil then
@@ -146,6 +144,19 @@ function teleportMaps.Start()
             discovered[#discovered + 1] = entry
         end
         entry.menus[#entry.menus + 1] = menu
+    end
+    for _, class in ipairs(registry) do
+        local menu = class:New()
+        assert(type(menu.key) == "string", "Teleport menu key must be a string, got " .. tostring(menu.key))
+        assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
+        keys[menu.key] = true
+        register(menu)
+        -- Both dialogs use the same definitions/settings, but own independent sessions.
+        if menu.interface == ModalChoiceMenu then
+            local choiceMenu = class:New()
+            choiceMenu.interface = ChoiceV2Menu
+            register(choiceMenu)
+        end
     end
     for _, entry in ipairs(discovered) do
         table.sort(entry.menus, function(a, b) return a.key < b.key end)
