@@ -40,10 +40,10 @@ function components.Walk(root, callback, visited)
 end
 
 -- Inventory artwork is passive and never displays the native quantity overlay.
-function components.ItemSprite(parent, objectID)
+function components.ItemSprite(parent, objectID, objectCount)
     local sprite = ui.Sprite.new(parent)
     sprite.associatedObjectID = objectID
-    sprite.associatedObjectQuantity = 1
+    sprite.associatedObjectQuantity = objectCount or 1
     sprite.associatedObjectQuantityMode = ui.ObjectQuantityDisplayMode.NEVER
     sprite.clickthrough = true
 

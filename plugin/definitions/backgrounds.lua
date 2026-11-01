@@ -8,6 +8,11 @@
 -- - crop (optional): x, y, width and height of the crop area, or a function returning it (nil for the full image)
 
 return {
+    havenhythe = {
+        image = Plugin.resources.backgrounds.havenhythe,
+        width = 1024,
+        height = 724,
+    },
     parchment = {
         sprites = {{ id.Sprite.CHRISTMAS_HUB_EVENT_INFO_PARCHMENT }},
         width = 300,

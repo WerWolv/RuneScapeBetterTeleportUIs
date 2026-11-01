@@ -154,6 +154,9 @@ async function renderMap(profile) {
             candidates[index] = difference < profile.oceanTolerance || bridgeWater?.[index] >= 128 ? 1 : 0;
         }
 
+        // Some templates use a distinct water colour for lakes and bridge-separated rivers too.
+        if (profile.includeInlandWater) return candidates;
+
         // Only border-connected water is sea. Grey inland buildings must not acquire
         // blue shorelines, and islands must remain excluded from the ocean mask.
         const ocean = new Uint8Array(PIXEL_COUNT);
@@ -366,6 +369,13 @@ async function renderMap(profile) {
         const localBrightness = brightness(smoothColor);
         const relief = clamp((localBrightness - 58) / 170, 0, 1);
         let color = mixColors(PALETTE.lowTerrain, PALETTE.highTerrain, relief * 0.85);
+
+        // Optional source-colour pigment keeps distinct biomes instead of converting all land to sepia.
+        if (profile.sourceColorWash) {
+            const wash = profile.sourceColorWash;
+            const pigment = mixColors(smoothColor, PALETTE.paper, wash.paper);
+            color = mixColors(color, pigment, wash.opacity);
+        }
 
         // Broad pale terrain is snow; thin white architectural lines become ink.
         const neutral = 1 - Math.min(1, colorSpread(smoothColor) / 48);
