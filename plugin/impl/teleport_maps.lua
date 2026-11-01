@@ -74,11 +74,22 @@ end
 
 -- Each native interface owns a session; one open interface must not starve another.
 local function updateInterface(entry)
+    local snapshot
     local ok, message = pcall(function()
         if entry.active ~= nil and not userSettings.Get(entry.active.enabledSetting) then
             releaseInterface(entry)
         end
-        local snapshot = entry.interface:ReadInterface()
+        snapshot = entry.interface:ReadInterface()
+        -- Retrying a failed allocation every Draw can exhaust more IDs. Keep the
+        -- restored native dialog until it closes or a different window replaces it.
+        if entry.failedWindow ~= nil then
+            if snapshot ~= nil and snapshot.window == entry.failedWindow then return end
+            if snapshot == nil then
+                local readable, visible = pcall(function() return entry.failedWindow.visibleGlobal end)
+                if readable and visible then return end
+            end
+            entry.failedWindow = nil
+        end
         local winner, match
         if snapshot ~= nil then winner, match = selectMenu(entry, snapshot) end
         if winner == nil then
@@ -119,6 +130,11 @@ local function updateInterface(entry)
     if not ok then
         releaseInterface(entry)
         message = tostring(message)
+        local normalized = message:lower()
+        if snapshot ~= nil and (normalized:find("invalid dynamic id", 1, true)
+            or normalized:find("invalid dynamicid", 1, true)) then
+            entry.failedWindow = snapshot.window
+        end
         if message ~= entry.lastLayoutError then
             print("Unable to embed teleport map: " .. message)
             entry.lastLayoutError = message

@@ -9,6 +9,10 @@ local collections = {
     [ui.ComponentType.GROUP_BOX]      = true,
 }
 
+function components.IsCollection(control)
+    return collections[control.type] == true
+end
+
 -- Native wrappers may refer to the same component through multiple collection paths.
 function components.Key(control)
     return table.concat({ control.interfaceID, control.staticID, control.categoryID, control.dynamicID }, ":")
