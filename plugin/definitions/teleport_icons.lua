@@ -227,6 +227,10 @@ return {
         objectID = id.Obj.ACS_PIRATE_SPELL_SHEET,
         size = 40
     },
+    dorgeshKaanSphere = {
+        objectID = id.Obj.DORGESH_TELEPORT_ARTIFACT,
+        size = 40
+    },
     lupeTeleport = {
         normal = { image = Plugin.resources.icons.lupe_teleport },
         hovered = { image = Plugin.resources.icons.lupe_teleport },
