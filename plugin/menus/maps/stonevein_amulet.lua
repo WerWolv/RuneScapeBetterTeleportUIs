@@ -9,6 +9,7 @@ function StoneveinAmulet:Define()
         background = backgrounds.havenhythe,
         noBackgroundCrop = true,
         icons = teleportIcons.remnantEnergy,
+        sizeMultiplier = 1.25,
         entries = {
             ["1. Divine fall"] = {
                 point = {x = 729, y = 250}
