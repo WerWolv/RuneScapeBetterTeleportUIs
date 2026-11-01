@@ -136,6 +136,10 @@ return {
         module = "maps/luck_rings",
     },
     {
+        name = "Pharaoh's Sceptre",
+        module = "maps/pharaohs_sceptre",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
