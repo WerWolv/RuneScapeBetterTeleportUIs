@@ -73,6 +73,20 @@ return {
         },
     },
     {
+        tab = "Nexus",
+        label = "Custom teleport categories",
+        description = "Create categories and choose the teleports included in each one",
+        fillHeight = true,
+        settings = {
+            {
+                key = "nexusCustomCategories",
+                type = "impl/settings/teleport_categories",
+                default = "",
+                categories = require("definitions/nexus_categories"),
+            },
+        },
+    },
+    {
         tab = "Interfaces",
         label = "Available UI enhancements",
         description = "Options to enable or disable each UI change individually",
