@@ -35,6 +35,21 @@ local interfaceSettings = {
             },
         },
     },
+    ["maps/jewellery_box"] = {
+        {
+            label = "Custom teleport categories",
+            description = "Create categories and choose the teleports included in each one",
+            fillHeight = true,
+            settings = {
+                {
+                    key = "jewelleryBoxCustomCategories",
+                    type = "impl/settings/teleport_categories",
+                    default = "",
+                    categories = require("definitions/jewellery_box_categories"),
+                },
+            },
+        },
+    },
     ["maps/teleport_nexus"] = {
         {
             label = "Custom teleport categories",

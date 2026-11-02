@@ -899,6 +899,18 @@ return {
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
     },
+    skillsNecklace = {
+        objectID = id.Obj.JEWL_NECKLACE_OF_SKILLS_4,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
+    ringOfWealth = {
+        objectID = id.Obj.RING_OF_WEALTH_4,
+        size = 32,
+        shadowColor = 0x00000066,
+        shadowColorHovered = 0x00000066
+    },
     gamesNecklace = {
         objectID = id.Obj.NECKLACE_OF_MINIGAMES_8,
         size = 32,

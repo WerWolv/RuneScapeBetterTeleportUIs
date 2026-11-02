@@ -1,5 +1,9 @@
 return {
     {
+        name = "Jewellery Boxes",
+        module = "maps/jewellery_box",
+    },
+    {
         name = "Teleport Nexus",
         module = "maps/teleport_nexus",
     },

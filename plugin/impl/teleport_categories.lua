@@ -94,9 +94,10 @@ function TeleportCategories.NameError(name, data, builtins, exceptID)
     end
 end
 
-function TeleportCategories.New(definition)
+function TeleportCategories.New(definition, destinations)
     return setmetatable({
         definition = definition,
+        destinations = destinations,
         selected = PersistentDB:GetString(definition.selectionKey) or "all",
     }, TeleportCategories)
 end
@@ -123,6 +124,27 @@ function TeleportCategories:Update(value)
         self.byKey[key] = category
     end
 
+    -- A map only offers categories containing one of its native destinations.
+    -- Keep this independent of search and the currently selected category.
+    if self.destinations ~= nil then
+        local choices = {}
+        for _, choice in ipairs(self.choices) do
+            local populated = choice.value == "all"
+            for _, destination in ipairs(self.destinations) do
+                if populated or self:Includes(destination, choice.value) then
+                    populated = true
+                    break
+                end
+            end
+            if populated then
+                choices[#choices + 1] = choice
+            else
+                self.byKey[choice.value] = nil
+            end
+        end
+        self.choices = choices
+    end
+
     local labels = {}
 
     for _, choice in ipairs(self.choices) do
@@ -147,19 +169,20 @@ function TeleportCategories:Select(key)
     end
 end
 
-function TeleportCategories:Includes(destination)
-    if self.selected == "all" then
+function TeleportCategories:Includes(destination, key)
+    local selected = key or self.selected
+    if selected == "all" then
         return true
     end
 
-    local custom = self.byKey[self.selected]
+    local custom = self.byKey[selected]
 
     if type(custom) == "table" then
         return custom.destinations[destination.categoryKey] == true
     end
 
     for _, key in ipairs(destination.categories or {}) do
-        if key == self.selected then
+        if key == selected then
             return true
         end
     end
