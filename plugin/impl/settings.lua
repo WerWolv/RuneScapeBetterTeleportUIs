@@ -36,19 +36,20 @@ function settings.Set(key, value)
 end
 
 local function clearView()
-    if parent ~= nil then
-        pcall(function() parent:Unsubscribe(ui.Hook.ONRESIZE, eventID) end)
+    local previousParent, previousView = parent, view
+    parent, view = nil, nil
+
+    if previousParent ~= nil then
+        pcall(function() previousParent:Unsubscribe(ui.Hook.ONRESIZE, eventID) end)
     end
 
     for _, group in ipairs(groups) do
         group:Unmount()
     end
 
-    if view ~= nil then
-        pcall(function() view:Destroy() end)
+    if previousView ~= nil then
+        pcall(function() previousView:Destroy() end)
     end
-
-    parent, view = nil, nil
 end
 
 local function buildSettings(event)
@@ -71,6 +72,7 @@ local function buildSettings(event)
         widthAnchor = 1,
         heightAnchor = 1,
         onChange = function()
+            if view == nil then return end
             for _, group in ipairs(groups) do group:Refresh() end
         end,
     })

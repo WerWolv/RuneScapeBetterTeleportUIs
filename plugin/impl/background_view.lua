@@ -28,7 +28,7 @@ function backgroundView:ShowVignette(option, width, height)
     end
 
     if self.vignette == nil then
-        self.vignette = ui.Layer.new(self.artwork)
+        self.vignette = ui.Layer.new(self.layer)
         self.vignette.clickthrough = true
         self.vignetteStrips = {}
     end

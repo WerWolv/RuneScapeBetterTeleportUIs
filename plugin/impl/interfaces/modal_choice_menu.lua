@@ -409,7 +409,7 @@ end
 -- Track overrides for maps and every modal subclass, including partially failed updates.
 function ModalChoiceMenu:Update(snapshot)
     self.session.nativeLayout:Apply(function()
-        self.interface:UpdateLayoutHost(self.session, self:GetSizeMultiplier())
+        self:UpdateLayoutHost(self.session, self:GetSizeMultiplier())
         TeleportMenu.Update(self, snapshot)
     end)
 end
@@ -595,6 +595,13 @@ end
 -- Refresh icon states and show only the hovered destination's tooltip.
 function ModalChoiceMenu:UpdateVisuals(layout, hovered)
     self.iconView:Update(self.session.menu, hovered)
+
+    -- Apply the edge shading to icons and badges, including the raised hover marker.
+    local vignette = self.backgroundView.vignette
+    if vignette ~= nil then
+        vignette:MoveToFront()
+    end
+
     self:UpdateTooltips(hovered)
 end
 

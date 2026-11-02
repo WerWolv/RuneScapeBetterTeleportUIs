@@ -23,7 +23,7 @@ function HotkeyBadge.New(parent, key)
     label:SetSize(0, 0, 0.97, 1.0)
     label.content = key ~= nil and tostring(key) or ""
 
-    return setmetatable({ root = root, label = label }, HotkeyBadge)
+    return setmetatable({ root = root, background = background, label = label }, HotkeyBadge)
 end
 
 -- Menus supply their anchor and state; all badge styling and placement lives here.
@@ -63,9 +63,15 @@ function HotkeyBadge:Update(anchor, options)
         disabled = anchor.enabled == false
     end
 
-    root.alpha = disabled and 0.6 or 1
     self.label.rgba = disabled and 0x9D978AFF or 0xFFE3A3FF
+    self:SetAlpha(disabled and 0.6 or 1)
     self:MoveToFront()
+end
+
+-- Native layers do not apply their opacity to the graphics they contain.
+function HotkeyBadge:SetAlpha(alpha)
+    self.background.alpha = alpha
+    self.label.alpha = alpha
 end
 
 function HotkeyBadge:Hide()
