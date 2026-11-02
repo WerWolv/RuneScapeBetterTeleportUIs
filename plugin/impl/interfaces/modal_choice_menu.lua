@@ -489,13 +489,14 @@ function ModalChoiceMenu:LayoutWindow(width, height)
         math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8))
     setRect(window, x, y, windowWidth, windowHeight)
     local origin = window.xyGlobal
-    setRect(content, origin.x + session.left, origin.y + session.top, width, height)
     for _, frame in ipairs(session.frame) do
         setRect(frame.control,
             origin.x + frame.left, origin.y + frame.top,
             math.max(1, windowWidth - frame.left - frame.right),
             math.max(1, windowHeight - frame.top - frame.bottom))
     end
+    -- Content may be nested inside the background; position it after its frame ancestors.
+    setRect(content, origin.x + session.left, origin.y + session.top, width, height)
     local close = session.close
     if close ~= nil then
         setRect(close.control, origin.x + windowWidth - close.width - close.right,
@@ -512,7 +513,7 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     local expanded = {}
     for _, entry in ipairs(session.rows) do
         local ancestors, ancestor = {}, entry.row.parent
-        while ancestor ~= nil and ancestor ~= window do
+        while ancestor ~= nil and ancestor ~= window and ancestor ~= content do
             ancestors[#ancestors + 1] = ancestor
             ancestor = ancestor.parent
         end
