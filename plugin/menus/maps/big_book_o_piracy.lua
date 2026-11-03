@@ -1,7 +1,8 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local PirateSpellSheet = ModalChoiceMenu:Extend("pirateSpellSheet")
+local PirateSpellSheet = ChoiceV2Menu:Extend("pirateSpellSheet")
 local BigBookOPiracy = ModalChoiceMenu:Extend("bigBookOPiracy")
 
 function PirateSpellSheet:Define()
