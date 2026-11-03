@@ -15,6 +15,7 @@ function DungeoneeringCapePage1:Define()
     return {
         title = "Resource Dungeons",
         background = backgrounds.runescapeSurface,
+        noBackgroundCrop = true,
         entries = {
             ["1. Edgeville Dungeon chaos druids dungeon"] = {
                 nameOverride = "Chaos druids dungeon",
@@ -86,6 +87,7 @@ function DungeoneeringCapePage2:Define()
     return {
         title = "Resource Dungeons",
         background = backgrounds.runescapeSurface,
+        noBackgroundCrop = true,
         entries = {
             ["1. Taverley blue dragon dungeon"] = {
                 nameOverride = "Blue dragon dungeon",
@@ -154,6 +156,7 @@ function DungeoneeringCapePage3:Define()
     return {
         title = "Resource Dungeons",
         background = backgrounds.runescapeSurface,
+        noBackgroundCrop = true,
         entries = {
             ["1. Gorajo hoardstalker dungeon"] = {
                 nameOverride = "Gorajo hoardstalker dungeon",
