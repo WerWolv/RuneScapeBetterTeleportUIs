@@ -1,7 +1,7 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local BogolinTelepearl = ModalChoiceMenu:Extend("bogolinTelepearl")
+local BogolinTelepearl = ChoiceV2Menu:Extend("bogolinTelepearl")
 
 function BogolinTelepearl:Define()
     return {

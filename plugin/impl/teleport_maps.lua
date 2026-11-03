@@ -3,8 +3,6 @@ local matcher = require("impl/destination_matcher")
 local settings = require("definitions/constants")
 local userSettings = require("impl/settings")
 local MenuUIToggle = require("impl/ui/menu_ui_toggle")
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
 local log = require("impl/log")
 local cleanup = require("impl/cleanup")
 
@@ -196,7 +194,7 @@ local function draw()
     end
 end
 
--- Instantiate concrete menus and group them by their inherited interface class.
+-- Instantiate each menu once and register only its declared interface.
 function teleportMaps.Start()
     if interfaces ~= nil then
         return
@@ -226,21 +224,8 @@ function teleportMaps.Start()
             assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
             assert(menu.interface, "Teleport menu must inherit an interface class")
 
-            -- Construct both variants before registering either, so a failure
-            -- leaves no partially registered menu family.
-            local choiceMenu
-
-            if menu.interface == ModalChoiceMenu then
-                choiceMenu = class:New()
-                choiceMenu.interface = ChoiceV2Menu
-            end
-
             keys[menu.key] = true
             register(menu)
-
-            if choiceMenu ~= nil then
-                register(choiceMenu)
-            end
         end)
 
         if not ok then
