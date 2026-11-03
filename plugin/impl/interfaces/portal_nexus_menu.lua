@@ -1,4 +1,5 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local native = require("impl/interfaces/native_helpers")
 local components = require("impl/components")
 local text = require("impl/text")
 
@@ -108,41 +109,10 @@ function PortalNexusMenu:ReadInterface()
         return nil
     end
 
-    local rows, seen, malformed = {}, {}, false
+    local rows = native.ReadDynamicRows(scrolling, readRow)
 
-    scrolling:IterateDynamicComponents(function(row)
-        local key = components.Key(row)
-
-        if row.parent == scrolling and not row.hidden and not seen[key] then
-            seen[key] = true
-
-            local entry = readRow(row)
-
-            if entry == nil then
-                malformed = true
-            else
-                rows[#rows + 1] = entry
-            end
-        end
-
-        return false
-    end)
-
-    if malformed or #rows == 0 then
+    if rows == nil then
         return nil
-    end
-
-    -- Each native row has its own category; their root dynamic IDs are all zero.
-    table.sort(rows, function(a, b)
-        if a.row.categoryID ~= b.row.categoryID then
-            return a.row.categoryID < b.row.categoryID
-        end
-
-        return a.row.dynamicID < b.row.dynamicID
-    end)
-
-    for index, row in ipairs(rows) do
-        row.index = index
     end
 
     return {

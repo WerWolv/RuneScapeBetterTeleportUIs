@@ -1,4 +1,5 @@
 local text = require("impl/text")
+local cleanup = require("impl/cleanup")
 
 local teleportTooltip = {}
 local maxWidth = 240
@@ -42,22 +43,26 @@ local function isHovered(state)
     -- Native absolute positions do not reliably include ancestor scroll origins.
     -- Clip in viewport space using the same scroll offset as the rendered content.
     local x, y = positionInViewport(target, viewport)
+
     if x == nil then
         return false
     end
 
     x, y = x + tooltip.cursorX, y + tooltip.cursorY
+
     return x >= 0 and y >= 0 and x < viewport.width and y < viewport.height
 end
 
 local function refreshTracked()
     local state = activeTracked
+
     if state == nil then
         return
     end
 
     if not isHovered(state) then
         state.tooltip:Hide()
+
         return
     end
 
@@ -98,6 +103,7 @@ function teleportTooltip.Track(tooltip, viewport)
     function tooltip:Show()
         if not isHovered(state) then
             self:Hide()
+
             return
         end
 
@@ -126,33 +132,46 @@ function teleportTooltip.Track(tooltip, viewport)
     tooltip.target:Subscribe(ui.Hook.ONMOUSEREPEAT, trackedHookID, function(_, x, y)
         tooltip.cursorX, tooltip.cursorY = x, y
         tooltip:Show()
+
         return true
     end)
 
     trackedCount = trackedCount + 1
+
     if trackedCount == 1 then
         Event.Logic.Subscribe(trackedHookID, refreshTracked)
     end
 
     local destroyed = false
+
     function tooltip:Destroy()
         if destroyed then
             return
         end
 
         destroyed = true
-        self:Hide()
+
+        cleanup.Try("hide teleport tooltip", function()
+            self:Hide()
+        end)
 
         if self.target ~= nil then
-            pcall(function() self.target:Unsubscribe(ui.Hook.ONMOUSEREPEAT, trackedHookID) end)
+            cleanup.Try("unsubscribe tracked tooltip hover", function()
+                self.target:Unsubscribe(ui.Hook.ONMOUSEREPEAT, trackedHookID)
+            end)
         end
 
         trackedCount = trackedCount - 1
+
         if trackedCount == 0 then
-            Event.Logic.Unsubscribe(trackedHookID)
+            cleanup.Try("unsubscribe tooltip tracking", function()
+                Event.Logic.Unsubscribe(trackedHookID)
+            end)
         end
 
-        return destroy(self)
+        cleanup.Try("destroy tracked tooltip", function()
+            destroy(self)
+        end)
     end
 
     return tooltip
@@ -176,13 +195,17 @@ local function attachAtCursor(target, parent, options)
     -- Refresh coordinates regardless of visibility; the menu decides what to show.
     target:Subscribe(ui.Hook.ONMOUSEREPEAT, cursorHookID, function(_, x, y)
         tooltip.cursorX, tooltip.cursorY = x, y
+
         return true
     end)
 
     local destroy = tooltip.Destroy
+
     function tooltip:Destroy()
         if self.target ~= nil then
-            pcall(function() self.target:Unsubscribe(ui.Hook.ONMOUSEREPEAT, cursorHookID) end)
+            cleanup.Try("unsubscribe tooltip cursor", function()
+                self.target:Unsubscribe(ui.Hook.ONMOUSEREPEAT, cursorHookID)
+            end)
         end
 
         return destroy(self)
@@ -193,6 +216,7 @@ end
 
 local function lines(value)
     local normalized = value:gsub("<br%s*/?>", "\n"):gsub("\n$", "")
+
     return (normalized .. "\n"):gmatch("(.-)\n")
 end
 
@@ -283,6 +307,7 @@ end
 function teleportTooltip.Shared(parent, viewport)
     local anchor = ui.Layer.new(parent)
     anchor.hidden = true
+
     local shared = {
         anchor = anchor,
         tooltip = teleportTooltip.Track(teleportTooltip.Attach(anchor, parent, ""), viewport),
@@ -291,19 +316,30 @@ function teleportTooltip.Shared(parent, viewport)
 
     -- Context teardown can destroy the tooltip before its grid is destroyed.
     local destroy = shared.tooltip.Destroy
+
     function shared.tooltip:Destroy()
-        if shared.destroyed then return end
+        if shared.destroyed then
+            return
+        end
+
         shared.destroyed = true
         self.target = anchor
         self.targetInterfaceID = anchor.interfaceID
+
         return destroy(self)
     end
 
     function shared:Show(target, title, x, y)
-        if self.destroyed or target.enabled == false or not target.visibleGlobal then return end
+        if self.destroyed or target.enabled == false or not target.visibleGlobal then
+            return
+        end
 
         local tooltip = self.tooltip
-        if tooltip.target ~= target then tooltip:Hide() end
+
+        if tooltip.target ~= target then
+            tooltip:Hide()
+        end
+
         tooltip.target = target
         tooltip.targetInterfaceID = target.interfaceID
         tooltip.cursorX, tooltip.cursorY = x, y
@@ -312,6 +348,7 @@ function teleportTooltip.Shared(parent, viewport)
             tooltip:SetText(title)
             self.title = title
         end
+
         tooltip:Show()
     end
 
@@ -322,11 +359,8 @@ function teleportTooltip.Shared(parent, viewport)
     end
 
     function shared:Destroy()
-        if self.tooltip ~= nil then
-            self.tooltip:Destroy()
-            self.anchor:Destroy()
-            self.tooltip, self.anchor = nil, nil
-        end
+        cleanup.Release(self, "tooltip")
+        cleanup.Release(self, "anchor")
     end
 
     return shared

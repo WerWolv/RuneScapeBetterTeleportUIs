@@ -4,6 +4,7 @@ local HotkeyBadge = require("impl/hotkey_badge")
 local settings = require("impl/settings")
 local text = require("impl/text")
 local cropped = require("definitions/artwork_variants").Cropped
+
 local mapCrop = {}
 local padding = 60
 
@@ -19,16 +20,20 @@ local function teleportBounds(source, rows, minWidth)
         if not destination.hidden and point ~= nil
             and geometry.Contains(source, point) then
             local width, height = 0, 0
+
             if destination.icons ~= nil then
                 width, height = ButtonIcon.Dimensions(destination.icons)
             end
+
             local marginX = math.ceil(width / 2) + padding
             local marginY = math.ceil(height / 2) + padding
             local badgeRadius = 0
             local key = text.Hotkey(row.name or "")
+
             if key ~= nil and not row.locked and settings.Get("showTeleportHotkeys") then
                 badgeRadius = math.ceil(HotkeyBadge.Size(key, width) / 2)
             end
+
             left = math.min(left or point.x, point.x - marginX)
             top = math.min(top or point.y, point.y - marginY - badgeRadius)
             right = math.max(right or point.x, point.x + marginX + badgeRadius)
@@ -48,6 +53,7 @@ local function teleportBounds(source, rows, minWidth)
     -- Header clearance adds map area equally on the left and right.
     local width = math.min(bounds.width, math.max(right - left, minWidth or 0))
     local x = left - (width - (right - left)) / 2
+
     return {
         x = math.max(bounds.x, math.min(x, bounds.x + bounds.width - width)),
         y = top,
@@ -64,8 +70,10 @@ function mapCrop.Attach(menu)
         if menu.group.noBackgroundCrop then
             return geometry.Bounds(source)
         end
+
         return teleportBounds(source, menu.rows, menu.cropMinWidth)
     end)
+
     menu.background = background
 
     for _, row in ipairs(menu.rows) do

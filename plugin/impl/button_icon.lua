@@ -4,6 +4,8 @@ local utils = require("impl/utils")
 local HotkeyBadge = require("impl/hotkey_badge")
 local components = require("impl/components")
 local text = require("impl/text")
+local cleanup = require("impl/cleanup")
+
 local buttonIcon = {}
 buttonIcon.__index = buttonIcon
 
@@ -24,7 +26,7 @@ end
 
 -- Convert Vector4 shadow colors to packed RGBA, leaving existing hex values unchanged.
 local function shadowRGBA(color)
-    if type(color) == "number" then 
+    if type(color) == "number" then
         return color
     end
 
@@ -37,11 +39,11 @@ end
 
 -- Choose a state's shadow color, suppressing shadows for disabled destinations.
 local function getShadowColor(icons, highlighted, disabled)
-    if disabled then 
+    if disabled then
         return 0x00000000
     end
 
-    if highlighted then 
+    if highlighted then
         return icons.shadowColorHovered or constants.defaultShadowColorHovered
     end
 
@@ -52,6 +54,7 @@ local function shadowPadding(icons, kind)
     if kind == "sprite" and (icons.shadowColor ~= nil or icons.shadowColorHovered ~= nil) then
         return 2
     end
+
     return 0
 end
 
@@ -70,12 +73,14 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
 
     local color = shadowRGBA(getShadowColor(icons, highlighted, disabled))
     marker.shadowLayer.hidden = (color & 0xFF) == 0
-    if marker.shadowLayer.hidden then 
+
+    if marker.shadowLayer.hidden then
         return
     end
 
     local offset = highlighted and 2 or 1
     local width, height = marker.bounds.width, marker.bounds.height
+
     if marker.shadow == nil or marker.shadowImage ~= image or marker.shadowTint ~= color
         or marker.shadowOffset ~= offset or marker.shadowWidth ~= width or marker.shadowHeight ~= height then
         if marker.shadow == nil then
@@ -83,10 +88,12 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
         elseif marker.shadowImage ~= image then
             marker.shadow:SetSprite(image)
         end
+
         local root = marker.shadow.root
         root:SetPos(marker.bounds.x + offset, marker.bounds.y + offset)
         root:SetSize(width, height)
         root.rgba = color
+
         marker.shadowImage, marker.shadowTint, marker.shadowOffset = image, color, offset
         marker.shadowWidth, marker.shadowHeight = width, height
     end
@@ -104,39 +111,35 @@ local function updateLock(marker, width, height, locked)
         lock.shadowRGBA = 0x000000FF
         marker.lock = lock
     end
+
     if marker.lock ~= nil then
         marker.lock.hidden = not locked
-        if locked then marker.lock:MoveToFront() end
+
+        if locked then
+            marker.lock:MoveToFront()
+        end
     end
 end
 
 -- Release explicit sprite wrappers and the native marker subtree.
 local function destroyMarker(marker)
-    if marker.shadow ~= nil then 
-        pcall(function() marker.shadow:Destroy() end)
-    end
-
-    if marker.sprite ~= nil then 
-        pcall(function() marker.sprite:Destroy() end)
-    end
-
-    if marker.hotkey ~= nil then
-        pcall(function()
-            marker.hotkey:Destroy()
-        end)
-    end
-
-    pcall(function() marker.layer:Destroy() end)
+    cleanup.Release(marker, "shadow")
+    cleanup.Release(marker, "sprite")
+    cleanup.Release(marker, "hotkey")
+    cleanup.Release(marker, "layer")
 end
 
 -- Create an icon collection attached to the map viewport.
 function buttonIcon.New(parent)
-    return setmetatable({parent = parent, markers = {}}, buttonIcon)
+    return setmetatable({ parent = parent, markers = {} }, buttonIcon)
 end
 
 -- Destroy every marker and discard cached rendering state.
 function buttonIcon:Destroy()
-    for _, marker in pairs(self.markers) do destroyMarker(marker) end
+    for _, marker in pairs(self.markers) do
+        destroyMarker(marker)
+    end
+
     self.markers = {}
 end
 
@@ -159,6 +162,7 @@ end
 function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
+
     local marker = self.markers[name]
     local width, height = buttonIcon.Dimensions(icons, highlighted)
     local source = buttonIcon.Source(icons, highlighted, disabled, locked)
@@ -169,10 +173,17 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
 
     if objectID == nil then
         image = source.sprite
+
         if image == nil then
             image = source.image
-            if image ~= nil and not image.loaded then image:Load() end
-            if image == nil or not image.loaded then return nil end
+
+            if image ~= nil and not image.loaded then
+                image:Load()
+            end
+
+            if image == nil or not image.loaded then
+                return nil
+            end
         end
     end
 
@@ -188,9 +199,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         local layer = ui.Layer.new(self.parent)
         layer:SetSize(width + padding, height + padding)
         layer.clickthrough = true
+
         local artwork = ui.Layer.new(layer)
         artwork:SetSize(width + padding, height + padding)
         artwork.clickthrough = true
+
         marker = {
             layer = layer,
             artwork = artwork,
@@ -221,17 +234,27 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     -- Hover enlargement reuses the same controls instead of consuming dynamic IDs.
     if marker.width ~= width or marker.height ~= height then
         local padding = shadowPadding(icons, kind)
+
         marker.layer:SetSize(width + padding, height + padding)
         marker.artwork:SetSize(width + padding, height + padding)
+
         if marker.itemSprite ~= nil then
             marker.itemSprite:SetSize(width, height)
         else
             marker.sprite.root:SetSize(width, height)
             marker.bounds.width, marker.bounds.height = width, height
-            if marker.shadowLayer ~= nil then marker.shadowLayer:SetSize(width + padding, height + padding) end
+
+            if marker.shadowLayer ~= nil then
+                marker.shadowLayer:SetSize(width + padding, height + padding)
+            end
         end
+
         marker.width, marker.height = width, height
-        if marker.lock ~= nil then marker.lock:Destroy(); marker.lock = nil end
+
+        if marker.lock ~= nil then
+            marker.lock:Destroy()
+            marker.lock = nil
+        end
     end
 
     if marker.itemSprite ~= nil and (marker.objectID ~= objectID or marker.objectCount ~= objectCount) then
@@ -242,14 +265,17 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     end
 
     local shadowColor = getShadowColor(icons, highlighted, disabled)
+
     if marker.itemSprite ~= nil
         and (marker.highlighted ~= highlighted or marker.shadowColor ~= shadowColor) then
         marker.itemSprite.outlineWidth = highlighted and 1 or 0
+
         if type(shadowColor) == "number" then
             marker.itemSprite.shadowRGBA = shadowColor
         else
             marker.itemSprite.shadowColour = shadowColor
         end
+
         marker.highlighted, marker.shadowColor = highlighted, shadowColor
     elseif marker.sprite ~= nil and marker.image ~= image then
         marker.sprite:SetSprite(image)
@@ -267,11 +293,13 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         else
             marker.artwork.alpha = disabled and 0.4 or 1.0
         end
+
         marker.disabled = disabled
     end
 
     local showLock = (locked and (icons.locked == nil or icons.showLockIcon == true))
         or (disabled and showLockWhenDisabled == true)
+
     updateLock(marker, width, height, showLock)
 
     return marker
@@ -279,8 +307,9 @@ end
 
 -- Position visible icons and hide markers for hidden, cropped-out or unavailable artwork.
 function buttonIcon:Update(menu, hovered)
-    for _, marker in pairs(self.markers) do 
-        marker.layer.hidden = true 
+    for _, marker in pairs(self.markers) do
+        marker.layer.hidden = true
+
         if marker.hotkey ~= nil then
             marker.hotkey:Hide()
         end
@@ -296,6 +325,7 @@ function buttonIcon:Update(menu, hovered)
 
             if marker ~= nil then
                 local x, y = geometry.Project(menu.background, point, self.parent.width, self.parent.height)
+
                 marker.layer:SetPos(x - marker.width / 2, y - marker.height / 2)
                 marker.layer.hidden = false
                 marker.layer:MoveToFront()

@@ -3,6 +3,7 @@ local textUtils = require("impl/text")
 local componentUtils = require("impl/components")
 local HotkeyBadge = require("impl/hotkey_badge")
 local NativeLayout = require("impl/native_layout")
+local cleanup = require("impl/cleanup")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
 
 -- Native shortcut order differs from the component order in the interface.
@@ -105,7 +106,9 @@ end
 function TirannwnQuiver:UpdateCharges()
     local session = self.session
     local text = session.chargesText
-    if text == nil then return end
+    if text == nil then
+        return
+    end
 
     session.deathLayout:Restore()
 
@@ -156,30 +159,18 @@ end
 
 function TirannwnQuiver:ReleaseVisuals()
     if self.session ~= nil then
-        if self.session.deathLayout ~= nil then
-            self.session.deathLayout:Restore()
-        end
-
-        if self.session.deathDisabledIcon ~= nil then
-            pcall(function()
-                self.session.deathDisabledIcon:Destroy()
-            end)
-            self.session.deathDisabledIcon = nil
-        end
+        cleanup.Release(self.session, "deathLayout", "Restore")
+        cleanup.Release(self.session, "deathDisabledIcon")
 
         for _, hotkey in ipairs(self.session.hotkeys or {}) do
-            pcall(function()
-                hotkey.badge:Destroy()
-            end)
+            cleanup.Release(hotkey, "badge")
         end
 
         self.session.hotkeys = nil
     end
 
-    local text = self.session and self.session.chargesText
-    if text ~= nil then
-        pcall(function() text:Destroy() end)
-        self.session.chargesText = nil
+    if self.session ~= nil then
+        cleanup.Release(self.session, "chargesText")
     end
 end
 

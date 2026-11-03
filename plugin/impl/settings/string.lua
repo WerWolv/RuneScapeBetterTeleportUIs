@@ -16,7 +16,9 @@ function StringSetting:CreateControl(host)
         text = self.value,
         placeholder = self.definition.placeholder,
         marginBottom = self:ControlMargin(),
-        onChange = function(_, _, value) self:Set(value) end,
+        onChange = function(_, _, value)
+            self:Set(value)
+        end,
     })
     self:AddDescription(host)
     return control

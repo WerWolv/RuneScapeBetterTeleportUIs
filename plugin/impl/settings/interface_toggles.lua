@@ -1,4 +1,6 @@
 local text = require("impl/text")
+local ScrollInput = require("impl/scroll_input")
+
 local InterfaceToggles = {}
 InterfaceToggles.__index = InterfaceToggles
 
@@ -12,13 +14,16 @@ end
 -- This widget owns the table, toggles and cogs; settings retain their usual saved keys.
 function InterfaceToggles:Mount(page, y, openDetails)
     self.page, self.y = page, y
+
     page:SetScrollable(false)
     self.view = prettyui.SimpleView.new(page.content, {
         x = 14, y = y, width = -28, widthAnchor = 1, height = 1,
         scrollable = false,
         layout = { padding = 0, startY = 0 },
     })
+
     local heading = self.view:AddTitle({ text = self.definition.label, height = 24, marginTop = 0, marginBottom = 0 })
+
     if not text.IsBlank(self.definition.description) then
         heading = self.view:AddText({
             text = self.definition.description,
@@ -28,11 +33,14 @@ function InterfaceToggles:Mount(page, y, openDetails)
             marginBottom = 0,
         })
     end
+
     self.contentY = heading.y + heading.height + 4
 
     local entries = {}
+
     for index, setting in ipairs(self.settings) do
         assert(setting.definition.type == "boolean", "Interface toggles require boolean settings")
+
         entries[index] = {
             id = setting.definition.key,
             text = "",
@@ -45,43 +53,54 @@ function InterfaceToggles:Mount(page, y, openDetails)
         y = self.contentY, width = 0, widthAnchor = 1, height = 1,
         entryHeight = rowHeight, entries = entries,
     })
+
     self.list, self.rows = list, {}
-    local onScrollWheel = function(component, delta)
-        return list:_OnScrollWheel(component, delta)
-    end
+
+    local onScrollWheel = ScrollInput.For(list, rowHeight)
 
     for index, setting in ipairs(self.settings) do
         local row = list.rows[index]
         row.label.hidden = true
+
         local control = prettyui.CheckboxButton.new(row.root, {
             { text = setting.definition.label, value = setting.definition.key, selected = setting:Get() },
         }, {
             x = 8, y = 5, width = -48, widthAnchor = 1,
-            _onScrollWheel = onScrollWheel,
             onChange = function(_, _, _, selected)
-                if self.list == list then setting:Set(selected) end
+                if self.list == list then
+                    setting:Set(selected)
+                end
             end,
         })
+
         setting.control = control
         self.rows[index] = { control = control }
 
         if setting.details ~= nil then
             self.rows[index].button = prettyui.SimpleButton.new(row.root, id.Sprite.RS3_ICON_SETTINGS_17PX_0, function()
-                if self.list == list then openDetails(setting) end
+                if self.list == list then
+                    openDetails(setting)
+                end
             end, {
                 x = -32, y = 3, xAnchor = 1, width = 26, height = 26, iconSize = 17,
-                _onScrollWheel = onScrollWheel,
             })
         end
     end
 
+    ScrollInput.Bind(list.root, onScrollWheel)
+
     self:Refresh()
+
     return page.root.height
 end
 
 function InterfaceToggles:Refresh()
-    if self.view == nil then return end
+    if self.view == nil then
+        return
+    end
+
     local height = math.max(1, self.page.root.height - self.y - 12)
+
     self.view.root:SetHeight(height)
     self.view:SetContentHeight(height)
     self.list:SetSize(self.view.content.width, math.max(1, height - self.contentY))
@@ -90,14 +109,36 @@ end
 
 function InterfaceToggles:Unmount()
     local view, list, rows = self.view, self.list, self.rows
+
     self.view, self.list, self.rows, self.page = nil, nil, nil, nil
+
     for _, row in ipairs(rows or {}) do
-        pcall(function() row.control:Destroy() end)
-        if row.button ~= nil then pcall(function() row.button:Destroy() end) end
+        pcall(function()
+            row.control:Destroy()
+        end)
+
+        if row.button ~= nil then
+            pcall(function()
+                row.button:Destroy()
+            end)
+        end
     end
-    if list ~= nil then pcall(function() list:Destroy() end) end
-    if view ~= nil then pcall(function() view:Destroy() end) end
-    for _, setting in ipairs(self.settings) do setting:Unmount() end
+
+    if list ~= nil then
+        pcall(function()
+            list:Destroy()
+        end)
+    end
+
+    if view ~= nil then
+        pcall(function()
+            view:Destroy()
+        end)
+    end
+
+    for _, setting in ipairs(self.settings) do
+        setting:Unmount()
+    end
 end
 
 return InterfaceToggles

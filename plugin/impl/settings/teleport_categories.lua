@@ -2,6 +2,8 @@ local StringSetting = require("impl/settings/string")
 local Categories = require("impl/teleport_categories")
 local IconGrid = require("impl/teleport_icon_grid")
 local text = require("impl/text")
+local ScrollInput = require("impl/scroll_input")
+local InputClipping = require("impl/input_clipping")
 
 local CategorySetting = StringSetting:Extend()
 local rowHeight = 30
@@ -19,6 +21,7 @@ function CategorySetting:CreateControl(host)
     end
 
     editor.destinations = {}
+
     for name in pairs(names) do
         editor.destinations[#editor.destinations + 1] = name
     end
@@ -27,15 +30,13 @@ function CategorySetting:CreateControl(host)
 
     editor.category = host:AddList({
         height = 1, entryHeight = rowHeight, width = -12, widthAnchor = 0.36,
-        _onEntryClick = function(_, categoryID)
-            if not editor.updating then
+        onChange = function(_, categoryID, selected)
+            if selected and not editor.updating then
                 self:SelectCategory(categoryID)
             end
         end,
     })
-    editor.onScrollWheel = function(component, delta)
-        return editor.category:_OnScrollWheel(component, delta)
-    end
+    editor.onScrollWheel = ScrollInput.For(editor.category, rowHeight, ScrollInput.For(host))
 
     editor.creation = ui.Layer.new(host.content)
     editor.creation:SetSize(-12, rowHeight, 0.36, 0)
@@ -43,7 +44,10 @@ function CategorySetting:CreateControl(host)
         x = 0, y = 1, width = -34, widthAnchor = 1, height = rowHeight - 2,
         placeholder = "New category", maxLength = 40,
         onChange = function(_, reason)
-            if self.control ~= editor or editor.updating or editor.closed then return end
+            if self.control ~= editor or editor.updating or editor.closed then
+                return
+            end
+
             if reason == ui.InputFieldActionResult.SUBMIT then
                 self:CreateCategory()
             else
@@ -58,6 +62,7 @@ function CategorySetting:CreateControl(host)
     })
 
     local eventID = "teleportMapsCategoryMenu:" .. self.definition.key
+
     Event.MiniMenuReady.Subscribe(eventID, function(event)
         if self.control ~= editor or editor.closed or not editor.category.root.visibleGlobal
             or not editor.category.viewport.isMouseOver then
@@ -73,32 +78,44 @@ function CategorySetting:CreateControl(host)
                 end
 
                 event.miniMenu:Add("Rename", function()
-                    if available() then self:BeginRename(categoryID) end
+                    if available() then
+                        self:BeginRename(categoryID)
+                    end
                 end)
+
                 -- Native menu entries display in reverse order; keep selection as the default action.
                 event.miniMenu:Add("Select", function()
-                    if available() then self:SelectCategory(categoryID) end
+                    if available() then
+                        self:SelectCategory(categoryID)
+                    end
                 end)
+
                 return
             end
         end
     end)
 
     local setScrollPosition = editor.category.SetScrollPosition
+
     editor.category.SetScrollPosition = function(control, position)
         setScrollPosition(control, position)
         self:RefreshInputClipping(editor)
     end
 
     local destroy = editor.category.Destroy
+
     editor.category.Destroy = function(control)
-        if editor.closed then return end
+        if editor.closed then
+            return
+        end
+
         editor.closed = true
         Event.MiniMenuReady.Unsubscribe(eventID)
         self:ClearCategoryControls(editor)
         editor.newName:Destroy()
         editor.create:Destroy()
         editor.creation:Destroy()
+
         if editor.grid ~= nil then
             editor.grid:Destroy()
         end
@@ -107,6 +124,7 @@ function CategorySetting:CreateControl(host)
     end
 
     editor.grid = IconGrid.New(host.content)
+
     local entries = {}
 
     for _, name in ipairs(editor.destinations) do
@@ -230,7 +248,6 @@ function CategorySetting:BeginRename(categoryID, draft)
         control.input = prettyui.TextField.new(control.row.root, {
             x = 4, y = 1, width = -38, widthAnchor = 1, height = rowHeight - 2,
             maxLength = 40,
-            _onScrollWheel = editor.onScrollWheel,
             onChange = function(_, reason)
                 if self.control ~= editor or editor.updating or editor.closed
                     or editor.editingID ~= categoryID then
@@ -244,6 +261,7 @@ function CategorySetting:BeginRename(categoryID, draft)
                 end
             end,
         })
+        ScrollInput.Bind(control.input.root, editor.onScrollWheel)
     end
 
     control.row.label.hidden = true
@@ -298,20 +316,20 @@ function CategorySetting:DeleteCategory(categoryID)
 end
 
 function CategorySetting:RefreshInputClipping(editor)
-    local function refresh(input, row)
-        if input == nil then return end
-        local top = row.root.y - editor.category.scrollY
-        input:_SetContentClipped(top < 0 or top + rowHeight > editor.category.viewport.height)
-    end
-
     for _, control in pairs(editor.rows) do
-        refresh(control.input, control.row)
+        if control.input ~= nil then
+            local top = control.row.root.y - editor.category.scrollY
+            InputClipping.Update(control, top < 0 or top + rowHeight > editor.category.viewport.height)
+        end
     end
 end
 
 function CategorySetting:ClearCategoryControls(editor)
     for _, control in pairs(editor.rows) do
-        if control.input ~= nil then control.input:Destroy() end
+        if control.input ~= nil then
+            control.input:Destroy()
+        end
+
         control.delete:Destroy()
     end
 
@@ -328,7 +346,6 @@ function CategorySetting:BuildCategoryControls(choices)
 
         local button = prettyui.Sprite.new(row.root, id.Sprite.AIF_COMBAR_TRASHCAN_0, {
             x = -30, y = 3, xAnchor = 1, width = 24, height = 24,
-            _onScrollWheel = editor.onScrollWheel,
         })
 
         button.root.clickthrough = false
@@ -348,6 +365,7 @@ function CategorySetting:BuildCategoryControls(choices)
         editor.rows[categoryID] = { row = row, delete = button }
     end
 
+    ScrollInput.Bind(editor.category.root, editor.onScrollWheel)
     self:RefreshInputClipping(editor)
 end
 

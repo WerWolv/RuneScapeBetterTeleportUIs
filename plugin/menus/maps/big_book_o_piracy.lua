@@ -9,6 +9,7 @@ function PirateSpellSheet:Define()
         title = "Pirate Islands",
         background = backgrounds.pirateIslands,
         noBackgroundCrop = true,
+        sizeMultiplier = 3.5,
         entries = {
             ["1. Braindeath Island."] = {
                 nameOverride = "Braindeath Island",

@@ -5,20 +5,19 @@ local userSettings = require("impl/settings")
 local MenuUIToggle = require("impl/menu_ui_toggle")
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
+local log = require("impl/log")
+local cleanup = require("impl/cleanup")
+
 local teleportMaps = {}
 local interfaces
 
 -- Release the selected menu's resources before switching or closing interfaces.
 local function releaseActive(entry)
-    if entry.active ~= nil then entry.active:Release() end
-    entry.active = nil
+    cleanup.Release(entry, "active", "Release")
 end
 
 local function releaseToggle(entry)
-    if entry.toggle ~= nil then
-        entry.toggle:Destroy()
-        entry.toggle = nil
-    end
+    cleanup.Release(entry, "toggle")
 end
 
 local function releaseInterface(entry)
@@ -29,17 +28,22 @@ end
 -- Rank read-only candidates and resolve only the winner for an interface snapshot.
 local function selectMenu(entry, snapshot)
     local interface, menus, active = entry.interface, entry.menus, entry.active
+
     if active ~= nil and active.interface == interface and active:Matches(snapshot) then
         return active, active.session.menu
     end
+
     local winner, match
     local matches, failures = {}, {}
+
     for _, menu in ipairs(menus) do
         local candidate, reason = menu:Match(snapshot)
+
         if candidate ~= nil then
             if match == nil or candidate.unusedEntries < match.unusedEntries then
                 winner, match = menu, candidate
             end
+
             if settings.debugMatching then
                 matches[#matches + 1] = menu.key .. " (" .. #snapshot.nativeRows .. " matches, " .. candidate.unusedEntries .. " unused entries)"
             end
@@ -47,53 +51,94 @@ local function selectMenu(entry, snapshot)
             failures[#failures + 1] = "  " .. menu.key .. ": " .. reason
         end
     end
+
     if winner ~= nil then
         if #matches > 1 then
-            interface:ReportMatch({"Selected " .. winner.key .. " by fewest unused entries, then alphabetical menu key.",
-                "Candidates: " .. table.concat(matches, ", ")})
+            interface:ReportMatch({
+                "Selected " .. winner.key .. " by fewest unused entries, then alphabetical menu key.",
+                "Candidates: " .. table.concat(matches, ", ")
+            })
         else
             interface:ReportMatch(nil)
         end
     elseif settings.debugMatching then
-        local lines = {"Not matched: no menu matched every visible option.",
-            "Current options (after removing formatting tags and outer whitespace):"}
+        local lines = {
+            "Not matched: no menu matched every visible option.",
+            "Current options (after removing formatting tags and outer whitespace):"
+        }
+
         for _, row in ipairs(snapshot.nativeRows) do
             lines[#lines + 1] = "  OPTION_" .. row.index .. ": " .. matcher.LabelSummary(row.labels)
         end
+
         lines[#lines + 1] = "First rejection reason for each menu:"
-        for _, failure in ipairs(failures) do lines[#lines + 1] = failure end
+
+        for _, failure in ipairs(failures) do
+            lines[#lines + 1] = failure
+        end
+
         interface:ReportMatch(lines)
     else
         interface:ReportMatch(nil)
     end
+
     -- Identify the best match before checking its toggle, so a disabled menu cannot
     -- fall back to a less-specific replacement sharing the same native interface.
-    if winner ~= nil and not userSettings.Get(winner.enabledSetting) then return nil end
+    if winner ~= nil and not userSettings.Get(winner.enabledSetting) then
+        return nil
+    end
+
     return winner, match
 end
 
 -- Each native interface owns a session; one open interface must not starve another.
 local function updateInterface(entry)
+    -- Discovery can fail before a window is available to quarantine. Back off
+    -- those reads as well, without blocking unrelated interfaces.
+    if (entry.retryFrames or 0) > 0 then
+        entry.retryFrames = entry.retryFrames - 1
+
+        return
+    end
+
     local snapshot
+
     local ok, message = pcall(function()
         if entry.active ~= nil and not userSettings.Get(entry.active.enabledSetting) then
             releaseInterface(entry)
         end
+
         snapshot = entry.interface:ReadInterface()
-        -- Retrying a failed allocation every Draw can exhaust more IDs. Keep the
+
+        -- Retrying a failed layout every Draw can exhaust more IDs. Keep the
         -- restored native dialog until it closes or a different window replaces it.
         if entry.failedWindow ~= nil then
-            if snapshot ~= nil and snapshot.window == entry.failedWindow then return end
-            if snapshot == nil then
-                local readable, visible = pcall(function() return entry.failedWindow.visibleGlobal end)
-                if readable and visible then return end
+            if snapshot ~= nil and snapshot.window == entry.failedWindow then
+                return
             end
+
+            if snapshot == nil then
+                local readable, visible = pcall(function()
+                    return entry.failedWindow.visibleGlobal
+                end)
+
+                if readable and visible then
+                    return
+                end
+            end
+
             entry.failedWindow = nil
         end
+
         local winner, match
-        if snapshot ~= nil then winner, match = selectMenu(entry, snapshot) end
+
+        if snapshot ~= nil then
+            winner, match = selectMenu(entry, snapshot)
+        end
+
         if winner == nil then
             releaseInterface(entry)
+
             return
         end
 
@@ -104,17 +149,20 @@ local function updateInterface(entry)
         if entry.toggle ~= nil and entry.toggle.original then
             releaseActive(entry)
             entry.toggle:Update(snapshot)
-            entry.lastLayoutError = nil
+
             return
         end
 
         local active = entry.active
+
         if active ~= winner or active.session == nil or active.session.menu ~= match then
             local transition = active and active:GetTransitionState(winner, match)
+
             releaseActive(entry)
             entry.active = winner
             winner:Begin(match, transition)
         end
+
         winner:Update(snapshot)
 
         if winner.supportsOriginalUI and entry.toggle == nil then
@@ -125,58 +173,87 @@ local function updateInterface(entry)
         if entry.toggle ~= nil then
             entry.toggle:Update(snapshot)
         end
-        entry.lastLayoutError = nil
     end)
+
     if not ok then
-        releaseInterface(entry)
-        message = tostring(message)
-        local normalized = message:lower()
-        if snapshot ~= nil and (normalized:find("invalid dynamic id", 1, true)
-            or normalized:find("invalid dynamicid", 1, true)) then
+        if snapshot ~= nil then
             entry.failedWindow = snapshot.window
+        else
+            entry.retryDelay = math.min(600, (entry.retryDelay or 30) * 2)
+            entry.retryFrames = entry.retryDelay
         end
-        if message ~= entry.lastLayoutError then
-            print("Unable to embed teleport map: " .. message)
-            entry.lastLayoutError = message
-        end
+
+        releaseInterface(entry)
+        log.Once("Unable to embed teleport map: " .. tostring(message))
+    else
+        entry.retryDelay = nil
     end
 end
 
 local function draw()
-    for _, entry in ipairs(interfaces) do updateInterface(entry) end
+    for _, entry in ipairs(interfaces) do
+        updateInterface(entry)
+    end
 end
 
 -- Instantiate concrete menus and group them by their inherited interface class.
 function teleportMaps.Start()
-    if interfaces ~= nil then return end
+    if interfaces ~= nil then
+        return
+    end
+
     local discovered = {}
     local byInterface, keys = {}, {}
+
     local function register(menu)
         local interface = assert(menu.interface, "Teleport menu must inherit an interface class")
         local entry = byInterface[interface]
+
         if entry == nil then
-            entry = {interface = interface, menus = {}}
+            entry = { interface = interface, menus = {} }
             byInterface[interface] = entry
             discovered[#discovered + 1] = entry
         end
+
         entry.menus[#entry.menus + 1] = menu
     end
+
     for _, class in ipairs(registry) do
-        local menu = class:New()
-        assert(type(menu.key) == "string", "Teleport menu key must be a string, got " .. tostring(menu.key))
-        assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
-        keys[menu.key] = true
-        register(menu)
-        -- Both dialogs use the same definitions/settings, but own independent sessions.
-        if menu.interface == ModalChoiceMenu then
-            local choiceMenu = class:New()
-            choiceMenu.interface = ChoiceV2Menu
-            register(choiceMenu)
+        local ok, message = pcall(function()
+            local menu = class:New()
+
+            assert(type(menu.key) == "string", "Teleport menu key must be a string, got " .. tostring(menu.key))
+            assert(not keys[menu.key], "Duplicate teleport menu key: " .. menu.key)
+            assert(menu.interface, "Teleport menu must inherit an interface class")
+
+            -- Construct both variants before registering either, so a failure
+            -- leaves no partially registered menu family.
+            local choiceMenu
+
+            if menu.interface == ModalChoiceMenu then
+                choiceMenu = class:New()
+                choiceMenu.interface = ChoiceV2Menu
+            end
+
+            keys[menu.key] = true
+            register(menu)
+
+            if choiceMenu ~= nil then
+                register(choiceMenu)
+            end
+        end)
+
+        if not ok then
+            log.Once("Unable to initialize teleport menu " .. tostring(class.key) .. ": " .. tostring(message))
         end
     end
+
     for _, entry in ipairs(discovered) do
-        table.sort(entry.menus, function(a, b) return a.key < b.key end)
+        table.sort(entry.menus, function(a, b)
+            return a.key < b.key
+        end)
     end
+
     interfaces = discovered
     Event.Draw.Subscribe("destinationPreview", draw)
 end
@@ -184,9 +261,11 @@ end
 -- Stop rendering and discard all menu instances and active session resources.
 function teleportMaps.Stop()
     Event.Draw.Unsubscribe("destinationPreview")
+
     for _, entry in ipairs(interfaces or {}) do
         releaseInterface(entry)
     end
+
     interfaces = nil
 end
 

@@ -1,5 +1,6 @@
 local TeleportMenu = require("impl/teleport_menu")
 local NativeLayout = require("impl/native_layout")
+local cleanup = require("impl/cleanup")
 local TextFieldAutofocus = require("impl/text_field_autofocus")
 local text = require("impl/text")
 local userSettings = require("impl/settings")
@@ -427,6 +428,7 @@ function FairyRings:BeginInterface()
 
     session.nativeLayout = NativeLayout.FromControls(controls)
 
+    local separators, colours = {}, {}
     for name, color in pairs({
         LINE_DARK_TOP = 0x24180F,
         LINE_LIGHT_TOP = 0x3D2B1B,
@@ -436,10 +438,18 @@ function FairyRings:BeginInterface()
         local line = component(name)
 
         if line ~= nil then
+            separators[#separators + 1] = line
+            colours[line] = color
+        end
+    end
+    -- Separate ownership keeps search-layout restoration from undoing the styling.
+    session.separatorLayout = NativeLayout.FromControls(separators)
+    session.separatorLayout:Apply(function()
+        for line, color in pairs(colours) do
             line.rgb = color
             line.alpha = 1
         end
-    end
+    end)
 end
 
 function FairyRings:Matches(snapshot)
@@ -544,7 +554,7 @@ local function restoreScroll(session)
     local state = session.searchScroll
 
     if state ~= nil then
-        pcall(function()
+        cleanup.Try("restore Fairy Ring scroll state", function()
             if state.control.scrollHeight == state.appliedHeight then
                 state.control:SetScrollSize(state.width, state.height)
             end
@@ -924,8 +934,17 @@ function FairyRings:UpdateVisuals()
     favourites:IterateDynamicComponents(function(control)
         if control.type == ui.ComponentType.SPRITE
             and control.spriteID == id.Sprite.FAIRY_RINGS_ICON_FAVOURITE_0 then
+            local previous = self.session.favouriteIcons[control]
+            if previous ~= nil and control.runtimeSprite == previous.appliedRuntime
+                and control.spriteID == previous.appliedID then
+                return false
+            end
+
+            local override = { originalID = control.spriteID, originalRuntime = control.runtimeSprite }
+            self.session.favouriteIcons[control] = override
             control.sprite = image
-            self.session.favouriteIcons[control] = control.runtimeSprite
+            override.appliedRuntime = control.runtimeSprite
+            override.appliedID = control.spriteID
         end
 
         return false
@@ -933,44 +952,31 @@ function FairyRings:UpdateVisuals()
 end
 
 function FairyRings:ReleaseVisuals()
-    if self.searchInput ~= nil then
-        self.searchInput:Destroy()
-        self.searchInput = nil
-    end
-
-    if self.searchIcon ~= nil then
-        self.searchIcon:Destroy()
-        self.searchIcon = nil
-    end
-
-    if self.search ~= nil then
-        self.search:Destroy()
-        self.search = nil
-    end
+    cleanup.Release(self, "searchInput")
+    cleanup.Release(self, "searchIcon")
+    cleanup.Release(self, "search")
 end
 
--- Restore only our own cursor changes when the shared controller releases this menu.
+-- Restore our artwork, layout and cursor changes without overwriting newer client state.
 function FairyRings:ReleaseInterface()
-    if self.session.highlightLayout ~= nil then
-        self.session.highlightLayout:Restore()
+    for control, override in pairs(self.session.favouriteIcons or {}) do
+        cleanup.Try("restore Fairy Ring favourite artwork", function()
+            if control.runtimeSprite == override.appliedRuntime and control.spriteID == override.appliedID then
+                control.sprite = override.originalRuntime or override.originalID
+            end
+        end)
     end
 
-    if self.session.scrollbarLayout ~= nil then
-        self.session.scrollbarLayout:Restore()
-    end
-
-    if self.session.filteredLayout ~= nil then
-        self.session.filteredLayout:Restore()
+    for _, key in ipairs({ "separatorLayout", "highlightLayout", "scrollbarLayout", "filteredLayout" }) do
+        cleanup.Release(self.session, key, "Restore")
     end
 
     restoreScroll(self.session)
 
-    if self.session.nativeLayout ~= nil then
-        self.session.nativeLayout:Restore()
-    end
+    cleanup.Release(self.session, "nativeLayout", "Restore")
 
     for _, override in pairs(self.session.cursorOverrides or {}) do
-        pcall(function()
+        cleanup.Try("restore Fairy Ring cursor", function()
             local cursor = override.control.cursorConfig
 
             if cursor.mouseOverCursor == override.applied then
