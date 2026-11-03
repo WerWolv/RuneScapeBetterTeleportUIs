@@ -1,6 +1,7 @@
 local TeleportMenu = require("impl/teleport_menu")
 local nativeHelpers = require("impl/interfaces/native_helpers")
 local NativeLayout = require("impl/native_layout")
+local NativeDragOutline = require("impl/ui/native_drag_outline")
 local cleanup = require("impl/cleanup")
 local teleportTooltip = require("impl/ui/teleport_tooltip")
 local geometry = require("impl/map_geometry")
@@ -339,8 +340,6 @@ function ModalChoiceMenu:GetTransitionState(nextMenu, match)
         top = session.top,
         right = session.right,
         bottom = session.bottom,
-        centerX = session.centerX,
-        centerY = session.centerY,
     }
 end
 
@@ -369,18 +368,16 @@ function ModalChoiceMenu:GetModalHostSize()
     return content and content.width or 512, content and content.height or 334
 end
 
-function ModalChoiceMenu:UpdateLayoutHost(session, sizeMultiplier)
-    local multiplier = sizeMultiplier or 1
-    local frame, content = session.hostContainers[1], session.layoutParent
+function ModalChoiceMenu:GetLayoutBudget(session, sizeMultiplier)
     local padding = session.hostPadding
-    local width, height = nativeHelpers.FitLayoutHost(session, padding.contentWidth, padding.contentHeight, multiplier)
 
-    frame:SetSize(width + padding.width, height + padding.height)
+    return nativeHelpers.FitLayoutHost(session, padding.contentWidth, padding.contentHeight, sizeMultiplier)
+end
 
-    -- Follow host resizing without overwriting native content offsets or anchors.
-    content:SetSize(-padding.width, -padding.height, 1.0, 1.0)
-
-    session.hostResized = true
+-- Measure without resizing native controls. Only the final fitted rectangle is
+-- applied, so native drag/layout callbacks never see a temporary oversized host.
+function ModalChoiceMenu:UpdateLayoutHost(session, sizeMultiplier)
+    session.layoutWidth, session.layoutHeight = self.interface:GetLayoutBudget(session, sizeMultiplier)
 end
 
 -- Measure native margins or reuse the current page group's placement before attaching tooltips.
@@ -418,6 +415,7 @@ function ModalChoiceMenu:BeginInterface(placement)
     end
 
     session.nativeLayout = NativeLayout.FromControls(controls)
+    session.dragOutline = NativeDragOutline.New(session.hostContainers[1])
 
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
 
@@ -430,15 +428,9 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.right = frameInset
     session.bottom = frameInset
 
-    local layoutOrigin = session.layoutParent.xyGlobal
-
-    session.centerX = windowPos.x - layoutOrigin.x + window.width / 2
-    session.centerY = windowPos.y - layoutOrigin.y + window.height / 2
-
     if placement ~= nil then
         session.left, session.top = placement.left, placement.top
         session.right, session.bottom = placement.right, placement.bottom
-        session.centerX, session.centerY = placement.centerX, placement.centerY
     end
 
     session.rows, session.titles, session.tooltips, session.tooltipContexts = {}, {}, {}, {}
@@ -607,14 +599,15 @@ function ModalChoiceMenu:CalculateLayout()
     session.menu.cropMinWidth = nil
 
     local crop = geometry.Bounds(session.menu.background)
-    local parent = session.layoutParent
+    local availableWidth = session.layoutWidth or session.layoutParent.width
+    local availableHeight = session.layoutHeight or session.layoutParent.height
     local maxWidth = math.min(
         math.max(constants.maxWidth * self:GetSizeMultiplier(), minWidth),
-        parent.width - session.left - session.right - 16
+        availableWidth - session.left - session.right - 16
     )
     local scale = math.min(
         maxWidth / crop.width,
-        (parent.height - session.top - session.bottom - 16) / crop.height
+        (availableHeight - session.top - session.bottom - 16) / crop.height
     )
 
     session.menu.cropMinWidth = math.ceil(minWidth / scale)
@@ -641,19 +634,14 @@ local function setRect(control, x, y, width, height)
     control:SetSize(width, height)
 end
 
--- Keep the visible window in place while fitting its parents. Subsequent
--- native drag offsets remain on the host, with the dialog centered inside it.
-function ModalChoiceMenu:PositionLayoutHost(x, y)
-    local session = self.session
-    local host = session.hostContainers[1]
-    local fittedPosition = session.layoutParent.xyGlobal
-    local offsetX, offsetY = x - fittedPosition.x - 8, y - fittedPosition.y - 8
+-- Follow native movement, constraining the final fitted host at viewport edges.
+-- The content inset is local and never added back into the host's position.
+function ModalChoiceMenu:PositionLayoutHost()
+    nativeHelpers.ClampWindowHost(self.session)
 
-    if offsetX ~= 0 or offsetY ~= 0 then
-        host:SetPos(host.x + offsetX, host.y + offsetY)
-    end
+    local position = self.session.layoutParent.xyGlobal
 
-    return x, y
+    return position.x + 8, position.y + 8
 end
 
 -- Resize the native window and clipping containers for either maps or custom menu layouts.
@@ -663,34 +651,11 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     self:UpdateTitle()
 
     local window, content = session.window, session.content
-    local parent = session.layoutParent
     local windowWidth, windowHeight = width + session.left + session.right, height + session.top + session.bottom
-    local parentPosition = parent.xyGlobal
-    local x = parentPosition.x + math.max(
-        8,
-        math.min(math.floor(session.centerX - windowWidth / 2), parent.width - windowWidth - 8)
-    )
-    local y = parentPosition.y + math.max(
-        8,
-        math.min(math.floor(session.centerY - windowHeight / 2), parent.height - windowHeight - 8)
-    )
 
-    -- Layout uses the original host as a size budget, but native dragging must
-    -- see the final dialog size rather than that budget's unused right/bottom area.
-    local host = session.hostContainers[1]
-    local padding = session.hostPadding
-    local contentWidth, contentHeight = windowWidth + 16, windowHeight + 16
-    local anchors = parent.size
+    nativeHelpers.SizeWindowHost(session, windowWidth, windowHeight)
 
-    host:SetSize(contentWidth + padding.width, contentHeight + padding.height)
-    parent:SetSize(
-        contentWidth - host.width * anchors.widthParentPc,
-        contentHeight - host.height * anchors.heightParentPc,
-        anchors.widthParentPc, anchors.heightParentPc
-    )
-
-    x, y = self:PositionLayoutHost(x, y)
-    session.centerX, session.centerY = contentWidth / 2, contentHeight / 2
+    local x, y = self:PositionLayoutHost()
 
     setRect(window, x, y, windowWidth, windowHeight)
 
@@ -752,6 +717,8 @@ function ModalChoiceMenu:LayoutWindow(width, height)
             end
         end
     end
+
+    session.dragOutline:Update(window)
 end
 
 -- Suppress native child artwork without hiding controls from matching or input.
@@ -897,6 +864,7 @@ function ModalChoiceMenu:ReleaseInterface()
     end
 
     self:ReleaseTooltips()
+    cleanup.Release(self.session, "dragOutline", "Restore")
     cleanup.Release(self.session, "nativeLayout", "Restore")
 
     if modalHost == self.session.hostPadding then

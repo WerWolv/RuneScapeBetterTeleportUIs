@@ -31,16 +31,10 @@ function ChoiceV2Menu:GetLayoutHost(window)
 end
 
 -- Match the modal's available area without overwriting the client's drag offsets.
-function ChoiceV2Menu:UpdateLayoutHost(session, sizeMultiplier)
-    local frame, content = session.hostContainers[1], session.layoutParent
+function ChoiceV2Menu:GetLayoutBudget(session, sizeMultiplier)
     local baseWidth, baseHeight = ModalChoiceMenu:GetModalHostSize()
 
-    -- Dragging may reset only the frame's size; retain the original margins.
-    local paddingX, paddingY = session.hostPadding.width, session.hostPadding.height
-    local width, height = native.FitLayoutHost(session, baseWidth, baseHeight, sizeMultiplier)
-
-    frame:SetSize(width + paddingX, height + paddingY)
-    content:SetSize(width, height)
+    return native.FitLayoutHost(session, baseWidth, baseHeight, sizeMultiplier)
 end
 
 -- Native shortcuts and option names are separate labels inside each option's text layer.
