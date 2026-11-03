@@ -77,7 +77,9 @@ for _, interface in ipairs(require("definitions/teleport_interfaces")) do
         details = interfaceSettings[interface.module],
     }
 end
-table.sort(interfaces, function(a, b) return a.label < b.label end)
+table.sort(interfaces, function(a, b)
+    return a.label < b.label
+end)
 
 return {
     {

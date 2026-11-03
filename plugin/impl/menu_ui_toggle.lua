@@ -1,4 +1,5 @@
 local settings = require("impl/settings")
+local cleanup = require("impl/cleanup")
 local MenuUIToggle = {}
 MenuUIToggle.__index = MenuUIToggle
 
@@ -70,12 +71,7 @@ function MenuUIToggle:Update(snapshot)
 end
 
 function MenuUIToggle:Destroy()
-    if self.root ~= nil then
-        pcall(function()
-            self.root:Destroy()
-        end)
-        self.root = nil
-    end
+    cleanup.Release(self, "root")
 
     self.button = nil
 end

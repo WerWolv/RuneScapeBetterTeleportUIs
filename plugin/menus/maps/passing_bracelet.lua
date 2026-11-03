@@ -7,6 +7,7 @@ function PassingBracelet:Define()
     return {
         title = "Underworld",
         background = backgrounds.cityOfUm,
+        noBackgroundCrop = true,
         entries = {
             ["1. City of Um: Hanging Gardens"] = {
                 nameOverride = "Hanging Gardens",

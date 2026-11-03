@@ -15,7 +15,9 @@ function BooleanSetting:CreateControl(host)
         { text = self.definition.label, value = self.definition.key, selected = self.value },
     }, {
         marginBottom = self:ControlMargin(),
-        onChange = function(_, _, _, selected) self:Set(selected) end,
+        onChange = function(_, _, _, selected)
+            self:Set(selected)
+        end,
     })
     self:AddDescription(host)
     return control

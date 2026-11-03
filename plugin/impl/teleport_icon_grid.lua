@@ -1,5 +1,7 @@
 local components = require("impl/components")
 local teleportTooltip = require("impl/teleport_tooltip")
+local ScrollInput = require("impl/scroll_input")
+local cleanup = require("impl/cleanup")
 
 local IconGrid = {}
 IconGrid.__index = IconGrid
@@ -16,6 +18,7 @@ function IconGrid.New(parent)
         root = view.root,
         slots = {},
         tooltip = teleportTooltip.Shared(view.content, view.viewport),
+        onScrollWheel = ScrollInput.For(view),
     }, IconGrid)
 end
 
@@ -56,25 +59,29 @@ function IconGrid:Build(entries, onClick)
         slot.selection.clickthrough = true
 
         local function hover(_, x, y)
-            if self.enabled then self.tooltip:Show(root, slot.name, x, y) end
+            if self.enabled then
+                self.tooltip:Show(root, slot.name, x, y)
+            end
+
             return true
         end
+
         root:Subscribe(ui.Hook.ONMOUSEOVER, hover)
         root:Subscribe(ui.Hook.ONMOUSEREPEAT, hover)
         root:Subscribe(ui.Hook.ONMOUSELEAVE, function()
             self.tooltip:Hide(root)
+
             return true
         end)
         root:Subscribe(ui.Hook.ONCLICK, function()
             if self.enabled then
                 onClick(index)
             end
+
             return false
         end)
 
-        for _, control in ipairs({ root, background, slot.icon, slot.selection }) do
-            control:Subscribe(ui.Hook.ONSCROLLWHEEL, self.view._onScrollWheel)
-        end
+        ScrollInput.Bind(root, self.onScrollWheel)
     end
 end
 
@@ -102,7 +109,9 @@ function IconGrid:SetSelection(members, enabled)
         self.view:SetScrollable(enabled)
     end
 
-    if not enabled then self.tooltip:Hide() end
+    if not enabled then
+        self.tooltip:Hide()
+    end
 
     for _, slot in ipairs(self.slots) do
         slot.root.enabled = enabled
@@ -113,15 +122,14 @@ end
 
 function IconGrid:Destroy()
     self.enabled = false
-    self.tooltip:Destroy()
+    cleanup.Release(self, "tooltip")
+
     for _, slot in ipairs(self.slots) do
-        if slot.artwork ~= nil then
-            slot.artwork:Destroy()
-        end
+        cleanup.Release(slot, "artwork")
     end
 
     self.slots = {}
-    self.view:Destroy()
+    cleanup.Release(self, "view")
 end
 
 return IconGrid

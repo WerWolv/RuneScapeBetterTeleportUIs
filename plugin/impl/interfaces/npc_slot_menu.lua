@@ -3,6 +3,7 @@ local ButtonIcon = require("impl/button_icon")
 local HotkeyBadge = require("impl/hotkey_badge")
 local components = require("impl/components")
 local text = require("impl/text")
+
 local NpcSlotMenu = SlotMenu:Extend()
 
 local slotSize, rowGap, inset = 112, 8, 12
@@ -34,6 +35,7 @@ function NpcSlotMenu:BeginVisuals()
 
     for _, row in ipairs(self.session.menu.rows) do
         local destination = row.destination
+
         if not destination.hidden then
             local slot = self:CreateSlot(row, destination.npcID ~= nil)
             local layer = slot.layer
@@ -86,6 +88,7 @@ function NpcSlotMenu:CalculateLayout()
     while true do
         local width = math.max(1, math.floor(slotSize * scale))
         nameHeight, verticalGap = 0, 0
+
         for _, slot in ipairs(self.slots) do
             if slot.label ~= nil then
                 local font = config.Font.FromID(slot.label.font)
@@ -94,10 +97,12 @@ function NpcSlotMenu:CalculateLayout()
                 local height = font:GetStringHeightAndLineCount(slot.label.content, width,
                     font.baseline, false, false, false)
                 local padding = 0
+
                 if #lines > 1 then
                     padding = 4
                     verticalGap = rowGap
                 end
+
                 nameHeight = math.max(nameHeight, height + padding)
             end
         end
@@ -105,11 +110,14 @@ function NpcSlotMenu:CalculateLayout()
         artworkHeight = rows * slotSize + (rows - 1) * verticalGap + inset * 2
         local fittedScale = math.max(0.01, math.min(scale,
             (availableHeight - rows * nameHeight) / artworkHeight))
+
         if fittedScale >= scale then
             break
         end
+
         scale = fittedScale
     end
+
     local gridHeight = artworkHeight + rows * nameHeight / scale
 
     return {
@@ -130,6 +138,7 @@ function NpcSlotMenu:ApplyLayout(layout)
     self.slotLayer:SetSize(layout.width, layout.height)
 
     local origin = self.slotLayer.xyGlobal
+
     for _, row in ipairs(self.session.rows) do
         if row.destination.hidden then
             self:HideRowArtwork(row)
@@ -202,6 +211,7 @@ end
 function NpcSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
+
         if slot.label ~= nil then
             slot.label.rgba = row.name == hovered and 0xFFFFFFFF or 0xFFE3A3FF
         else

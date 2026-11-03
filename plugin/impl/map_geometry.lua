@@ -1,11 +1,12 @@
 local utils = require("impl/utils")
+
 local geometry = {}
 
 -- Validate and return the crop rectangle, defaulting to the full background.
 function geometry.Bounds(background)
     assert(
         utils.IsFinite(background.width) and utils.IsFinite(background.height) and
-        background.width > 0 and background.height > 0, 
+        background.width > 0 and background.height > 0,
         "Background dimensions must be positive numbers"
     )
 
@@ -15,7 +16,7 @@ function geometry.Bounds(background)
         crop = crop()
     end
 
-    crop = crop or {x = 0, y = 0, width = background.width, height = background.height}
+    crop = crop or { x = 0, y = 0, width = background.width, height = background.height }
 
     assert(
         type(crop) == "table" and
@@ -28,12 +29,12 @@ function geometry.Bounds(background)
 
     assert(
         crop.x >= 0 and crop.y >= 0 and
-        crop.width > 0 and crop.height > 0 and 
+        crop.width > 0 and crop.height > 0 and
         crop.x + crop.width <= background.width and
         crop.y + crop.height <= background.height,
         "Crop must be a positive rectangle inside the full background"
     )
-    
+
     return crop
 end
 
@@ -53,7 +54,10 @@ end
 -- Convert a full-map point into displayed coordinates, returning nil outside the crop.
 function geometry.Project(background, point, width, height)
     local crop = geometry.Bounds(background)
-    if not contains(crop, point) then return nil end
+
+    if not contains(crop, point) then
+        return nil
+    end
 
     return math.floor((point.x - crop.x) / math.max(1, crop.width - 1) * (width - 1) + 0.5),
         math.floor((point.y - crop.y) / math.max(1, crop.height - 1) * (height - 1) + 0.5)

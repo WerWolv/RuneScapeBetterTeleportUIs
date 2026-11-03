@@ -23,7 +23,9 @@ function NumberSetting:CreateControl(host)
         step = self.definition.step or 1,
         value = self.value,
         marginBottom = self:ControlMargin(),
-        onChange = function(_, value) self:Set(value) end,
+        onChange = function(_, value)
+            self:Set(value)
+        end,
     })
     self:AddDescription(host)
     return control

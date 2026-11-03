@@ -1,4 +1,6 @@
 local components = require("impl/components")
+local cleanup = require("impl/cleanup")
+
 local NativeLayout = {}
 NativeLayout.__index = NativeLayout
 
@@ -29,7 +31,9 @@ local function readState(control)
         state.scrollWidth, state.scrollHeight = control.scrollWidth, control.scrollHeight
     end
 
-    if control.type == ui.ComponentType.PANEL then state.spacing = control.spacing end
+    if control.type == ui.ComponentType.PANEL then
+        state.spacing = control.spacing
+    end
 
     if control.type == ui.ComponentType.LABEL then
         state.content = control.content
@@ -118,6 +122,7 @@ end
 local function restore(control, change)
     local state = readState(control)
     local restored = {}
+
     for field, value in pairs(change.applied) do
         if state[field] == value then
             state[field] = change.original[field]
@@ -126,6 +131,7 @@ local function restore(control, change)
     end
 
     local positionChanged, sizeChanged = false, false
+
     for _, field in ipairs(positionFields) do
         positionChanged = positionChanged or restored[field]
     end
@@ -149,11 +155,14 @@ local function restore(control, change)
     if restored.scrollWidth or restored.scrollHeight then
         control:SetScrollSize(state.scrollWidth, state.scrollHeight)
     end
+
     if restored.scrollX or restored.scrollY then
         control:SetScrollPos(state.scrollX, state.scrollY)
     end
 
-    if restored.spacing then control.spacing = state.spacing end
+    if restored.spacing then
+        control.spacing = state.spacing
+    end
 
     if restored.rgb then
         control.rgb = state.rgb
@@ -198,7 +207,7 @@ function NativeLayout:Restore()
         local change = self.changes[entry.control]
 
         if change ~= nil then
-            pcall(function()
+            cleanup.Try("restore native layout", function()
                 if entry.control.parent == entry.parent then
                     restore(entry.control, change)
                 end

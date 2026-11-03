@@ -25,6 +25,7 @@ function TeleportCategories.Parse(value)
     end
 
     data.nextID = math.max(1, tonumber(nextID))
+
     local seen = {}
 
     for line in body:gmatch("[^\r\n]+") do
@@ -128,20 +129,24 @@ function TeleportCategories:Update(value)
     -- Keep this independent of search and the currently selected category.
     if self.destinations ~= nil then
         local choices = {}
+
         for _, choice in ipairs(self.choices) do
             local populated = choice.value == "all"
+
             for _, destination in ipairs(self.destinations) do
                 if populated or self:Includes(destination, choice.value) then
                     populated = true
                     break
                 end
             end
+
             if populated then
                 choices[#choices + 1] = choice
             else
                 self.byKey[choice.value] = nil
             end
         end
+
         self.choices = choices
     end
 
@@ -171,6 +176,7 @@ end
 
 function TeleportCategories:Includes(destination, key)
     local selected = key or self.selected
+
     if selected == "all" then
         return true
     end

@@ -1,6 +1,7 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local cleanup = require("impl/cleanup")
 local RingOfSlaying = ModalChoiceMenu:Extend("ringOfSlaying")
 
 local slayerMasters = {
@@ -63,7 +64,13 @@ local slayerMasters = {
 }
 
 local function currentSlayerMaster()
-    return slayerMasters[var.VarPlayer.SLAYER_MASTER.value]
+    local variable = var.VarPlayer.SLAYER_MASTER
+    return variable and slayerMasters[variable.value] or nil
+end
+
+local function slayerOptionsName()
+    local master = currentSlayerMaster()
+    return master and ("Talk to <col=ffff00>" .. master.name .. "</col>") or "Slayer options"
 end
 
 function RingOfSlaying:Define()
@@ -89,16 +96,23 @@ function RingOfSlaying:Define()
                 point = {x = 416, y = 157},
             },
             ["5. Nowhere. Give me Slayer options."] = {
-                nameOverride = "Talk to <col=ffff00>" .. currentSlayerMaster().name .. "</col>",
+                nameOverride = slayerOptionsName,
                 point = {x = 0, y = 0}
             },
         },
     }
 end
 
+-- Re-resolve the label and portrait together when the player's master changes.
+function RingOfSlaying:Matches(snapshot)
+    return ModalChoiceMenu.Matches(self, snapshot)
+        and self.session.slayerMaster == currentSlayerMaster()
+end
+
 -- Clip the passive model at the map's bottom edge so it rises out of the map.
 function RingOfSlaying:BeginVisuals()
     ModalChoiceMenu.BeginVisuals(self)
+    self.session.slayerMaster = currentSlayerMaster()
 
     local layer = ui.Layer.new(self.backgroundView.layer)
     layer.clickthrough = true
@@ -108,7 +122,7 @@ function RingOfSlaying:BeginVisuals()
     for _, row in ipairs(self.session.rows) do
         if row.entryKey == "5. Nowhere. Give me Slayer options." then
             -- Keep its native tooltip, but let the portrait supply the artwork and hitbox.
-            row.destination.hidden = true
+            row.destination.hidden = self.session.slayerMaster ~= nil
             self.masterPortrait.optionsRow = row
             break
         end
@@ -197,7 +211,7 @@ end
 function RingOfSlaying:ReleaseVisuals()
     local portrait = self.masterPortrait
     if portrait ~= nil and portrait.originalCursor ~= nil then
-        pcall(function()
+        cleanup.Try("restore Slayer master cursor", function()
             local cursor = portrait.optionsRow.click.cursorConfig
             if cursor.mouseOverCursor == id.Cursor.CURSOR_TALKTO then
                 cursor.mouseOverCursor = portrait.originalCursor

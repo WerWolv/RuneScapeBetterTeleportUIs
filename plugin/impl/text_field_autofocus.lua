@@ -2,6 +2,7 @@
 -- See licenses/PRETTYRS_FAIRYRINGS_LICENSE.
 
 local TextFieldAutoFocus = {}
+local cleanup = require("impl/cleanup")
 TextFieldAutoFocus.__index = TextFieldAutoFocus
 
 local function encodeCharacter(code)
@@ -193,20 +194,16 @@ function TextFieldAutoFocus:OnKey(key, character)
 end
 
 function TextFieldAutoFocus:Destroy()
-    Event.Logic.Unsubscribe(self.hookID)
+    cleanup.Try("unsubscribe search caret updates", function()
+        Event.Logic.Unsubscribe(self.hookID)
+    end)
+    cleanup.Release(self, "caret")
 
-    if self.caret ~= nil then
-        pcall(function()
-            self.caret:Destroy()
-        end)
-        self.caret = nil
-    end
-
-    pcall(function()
+    cleanup.Try("unsubscribe search keyboard input", function()
         self.listener:Unsubscribe(ui.Hook.ONKEY, self.hookID)
     end)
 
-    pcall(function()
+    cleanup.Try("unsubscribe search click input", function()
         self.field.root:Unsubscribe(ui.Hook.ONCLICK, self.hookID)
     end)
 

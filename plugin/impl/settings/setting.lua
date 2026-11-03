@@ -1,16 +1,19 @@
 local text = require("impl/text")
+
 local Setting = {}
 Setting.__index = Setting
 
 function Setting:Extend()
     local class = {}
     class.__index = class
+
     return setmetatable(class, { __index = self })
 end
 
 function Setting:New(definition)
     local instance = setmetatable({ definition = definition, value = definition.default }, self)
     assert(instance:Validate(definition.default), "Invalid default for setting: " .. definition.key)
+
     return instance
 end
 
@@ -82,7 +85,8 @@ function Setting:Unmount()
 end
 
 -- Full-height editor groups supply the available area after mounting and resizing.
-function Setting:Layout(width, height) end
+function Setting:Layout(width, height)
+end
 
 function Setting:ControlMargin()
     return not text.IsBlank(self.definition.description) and 0 or nil

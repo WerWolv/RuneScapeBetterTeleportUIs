@@ -7,6 +7,8 @@ local TeleportCategories = require("impl/teleport_categories")
 local TitledFrame = require("impl/titled_frame")
 local settings = require("impl/settings")
 local text = require("impl/text")
+local ScrollInput = require("impl/scroll_input")
+local cleanup = require("impl/cleanup")
 
 local CategoryMap = {}
 local Filters = {}
@@ -54,6 +56,7 @@ function Filters:Build(rows)
         height = 240,
         layout = { padding = 12, startY = 12, rowGap = 10 },
     })
+    self.onScrollWheel = ScrollInput.For(self.view)
 
     self.search = self.view:AddTextField({
         placeholder = "Search...",
@@ -82,8 +85,8 @@ function Filters:Build(rows)
         self.separator.root.y + self.separator.root.height + separatorOptions.marginBottom + 4)
     self.categoryHeading = prettyui.Text.title(self.categoryPanel, {
         text = "Categories", x = 12, y = 40, width = -24, widthAnchor = 1, height = 10,
-        _onScrollWheel = self.view._onScrollWheel,
     })
+    ScrollInput.Bind(self.categoryHeading, self.onScrollWheel)
     self:BuildCategoryButtons()
 
     for _, row in ipairs(rows) do
@@ -110,11 +113,11 @@ function Filters:BuildCategoryButtons()
         width = -24,
         widthAnchor = 1,
         selectedValue = self.categories.selected,
-        _onScrollWheel = self.view._onScrollWheel,
         onChange = function(_, key)
             self.categories:Select(key)
         end,
     })
+    ScrollInput.Bind(self.categoryButtons.root, self.onScrollWheel)
 
     for _, item in ipairs(self.categoryButtons.items) do
         item.label.font = id.Font.MUSEO_SANS_13PT_REGULAR
@@ -171,15 +174,9 @@ function Filters:Layout(x, width, height)
 end
 
 function Filters:Destroy()
-    if self.categoryButtons ~= nil then
-        pcall(function() self.categoryButtons:Destroy() end)
-    end
-
-    if self.view ~= nil then
-        pcall(function() self.view:Destroy() end)
-    end
-
-    pcall(function() self.root:Destroy() end)
+    cleanup.Release(self, "categoryButtons")
+    cleanup.Release(self, "view")
+    cleanup.Release(self, "root")
 end
 
 -- Native rows collapse and move on every selection; attach after stable probes exist.
@@ -389,10 +386,7 @@ function CategoryMap:UpdateVisuals(layout, hovered)
 end
 
 function CategoryMap:ReleaseVisuals()
-    if self.filters ~= nil then
-        self.filters:Destroy()
-        self.filters = nil
-    end
+    cleanup.Release(self, "filters")
 
     ModalChoiceMenu.ReleaseVisuals(self)
 end
