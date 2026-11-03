@@ -1,9 +1,9 @@
 local StringSetting = require("impl/settings/string")
 local Categories = require("impl/teleport_categories")
-local IconGrid = require("impl/teleport_icon_grid")
+local IconGrid = require("impl/ui/teleport_icon_grid")
 local text = require("impl/text")
-local ScrollInput = require("impl/scroll_input")
-local InputClipping = require("impl/input_clipping")
+local ScrollInput = require("impl/ui/scroll_input")
+local InputClipping = require("impl/ui/input_clipping")
 
 local CategorySetting = StringSetting:Extend()
 local rowHeight = 30

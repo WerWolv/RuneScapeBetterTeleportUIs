@@ -1,6 +1,6 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local native = require("impl/interfaces/native_helpers")
-local components = require("impl/components")
+local components = require("impl/ui/components")
 local text = require("impl/text")
 
 local PortalNexusMenu = ModalChoiceMenu:Extend()

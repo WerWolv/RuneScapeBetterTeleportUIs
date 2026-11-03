@@ -1,7 +1,7 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
-local ButtonIcon = require("impl/button_icon")
-local HotkeyBadge = require("impl/hotkey_badge")
-local components = require("impl/components")
+local ButtonIcon = require("impl/ui/button_icon")
+local HotkeyBadge = require("impl/ui/hotkey_badge")
+local components = require("impl/ui/components")
 local text = require("impl/text")
 
 local NpcSlotMenu = SlotMenu:Extend()

@@ -1,8 +1,8 @@
 local constants = require("definitions/constants")
 local geometry = require("impl/map_geometry")
 local utils = require("impl/utils")
-local HotkeyBadge = require("impl/hotkey_badge")
-local components = require("impl/components")
+local HotkeyBadge = require("impl/ui/hotkey_badge")
+local components = require("impl/ui/components")
 local text = require("impl/text")
 local cleanup = require("impl/cleanup")
 
