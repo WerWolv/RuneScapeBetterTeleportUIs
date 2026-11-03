@@ -8,7 +8,6 @@ function BogolinTelepearl:Define()
         title = "Fenmoor",
         background = backgrounds.havenhythe,
         icons = teleportIcons.bogolinTelepearl,
-        sizeMultiplier = 3.5,
         entries = {
             ["1. Linbog"] = {
                 point = {x = 671, y = 496}

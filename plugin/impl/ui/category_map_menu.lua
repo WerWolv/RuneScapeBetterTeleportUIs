@@ -188,18 +188,15 @@ end
 function CategoryMap:UpdateLayoutHost(session, sizeMultiplier)
     ModalChoiceMenu.UpdateLayoutHost(self, session, sizeMultiplier)
 
-    local frame = session.hostContainers[1]
     local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
-    local width = math.min(frame.width + sidebarWidth, viewport.width)
 
-    frame:SetSize(width, frame.height)
-    session.hostResized = true
+    session.layoutWidth = math.min(session.layoutWidth + sidebarWidth, viewport.width - session.hostPadding.width)
 end
 
 function CategoryMap:CalculateLayout()
     local layout = ModalChoiceMenu.CalculateLayout(self)
     local session = self.session
-    local availableWidth = session.layoutParent.width - session.left - session.right - 16
+    local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
     local panelWidth = math.min(sidebarWidth, math.floor(availableWidth * 0.4))
     local width = math.max(1, math.min(layout.width, availableWidth - panelWidth))
 

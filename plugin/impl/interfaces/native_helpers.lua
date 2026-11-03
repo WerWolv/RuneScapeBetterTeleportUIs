@@ -68,6 +68,39 @@ function native.ReadLayoutHost(window, frameID, contentID, name)
     }
 end
 
+-- Fit the host with its established native margins. Frame artwork and position
+-- anchors remain owned by the client during dragging.
+function native.SizeWindowHost(session, width, height)
+    local frame = session.hostContainers[1]
+    local content = session.layoutParent
+    local padding = session.hostPadding
+    local contentWidth, contentHeight = width + 16, height + 16
+
+    frame:SetSize(contentWidth + padding.width, contentHeight + padding.height)
+    content:SetSize(-padding.width, -padding.height, 1.0, 1.0)
+end
+
+-- Native dragging can clamp with the saved window size before Lua restores
+-- the fitted size. Apply the viewport bounds to that final rectangle once.
+function native.ClampWindowHost(session)
+    local frame = session.hostContainers[1]
+    local viewport = assert(ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT))
+    local origin, bounds = frame.xyGlobal, viewport.xyGlobal
+    local x = math.max(bounds.x, math.min(origin.x, bounds.x + math.max(0, viewport.width - frame.width)))
+    local y = math.max(bounds.y, math.min(origin.y, bounds.y + math.max(0, viewport.height - frame.height)))
+    local offsetX, offsetY = x - origin.x, y - origin.y
+
+    if offsetX ~= 0 or offsetY ~= 0 then
+        local position = frame.position
+
+        frame:SetPos(
+            position.x + offsetX, position.y + offsetY,
+            position.xParentPc, position.yParentPc,
+            position.xSelfPc, position.ySelfPc
+        )
+    end
+end
+
 -- Share the size calculation while leaving each adapter's anchoring and drag
 -- offsets under its control. The result is the available host content size.
 function native.FitLayoutHost(session, baseWidth, baseHeight, sizeMultiplier)

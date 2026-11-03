@@ -156,7 +156,7 @@ function TeleportListMenu:GetLayoutHost(window)
     )
 end
 
-function TeleportListMenu:PositionLayoutHost(x, y)
+function TeleportListMenu:PositionLayoutHost()
     local session = self.session
 
     -- Center the fitted window once instead of inheriting FULLMODAL's old
@@ -164,17 +164,16 @@ function TeleportListMenu:PositionLayoutHost(x, y)
     if not session.hostPlaced then
         local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
         local host = session.hostContainers[1]
-        local viewportOrigin, hostOrigin = viewport.xyGlobal, host.xyGlobal
-        local contentOrigin = session.layoutParent.xyGlobal
+        local viewportOrigin, parentOrigin = viewport.xyGlobal, host.parent.xyGlobal
 
-        x = viewportOrigin.x + math.max(0, math.floor((viewport.width - host.width) / 2))
-            + contentOrigin.x - hostOrigin.x + 8
-        y = viewportOrigin.y + math.max(0, math.floor((viewport.height - host.height) / 2))
-            + contentOrigin.y - hostOrigin.y + 8
+        host:SetPos(
+            viewportOrigin.x - parentOrigin.x + math.max(0, math.floor((viewport.width - host.width) / 2)),
+            viewportOrigin.y - parentOrigin.y + math.max(0, math.floor((viewport.height - host.height) / 2))
+        )
         session.hostPlaced = true
     end
 
-    return ModalChoiceMenu.PositionLayoutHost(self, x, y)
+    return ModalChoiceMenu.PositionLayoutHost(self)
 end
 
 return TeleportListMenu
