@@ -1,6 +1,6 @@
-local components = require("impl/components")
-local teleportTooltip = require("impl/teleport_tooltip")
-local ScrollInput = require("impl/scroll_input")
+local components = require("impl/ui/components")
+local teleportTooltip = require("impl/ui/teleport_tooltip")
+local ScrollInput = require("impl/ui/scroll_input")
 local cleanup = require("impl/cleanup")
 
 local IconGrid = {}

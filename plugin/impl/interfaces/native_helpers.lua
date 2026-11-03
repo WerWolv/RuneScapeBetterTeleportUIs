@@ -1,4 +1,4 @@
-local components = require("impl/components")
+local components = require("impl/ui/components")
 
 local native = {}
 

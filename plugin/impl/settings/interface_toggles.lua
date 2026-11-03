@@ -1,5 +1,5 @@
 local text = require("impl/text")
-local ScrollInput = require("impl/scroll_input")
+local ScrollInput = require("impl/ui/scroll_input")
 
 local InterfaceToggles = {}
 InterfaceToggles.__index = InterfaceToggles

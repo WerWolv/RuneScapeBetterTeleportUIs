@@ -1,13 +1,13 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local components = require("impl/components")
+local components = require("impl/ui/components")
 local geometry = require("impl/map_geometry")
-local ButtonIcon = require("impl/button_icon")
+local ButtonIcon = require("impl/ui/button_icon")
 local utils = require("impl/utils")
 local TeleportCategories = require("impl/teleport_categories")
-local TitledFrame = require("impl/titled_frame")
+local TitledFrame = require("impl/ui/titled_frame")
 local settings = require("impl/settings")
 local text = require("impl/text")
-local ScrollInput = require("impl/scroll_input")
+local ScrollInput = require("impl/ui/scroll_input")
 local cleanup = require("impl/cleanup")
 
 local CategoryMap = {}

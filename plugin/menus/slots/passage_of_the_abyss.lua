@@ -1,7 +1,7 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local userSettings = require("impl/settings")
-local components = require("impl/components")
-local HotkeyBadge = require("impl/hotkey_badge")
+local components = require("impl/ui/components")
+local HotkeyBadge = require("impl/ui/hotkey_badge")
 local descriptions = require("definitions/descriptions")
 
 local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
