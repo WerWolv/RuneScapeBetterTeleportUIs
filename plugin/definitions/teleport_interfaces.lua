@@ -89,7 +89,7 @@ return {
     },
     {
         name = "Fairy Rings",
-        module = "enhancements/fairy_rings",
+        module = "enhancements/fairy_rings/fairy_rings",
     },
     {
         name = "Tirannwn Quiver",

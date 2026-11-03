@@ -1,5 +1,5 @@
 local StringSetting = require("impl/settings/string")
-local aliases = require("impl/fairy_ring_aliases")
+local aliases = require("menus/enhancements/fairy_rings/fairy_ring_aliases")
 local text = require("impl/text")
 local ScrollInput = require("impl/scroll_input")
 
