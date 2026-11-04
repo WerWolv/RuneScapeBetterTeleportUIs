@@ -148,6 +148,10 @@ return {
         module = "maps/pharaohs_sceptre",
     },
     {
+        name = "Menaphos Journal",
+        module = "maps/menaphos_journal",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },

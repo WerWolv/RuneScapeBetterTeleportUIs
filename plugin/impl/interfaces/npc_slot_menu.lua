@@ -212,17 +212,19 @@ end
 function NpcSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
+        local dimmed = row.disabled
 
         if slot.label ~= nil then
             slot.label.rgba = row.name == hovered and 0xFFFFFFFF or 0xFFE3A3FF
         else
             local icons = row.destination.icons
-            local source = ButtonIcon.Source(icons, row.name == hovered, row.disabled, row.locked)
+            local source
+            source, dimmed = ButtonIcon.Source(icons, row.name == hovered, row.disabled, row.locked)
 
             slot.icon.spriteID = source.sprite
         end
 
-        slot.layer.alpha = row.disabled and 0.4 or 1
+        slot.layer.alpha = dimmed and 0.4 or 1
         slot.hotkey:Update(slot.layer, {
             scale = layout.scale,
             inset = math.floor(4 * layout.scale),
