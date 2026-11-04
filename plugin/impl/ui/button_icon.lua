@@ -148,14 +148,18 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
     local normal = icons.normal or icons
 
     if locked then
-        return icons.locked or normal
+        return icons.locked or normal, true
     end
 
-    if highlighted and not disabled then
-        return icons.hovered or normal
+    if disabled then
+        return icons.disabled or normal, icons.disabled == nil
     end
 
-    return normal
+    if highlighted then
+        return icons.hovered or normal, false
+    end
+
+    return normal, false
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
@@ -165,7 +169,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
 
     local marker = self.markers[name]
     local width, height = buttonIcon.Dimensions(icons, highlighted)
-    local source = buttonIcon.Source(icons, highlighted, disabled, locked)
+    local source, dimmed = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
     local kind = objectID ~= nil and "item" or "sprite"
@@ -261,7 +265,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         marker.itemSprite.associatedObjectID = objectID
         marker.itemSprite.associatedObjectQuantity = objectCount
         marker.objectID, marker.objectCount = objectID, objectCount
-        marker.highlighted, marker.disabled = nil, nil
+        marker.highlighted, marker.dimmed = nil, nil
     end
 
     local shadowColor = getShadowColor(icons, highlighted, disabled)
@@ -286,15 +290,15 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 
-    if marker.disabled ~= disabled then
+    if marker.dimmed ~= dimmed then
         if marker.itemSprite ~= nil then
-            marker.itemSprite.colour = disabled
+            marker.itemSprite.colour = dimmed
                 and Vector4.new(0.45, 0.45, 0.45, 1.0) or Vector4.new(1.0, 1.0, 1.0, 1.0)
         else
-            marker.artwork.alpha = disabled and 0.4 or 1.0
+            marker.artwork.alpha = dimmed and 0.4 or 1.0
         end
 
-        marker.disabled = disabled
+        marker.dimmed = dimmed
     end
 
     local showLock = (locked and (icons.locked == nil or icons.showLockIcon == true))

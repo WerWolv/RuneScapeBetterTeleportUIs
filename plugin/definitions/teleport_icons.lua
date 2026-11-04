@@ -2,7 +2,8 @@ return {
     menaphosFactions = {
         imperial = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_0},
-            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_1},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_2},
+            disabled = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_4},
             size = 40,
             imageWidth = 32,
             imageHeight = 20,
@@ -11,7 +12,8 @@ return {
         },
         merchant = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_0},
-            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_1},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_2},
+            disabled = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_MERCHANT_4},
             size = 40,
             imageWidth = 32,
             imageHeight = 20,
@@ -20,7 +22,8 @@ return {
         },
         port = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_0},
-            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_1},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_2},
+            disabled = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_PORT_4},
             size = 40,
             imageWidth = 32,
             imageHeight = 20,
@@ -29,7 +32,8 @@ return {
         },
         worker = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_0},
-            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_1},
+            hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_2},
+            disabled = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_WORKER_4},
             size = 40,
             imageWidth = 32,
             imageHeight = 20,
@@ -203,16 +207,19 @@ return {
         shadowColorHovered = 0x8E8282CC
     },
     shiftingTombs = {
-        sprite = id.Sprite.MENAPHOS_TOMBS_ICON_SARCOPHAGUS,
+        normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_CITY_0},
+        hovered = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_CITY_1},
+        disabled = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_CITY_4},
         size = 32,
         imageWidth = 32,
-        imageHeight = 32,
+        imageHeight = 28,
         shadowColor = 0x000000FF,
         shadowColorHovered = 0x9A4521CC
     },
     sophanemSlayerDungeon = {
-        normal = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_LOCKED},
-        hovered = {sprite = id.Sprite.RS3_ICON_LEAGUES_RELIC_TELEPORT_SLAYER_ACTIVE},
+        normal = {sprite = id.Sprite.TRH56_ICON_SLAYER_XP_0},
+        hovered = {sprite = id.Sprite.TRH56_ICON_SLAYER_XP_1},
+        disabled = {sprite = id.Sprite.TRH56_ICON_SLAYER_XP_2},
         size = 32,
         imageWidth = 64,
         imageHeight = 64,

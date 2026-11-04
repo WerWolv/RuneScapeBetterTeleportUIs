@@ -4,7 +4,6 @@ local teleportIcons = require("definitions/teleport_icons")
 local GlobetrotterArmGuards = ModalChoiceMenu:Extend("globeTrotterArmGuards")
 local descriptions = require("definitions/descriptions")
 
--- Format the captured scroll count using the appropriate plural form.
 local function chargesRemaining(count)
     local noun = tonumber(count) == 1 and "scroll" or "scrolls"
     return descriptions.Text(string.format("%s <sprite=4513> %s remaining", count, noun))
