@@ -152,6 +152,10 @@ return {
         module = "maps/menaphos_journal",
     },
     {
+        name = "Quest Cape / Master Quest Cape",
+        module = "maps/quest_cape",
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
