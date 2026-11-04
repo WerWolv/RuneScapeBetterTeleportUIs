@@ -892,7 +892,7 @@ return {
             size = 36,
             shadowColor = 0x9A4521FF,
             shadowColorHovered = 0x9A4521CC
-        },
+        }
     },
     magicLyre = {
         objectID = id.Obj.MAGIC_ENCHANTED_STRUNG_LYRE_FULL_CHARGE,
@@ -1008,6 +1008,16 @@ return {
         size = 32,
         shadowColor = 0x00000066,
         shadowColorHovered = 0x00000066
+    },
+    quests = {
+        normal = {sprite = id.Sprite.ACHIEVEMENT_ICON_QUESTS_0},
+        hovered = {sprite = id.Sprite.ACHIEVEMENT_ICON_QUESTS_1},
+        disabled = {sprite = id.Sprite.ACHIEVEMENT_ICON_QUESTS_4},
+        size = 28,
+        imageWidth = 32,
+        imageHeight = 32,
+        shadowColor = 0x00000099,
+        shadowColorHovered = 0x00000099
     },
 
     nextArrow = {
