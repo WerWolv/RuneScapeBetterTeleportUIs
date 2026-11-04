@@ -46,4 +46,4 @@ package: $(ZIP_FILE)
 stubs:
 	@rm -rf $(STUBS_PATH)
 	@git clone https://github.com/FriendlyDevelopment/runescape-api-stubs $(STUBS_PATH)
-	$(shell jq '."workspace.library" = [ "$(STUBS_PATH)/types.lua", "$(STUBS_PATH)/generated/" ]' $(STUBS_PATH)/.luarc.json > $(BASE_DIR)/.luarc.json)
+	@jq '."workspace.library" = [ "$(STUBS_PATH)/types.lua", "$(STUBS_PATH)/generated/" ]' $(STUBS_PATH)/.luarc.json > $(BASE_DIR)/.luarc.json
