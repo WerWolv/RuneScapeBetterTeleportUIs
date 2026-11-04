@@ -1,6 +1,7 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local Model3D = require("impl/ui/model_3d")
 local cleanup = require("impl/cleanup")
 local RingOfSlaying = ModalChoiceMenu:Extend("ringOfSlaying")
 
@@ -21,7 +22,7 @@ local slayerMasters = {
         name = "Chaeldar",
         npcID = id.NPC.SLAYER_MASTER_4,
         animID = id.Seq.FAIRYKIT_FAIRY_QUEEN_READY,
-        offsetY = 300,
+        targetY = 650,
     },
     [5] = {
         name = "Lapalok",
@@ -35,7 +36,8 @@ local slayerMasters = {
         name = "Morvran",
         npcID = id.NPC.SLAYER_MASTER_7_IORWERTH,
         animID = id.Seq.ELF_2014_SLAYER_MASTER_IDLE,
-        offsetY = 240,
+        distance = 700,
+        targetY = 470,
     },
     [8] = {
         name = "Laniakea",
@@ -54,8 +56,8 @@ local slayerMasters = {
     [46] = {
         name = "Mandrith",
         npcID = id.NPC.BOUNTY_MANDRITH,
-        viewDistance = 500,
-        offsetY = 250,
+        distance = 850,
+        targetY = 600,
     },
     [47] = {
         name = "Jacquelyn",
@@ -109,103 +111,82 @@ function RingOfSlaying:Matches(snapshot)
         and self.session.slayerMaster == currentSlayerMaster()
 end
 
--- Clip the passive model at the map's bottom edge so it rises out of the map.
+-- The shared portrait owns drawing; the original Slayer options row owns input.
 function RingOfSlaying:BeginVisuals()
     ModalChoiceMenu.BeginVisuals(self)
     self.session.slayerMaster = currentSlayerMaster()
 
-    local layer = ui.Layer.new(self.backgroundView.layer)
-    layer.clickthrough = true
-    layer.hidden = true
-    self.masterPortrait = { layer = layer }
-
-    for _, row in ipairs(self.session.rows) do
-        if row.entryKey == "5. Nowhere. Give me Slayer options." then
-            -- Keep its native tooltip, but let the portrait supply the artwork and hitbox.
-            row.destination.hidden = self.session.slayerMaster ~= nil
-            self.masterPortrait.optionsRow = row
-            break
-        end
-    end
-
-    local model = ui.Model.new(layer)
-    model.clickthrough = true
-    self.masterPortrait.model = model
-end
-
-function RingOfSlaying:ApplyLayout(layout)
-    ModalChoiceMenu.ApplyLayout(self, layout)
-
-    local master = currentSlayerMaster()
-    local portrait = self.masterPortrait
-    portrait.layer.hidden = master == nil
+    local master = self.session.slayerMaster
 
     if master == nil then
         return
     end
 
-    -- Changing masters refreshes the model without restarting its animation every frame.
-    if portrait.master ~= master then
-        portrait.model:SetModel(ui.ModelType.NPC_MODEL, master.npcID)
-        portrait.model.animID = master.animID or id.Seq.HUMAN_READY
-        portrait.model.viewDistance = master.viewDistance or 400
-        portrait.master = master
-    end
-
-    local scale = math.min(1, layout.width / 500, layout.height / 400)
-    local function scaled(value)
-        return math.max(1, math.floor(value * scale))
-    end
-
-    local size = scaled(112)
-    -- Use the whole map as the clipping region, keeping the original portrait scale.
-    portrait.layer:SetPos(0, 0)
-    portrait.layer:SetSize(layout.width, layout.height)
-    portrait.model:SetSize(layout.width, layout.height)
-    portrait.model.modelWidth = math.max(1, math.floor(layout.width / scale))
-    portrait.model.modelHeight = math.max(1, math.floor(layout.height / scale))
-
-    local offset = portrait.model.screenOffset
-    -- Leave room for shoulders and animated arms to the left of the model's centre.
-    offset.x = math.floor(size - layout.width / 2 - 75)
-    offset.y = math.floor((layout.height - size) / 2) + scaled(master.offsetY or 280)
-    offset.z = 0
-    portrait.model.screenOffset = offset
-    portrait.layer:MoveToFront()
-
-    -- Use the native Slayer options action only over the visible portrait, not its full-map viewport.
-    if portrait.optionsRow ~= nil then
-        local origin = portrait.layer.xyGlobal
-        local centerX = layout.width / 2 + offset.x
-        local left = math.max(0, centerX - size)
-        local right = math.min(layout.width, math.max(left, centerX + size))
-        local height = math.min(layout.height, scaled(160))
-
-        self:HideRowArtwork(portrait.optionsRow)
-        self:LayoutRow(portrait.optionsRow,
-            origin.x + left, origin.y + layout.height - height,
-            right - left, height
-        )
-
-        local button = portrait.optionsRow.click
-        local cursor = button.cursorConfig
-        if cursor.mouseOverCursor ~= id.Cursor.CURSOR_TALKTO then
-            portrait.originalCursor = cursor.mouseOverCursor
-            cursor.mouseOverCursor = id.Cursor.CURSOR_TALKTO
+    for _, row in ipairs(self.session.rows) do
+        if row.entryKey == "5. Nowhere. Give me Slayer options." then
+            -- Keep its native tooltip, but let the portrait supply the artwork and hitbox.
+            row.destination.hidden = true
+            self.masterPortrait = Model3D.FromNPC(
+                self.backgroundView.layer,
+                master.npcID, master.animID or id.Seq.HUMAN_READY,
+                {
+                    left = 0, bottom = 0,
+                    width = 160, height = 200,
+                    camera = {
+                        target = { x = 0, y = master.targetY or 580, z = 0 },
+                        yaw = 180, pitch = 0,
+                        distance = master.distance or 600,
+                        fov = 45,
+                        nearPlane = 1, farPlane = 10000,
+                    },
+                }
+            )
+            self.masterPortrait.optionsRow = row
+            break
         end
+    end
+end
+
+function RingOfSlaying:ApplyLayout(layout)
+    ModalChoiceMenu.ApplyLayout(self, layout)
+
+    local portrait = self.masterPortrait
+
+    if portrait == nil then
+        return
+    end
+
+    local row = portrait.optionsRow
+    self:HideRowArtwork(row)
+    self:LayoutRow(row, portrait:Layout(layout))
+
+    local cursor = row.click.cursorConfig
+    if cursor.mouseOverCursor ~= id.Cursor.CURSOR_TALKTO then
+        portrait.originalCursor = cursor.mouseOverCursor
+        cursor.mouseOverCursor = id.Cursor.CURSOR_TALKTO
     end
 end
 
 -- Select the portrait before showing tooltips so cursor following stays active throughout a hover.
 function RingOfSlaying:GetHovered()
     local portrait = self.masterPortrait
-    local row = portrait.optionsRow
+    local row = portrait and portrait.optionsRow
 
-    if not portrait.layer.hidden and row ~= nil and row.click.visibleGlobal and row.click.isMouseOver then
+    if row ~= nil and not portrait.layer.hidden and row.click.visibleGlobal and row.click.isMouseOver then
         return row.name
     end
 
     return ModalChoiceMenu.GetHovered(self)
+end
+
+function RingOfSlaying:UpdateVisuals(layout, hovered)
+    ModalChoiceMenu.UpdateVisuals(self, layout, hovered)
+
+    local portrait = self.masterPortrait
+
+    if portrait ~= nil then
+        portrait:Update(portrait.optionsRow.disabled, hovered == portrait.optionsRow.name)
+    end
 end
 
 function RingOfSlaying:ReleaseVisuals()
