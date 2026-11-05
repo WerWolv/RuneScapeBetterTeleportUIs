@@ -53,12 +53,15 @@ end
 
 function FairyRingMapLayout.New(session)
     local wheels = component("COMBINATIONS")
+    local sidebarWidth = math.max(240, wheels.width + 40)
+
     local self = setmetatable({
         session = session,
         wheels = wheels,
         wheelWidth = wheels.width,
         wheelHeight = wheels.height,
-        sidebarWidth = math.max(240, wheels.width + 16),
+        sidebarWidth = sidebarWidth,
+        sidebarExpansion = sidebarWidth - math.max(240, wheels.width + 16),
     }, FairyRingMapLayout)
 
     -- The transparent top band keeps overflowing mushrooms inside the draggable host.
@@ -116,7 +119,8 @@ function FairyRingMapLayout:Layout(layout)
 
     setRect(session.content, origin.x, origin.y, window.width, window.height)
     expandAncestors(self.wheels, window)
-    setRect(self.wheels, origin.x + session.left + layout.width + 8, origin.y,
+    local wheelInset = (layout.sidebarWidth - self.wheelWidth) / 2
+    setRect(self.wheels, origin.x + session.left + layout.width + wheelInset, origin.y,
         self.wheelWidth, self.wheelHeight)
 
     for _, name in ipairs(hiddenArtwork) do

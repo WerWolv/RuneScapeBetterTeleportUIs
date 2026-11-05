@@ -104,6 +104,15 @@ function FairyRings:BeginVisuals()
     self.view:Build()
 end
 
+function FairyRings:UpdateLayoutHost(session, sizeMultiplier)
+    ModalChoiceMenu.UpdateLayoutHost(self, session, sizeMultiplier)
+
+    -- Extra sidebar padding should widen the host, not shrink the map and its height.
+    local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
+    session.layoutWidth = math.min(session.layoutWidth + self.mapLayout.sidebarExpansion,
+        viewport.width - session.hostPadding.width)
+end
+
 function FairyRings:CalculateLayout()
     local session, mapLayout = self.session, self.mapLayout
     local availableWidth = session.layoutWidth - session.left - session.right - 16

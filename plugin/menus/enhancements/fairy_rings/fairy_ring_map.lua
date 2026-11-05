@@ -1,4 +1,5 @@
 local BackgroundView = require("impl/ui/background_view")
+local HotkeyBadge = require("impl/ui/hotkey_badge")
 local components = require("impl/ui/components")
 local geometry = require("impl/map_geometry")
 local backgrounds = require("definitions/backgrounds")
@@ -16,6 +17,11 @@ local markerWidth, markerHeight = 44, 48
 local iconSize, hoveredIconSize = 32, 34
 local selectedOutlineWidth = 4
 local markerTopPadding = selectedOutlineWidth + (hoveredIconSize - iconSize) / 2
+-- Anchor badges to the normal icon's top-right corner within the fixed marker.
+local markerHotkeyOffset = {
+    x = iconSize / 2,
+    y = markerTopPadding - (markerHeight + markerTopPadding) / 2,
+}
 local listRowHeight, compactListRowHeight, listRowGap = 44, 26, 2
 
 function View.New(parent, tooltipLayer)
@@ -105,6 +111,7 @@ end
 
 local function destroyItem(item)
     cleanup.Release(item, "tooltip")
+    cleanup.Release(item, "hotkey")
     cleanup.Release(item, "icon")
     cleanup.Release(item, "target")
 end
@@ -144,7 +151,7 @@ function View:CreateItem(row)
         item.label:AlignTo(ui.AlignMode.TOPLEFT)
     end
 
-    item.shortcut = components.CenteredLabel(target, id.Font.MUSEO_SANS_13PT_BOLD)
+    item.hotkey = HotkeyBadge.New(item.mapped and parent or target, row.shortcut)
 
     if not self.contexts[parent] then
         prettyui.Tooltip.registerContext(parent, self.tooltipLayer, function(control)
@@ -199,22 +206,22 @@ function View:LayoutListRow(item, index, showCodes)
     local height = showCodes and listRowHeight or compactListRowHeight
     target:SetPos(0, index * (height + listRowGap))
     target:SetSize(math.max(1, self.list.viewport.width), height)
+    local showHotkey = row.shortcut ~= nil and row.shortcut ~= "" and settings.Get("showTeleportHotkeys")
+    local badgeSpace = showHotkey and HotkeyBadge.Size(row.shortcut, target.width) + 8 or 0
     item.label:SetPos(10, 5)
-    item.label:SetSize(math.max(1, target.width - 30), 17)
+    item.label:SetSize(math.max(1, target.width - 10 - math.max(20, badgeSpace)), 17)
     item.label.content = row.code:gsub("(%a)(%a)(%a)", "%1 %2 %3"):gsub("%-", "      ")
     item.label.hidden = not showCodes
     item.name:SetPos(10, showCodes and 23 or 4)
-    item.name:SetSize(math.max(1, target.width - 20), 18)
+    item.name:SetSize(math.max(1, target.width - 10 - math.max(10, badgeSpace)), 18)
     item.name.content = row.name
     item.selection:SetSize(target.width, target.height)
     item.stripe = index % 2 == 0 and 0x25211CE6 or 0x302B25E6
 end
 
 function View:UpdateItem(item, selectedName)
-    local target, row = item.target, item.row
-    item.shortcut.content = settings.Get("showTeleportHotkeys") and (row.shortcut or "") or ""
-    item.shortcut:SetPos(item.mapped and 0 or target.width - 20, item.mapped and markerTopPadding or 0)
-    item.shortcut:SetSize(14, 16)
+    local row = item.row
+    item.hotkey.label.content = row.shortcut or ""
     item.selected = text.Trim(row.location) == selectedName
 
     local alpha = item.matches and 1 or 0.2
@@ -228,7 +235,7 @@ function View:UpdateItem(item, selectedName)
         item.name.alpha = alpha
     end
 
-    item.label.alpha, item.shortcut.alpha = alpha, alpha
+    item.label.alpha = alpha
 end
 
 -- Only fully visible list rows receive native hitboxes. Compute clipping in
@@ -304,6 +311,13 @@ function View:Update(rows, selectedName)
         else
             item.selection.rgba = item.selected and 0x66512EFF or item == hovered and 0x484036FF or item.stripe
         end
+
+        item.hotkey:Update(item.target, {
+            disabled = false,
+            inset = not item.mapped and 4 or nil,
+            offset = item.mapped and markerHotkeyOffset or nil,
+        })
+        item.hotkey:SetAlpha(item.matches and 1 or 0.2)
 
         if item == hovered then
             item.tooltip:Show()
