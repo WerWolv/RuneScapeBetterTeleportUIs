@@ -52,4 +52,225 @@ function aliases.Serialize(entries)
     return "v2\n" .. table.concat(lines, "\n")
 end
 
+-- Taken with permission from https://github.com/PrettyRS/fairyrings/blob/main/aliases.lua
+-- Original code is licensed under BSD 3-Clause which may be found under licenses/PRETTYRS_FAIRYRINGS_LICENSE
+aliases.searchAliases = {
+    AIQ = {
+        "port sarim",
+        "rimmington",
+        "anvil",
+        "ice dungeon",
+        "frost dragons"
+    },
+    AIR = {
+        "clue",
+        "clue scroll",
+        "treasure trail"
+    },
+    AIS = {
+        "guthix"
+    },
+    ALR = {
+        "abby demons",
+        "abyssal demons"
+    },
+    AJR = {
+        "fremennik",
+        "mountain camp"
+    },
+    AKP = {
+        "home",
+        "poh"
+    },
+    AKQ = {
+        "falconry",
+        "phoenix lair",
+        "fishing colony",
+        "eternal magic trees",
+        "airuts"
+    },
+    AKS = {
+        "gnome glider",
+        "oo'glog",
+        "chompy birds"
+    },
+    ALP = {
+        "jiggig"
+    },
+    ALQ = {
+        "araxxor",
+        "port phasmatys"
+    },
+    ALS = {
+        "hemenster",
+        "seers village",
+        "fishing guild"
+    },
+    BIQ = {
+        "kq",
+        "bandit camp",
+        "mining camp",
+        "kalphite cave",
+        "kalphite queen"
+    },
+    BJP = {
+        "grove"
+    },
+    BJQ = {
+        "kuradal",
+        "slayer",
+        "mithril dragons",
+        "waterfiends"
+    },
+    BJR ={
+        "brimhaven"
+    },
+    BIP = {
+        "brilliant wisps",
+        "mta",
+        "mage training arena",
+        "het's oasis",
+        "slayer"
+    },
+    BJS = {
+        "solak",
+        "vinecrawlers",
+        "bulbous crawler",
+        "moss golem"
+    },
+    BIS = {
+        "ardy",
+        "ardougne"
+    },
+    BKP = {
+        "jiggig",
+        "incandescent wisps"
+    },
+    BKR = {
+        "nature spirit",
+        "nature grotto"
+    },
+    BKS = {
+        "wendlewick",
+        "eastfold farm",
+        "crabs"
+    },
+    BLP = {
+        "mor ul rek",
+        "volcano",
+        "karamja"
+    },
+    BLR = {
+        "witchaven",
+        "ardougne",
+        "keep le faye",
+        "pof",
+        "player owned farm"
+    },
+    BLQ = {
+        "bandos throne room"
+    },
+    CIQ = {
+        "tree gnome village",
+        "castle wars"
+    },
+    CJR = {
+        "camelot",
+        "seers village",
+        "rellekka"
+    },
+    CIS = {
+        "evil bob"
+    },
+    CJS = {
+        "karamja"
+    },
+    CKQ = {
+        "desert",
+        "soul altar",
+        "sophanem"
+    },
+    CKR = {
+        "nature altar",
+        "shilo village",
+        "cairn isle",
+        "karambwanji"
+    },
+    CKS = {
+        "temple trekking",
+        "paterdomus",
+        "slayer tower",
+        "mushroom patch"
+    },
+    CLR = {
+        "agility course",
+        "monkey"
+    },
+    CLS = {
+        "hazelmere"
+    },
+    DJP ={
+        "ardougne",
+        "port khazard",
+        "monastery"
+    },
+    DIP = {
+        "trouble brewing",
+        "cave horrors"
+    },
+    DIS = {
+        "draynor village",
+        "runecrafting guild",
+        "lumbridge swamp"
+    },
+    DJR = {
+        "camelot",
+        "seers village",
+        "rellekka"
+    },
+    DJS = {
+        "summoning obelisk",
+        "amlodd",
+        "ithell"
+    },
+    DKP = {
+        "karambwans",
+        "gnome glider",
+        "shipyard"
+    },
+    DKQ = {
+        "rotm",
+        "ritual of the mahjarrat",
+        "mahjarrat",
+        "jas"
+    },
+    DKR = {
+        "varrock",
+        "grand exchange",
+        "wilderness",
+        "ge"
+    },
+    DKS = {
+        "keldagrim",
+        "rellekka",
+        "fremennik",
+        "fremmy",
+        "polar hunter area"
+    },
+    DLP = {
+        "bank"
+    },
+    DLQ ={
+        "hunter area",
+        "uzer"
+    },
+    DLS = {
+        "canifis",
+        "tunnel",
+        "barrows",
+        "morton",
+        "mort'ton"
+    }
+}
+
 return aliases
