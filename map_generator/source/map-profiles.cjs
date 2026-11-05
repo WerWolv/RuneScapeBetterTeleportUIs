@@ -56,7 +56,6 @@ module.exports = {
             },
         ],
         palette: {
-            paper: [239, 214, 166],
             lowTerrain: [181, 159, 110],
             highTerrain: [226, 204, 157],
             vegetation: [141, 147, 89],
@@ -174,7 +173,6 @@ module.exports = {
             { from: [584, 182], to: [584, 198], width: 3, waterWidth: 9 },
         ],
         palette: {
-            oceanBase: [226, 207, 165],
             lowTerrain: [166, 116, 63],
             highTerrain: [211, 166, 108],
             terrainShadow: [105, 67, 35],
@@ -336,7 +334,7 @@ module.exports = {
         width: 888,
         height: 852,
         oceanTolerance: 10,
-        shorelineScale: 3,
+        shorelineScale: 1,
         lava: false,
         snow: false,
         landmarkOpacity: 0.72,
@@ -357,7 +355,7 @@ module.exports = {
             searchTop: 0,
             searchBottom: 500,
             searchStep: 1,
-            tickCount: 1,
+            tickCount: 64,
         },
     },
 };

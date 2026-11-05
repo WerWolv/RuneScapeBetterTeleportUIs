@@ -16,10 +16,9 @@ async function renderMap(profile) {
 
     const PALETTE = {
         sourceOcean: [137, 146, 159],
-        paper: [242, 226, 186],
+        paper: [249, 239, 214],
         oceanStain: [175, 143, 91],
-        oceanShore: [112, 141, 135],
-        oceanFoam: [255, 246, 215],
+        oceanShore: [113, 157, 166],
         lowTerrain: [174, 143, 98],
         highTerrain: [224, 199, 154],
         snow: [247, 239, 216],
@@ -30,12 +29,12 @@ async function renderMap(profile) {
         lavaBank: [119, 66, 34],
         lavaCenter: [213, 148, 65],
         lavaHighlight: [239, 190, 104],
-        inlandStain: [157, 137, 98],
+        inlandStain: [143, 156, 124],
         vegetation: [146, 144, 100],
-        landShore: [103, 128, 116],
-        landFoam: [249, 228, 185],
+        coastInk: [113, 85, 49],
+        coastHighlight: [244, 222, 180],
         coastalBank: [145, 119, 76],
-        agedEdge: [104, 64, 26],
+        agedEdge: [120, 76, 31],
         ...profile.palette,
     };
 
@@ -403,13 +402,10 @@ async function renderMap(profile) {
 
     function paintOcean(distance) {
         distance /= SHORELINE_SCALE;
-        let color = mixColors(PALETTE.oceanBase ?? PALETTE.paper, PALETTE.oceanStain, 0.25 * Math.exp(-distance / 11));
-        if (distance < 1.2) {
-            color = mixColors(color, PALETTE.oceanShore, 0.72);
-        } else if (distance < 3) {
-            color = mixColors(color, PALETTE.oceanFoam, 0.8);
-        }
-        return color;
+        const color = mixColors(PALETTE.paper, PALETTE.oceanStain, 0.08 * Math.exp(-distance / 12));
+        // Blue pigment hugs the coast and bleeds gently into the cream paper sea.
+        const opacity = 0.7 * Math.exp(-((distance / 3.2) ** 1.4));
+        return mixColors(color, PALETTE.oceanShore, opacity);
     }
 
     function paintLava(color, index, lava, textures) {
@@ -433,7 +429,7 @@ async function renderMap(profile) {
         return mixColors(color, PALETTE.landmarkInk, coverage * profile.landmarkOpacity);
     }
 
-    function paintLand(index, source, smoothed, coastDistance, lava, ink, textures, districts) {
+    function paintLand(index, source, smoothed, lava, textures, districts) {
         const sourceColor = readRgb(source, index);
         const smoothColor = readRgb(smoothed, index);
         const [red, green, blue] = sourceColor;
@@ -456,62 +452,95 @@ async function renderMap(profile) {
         color = mixColors(color, PALETTE.terrainShadow, shade * 0.65);
         color = paintDistrictWashes(color, index, districts, textures);
 
-        // Washed maps receive their linework after the terrain wash below.
-        if (!(profile.inkWash > 0)) {
-            color = paintLandmarkInk(color, index, ink);
-        }
         color = paintLava(color, index, lava, textures);
 
-        // Inland green/cyan effects are sepia stains, not false blue water.
+        // Inland green/cyan features use a subdued sage wash rather than a coastline.
         if (green > red * 1.16 && blue > red * 1.08 && green > 65) {
             if (profile.marsh) {
                 const waterCoverage = clamp((green - red - 12) / 30, 0, 1);
                 color = mixColors(color, profile.marsh.color, waterCoverage * profile.marsh.opacity);
             } else {
-                color = mixColors(color, PALETTE.inlandStain, 0.3);
+                color = mixColors(color, PALETTE.inlandStain, 0.45);
             }
         } else if (green > red * 1.12 && green > blue * 1.12) {
             color = mixColors(color, PALETTE.vegetation, 0.26);
         }
 
-        const distance = coastDistance[index] / SHORELINE_SCALE;
-        if (distance < 1.2) {
-            color = mixColors(color, PALETTE.landShore, 0.65);
-        } else if (distance < 3) {
-            color = mixColors(color, PALETTE.landFoam, 0.84);
-        } else if (distance < 6) {
-            color = mixColors(color, PALETTE.coastalBank, 0.22);
-        }
         return color;
     }
 
-    function paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts, cave }) {
+    // Watercolour is applied to the colour layer, before pen strokes and paper aging.
+    async function createWatercolorWash(source, smoothed, ocean, lava, textures, districts) {
+        const pigment = Buffer.alloc(PIXEL_COUNT * RGB_CHANNELS);
+        const coverage = Buffer.alloc(PIXEL_COUNT);
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            if (ocean[index]) continue;
+            coverage[index] = 255;
+            const color = paintLand(index, source, smoothed, lava, textures, districts);
+            for (let channel = 0; channel < RGB_CHANNELS; channel++) {
+                pigment[index * RGB_CHANNELS + channel] = clamp(Math.round(color[channel]), 0, 255);
+            }
+        }
+
+        // Normalized diffusion lets neighbouring pigments mingle without drawing
+        // sea colour into narrow islands, bridges, or the edges of the landmass.
+        const [soft, softCoverage] = await Promise.all([
+            rawImage(pigment, RGB_CHANNELS).blur(0.85).raw().toBuffer(),
+            blurMask(coverage, 0.85),
+        ]);
+        const wash = Buffer.alloc(PIXEL_COUNT * RGB_CHANNELS);
+        // An even transparent glaze: let the terrain supply the colour variation
+        // and the existing paper supply the texture, without synthetic blotches.
+        const density = (1 - (profile.inkWash ?? 0)) * 0.9;
+        for (let index = 0; index < PIXEL_COUNT; index++) {
+            if (ocean[index]) continue;
+            const color = readRgb(soft, index).map((value) => value * 255 / Math.max(1, softCoverage[index]));
+            for (let channel = 0; channel < RGB_CHANNELS; channel++) {
+                // Thin transparent pigment transmits the paper colour. Optical
+                // density keeps greens, ochres and blue-grey washes distinct.
+                const paper = PALETTE.paper[channel];
+                const transmission = clamp(color[channel] / paper, 0.01, 1.15);
+                wash[index * RGB_CHANNELS + channel] = clamp(
+                    Math.round(paper * Math.pow(transmission, density)), 0, 255,
+                );
+            }
+        }
+        return wash;
+    }
+
+    function paintMap({ wash, ocean, coastDistance, ink, textures, cave }) {
         const output = Buffer.alloc(PIXEL_COUNT * RGB_CHANNELS);
         for (let y = 0; y < HEIGHT; y++) {
             for (let x = 0; x < WIDTH; x++) {
                 const index = y * WIDTH + x;
                 let color = cave ? paintCave(index, cave, textures) : ocean[index]
                     ? paintOcean(coastDistance[index])
-                    : paintLand(index, source, smoothed, coastDistance, lava, ink, textures, districts);
+                    : readRgb(wash, index);
 
-                // Thin pigment lets the paper supply the colour and texture beneath
-                // the drawing. Low-frequency variation avoids a uniform digital tint.
-                if (!cave && !ocean[index] && profile.inkWash > 0) {
-                    const variation = ((textures.broad[index] - 128) / 128) * 0.10
-                        + ((textures.medium[index] - 128) / 128) * 0.04;
-                    color = mixColors(color, PALETTE.paper, clamp(profile.inkWash + variation, 0, 1));
+                // Crisp pen lines sit over the softly diffused colour washes.
+                if (!cave && !ocean[index]) {
                     color = paintLandmarkInk(color, index, ink);
                 }
 
-                // Age the paper edges and add fibres last, over both sea and land.
+                // A hairline of brown ink and pale inner rim define the land edge.
+                if (!cave && !ocean[index]) {
+                    const distance = coastDistance[index] / SHORELINE_SCALE;
+                    color = mixColors(color, PALETTE.coastalBank, 0.12 * Math.exp(-distance / 4));
+                    color = mixColors(color, PALETTE.coastHighlight, 0.4 * Math.exp(-(((distance - 1.2) / 0.85) ** 2)));
+                    color = mixColors(color, PALETTE.coastInk, 0.6 * Math.exp(-((distance / 0.65) ** 2)));
+                }
+
+                // Surface maps use the new parchment; caves retain their recessed, smoky finish.
                 const edgeDistance = Math.min(x, WIDTH - 1 - x, y, HEIGHT - 1 - y);
-                const age = (cave ? 0.48 : 0.2) * Math.exp(-edgeDistance / 20)
-                    + 0.075 * Math.exp(-edgeDistance / 90);
+                const edgePigment = 0.7 + textures.broad[index] / 255 * 0.6;
+                const age = cave
+                    ? 0.48 * Math.exp(-edgeDistance / 20) + 0.075 * Math.exp(-edgeDistance / 90)
+                    : (0.38 * Math.exp(-edgeDistance / 34) + 0.07 * Math.exp(-edgeDistance / 120)) * edgePigment;
                 color = mixColors(color, PALETTE.agedEdge, age);
                 const fiber =
-                    ((textures.fine[index] - 128) / 128) * 5 +
-                    ((textures.medium[index] - 128) / 128) * 4 +
-                    ((textures.broad[index] - 128) / 128) * 6;
+                    ((textures.fine[index] - 128) / 128) * (cave ? 5 : 8) +
+                    ((textures.medium[index] - 128) / 128) * (cave ? 4 : 3) +
+                    ((textures.broad[index] - 128) / 128) * (cave ? 6 : 4);
 
                 for (let channel = 0; channel < RGB_CHANNELS; channel++) {
                     output[index * RGB_CHANNELS + channel] = clamp(
@@ -572,7 +601,7 @@ async function renderMap(profile) {
         return Buffer.from(`
         <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(${x} ${y}) scale(${COMPASS.scale})"
-               stroke="#876638" fill="none" opacity=".25">
+               stroke="#876638" fill="none" opacity=".33">
                 <circle r="64" stroke-width=".8"/>
                 <circle r="59" stroke-width=".6"/>
                 <circle r="32" stroke-width=".7"/>
@@ -624,7 +653,8 @@ async function renderMap(profile) {
         const lava = await createLavaMasks(source, ocean);
         const landmarks = extractLandmarks(source, smoothed, ocean, coastDistance, lava);
         const ink = await drawLandmarkInk(landmarks, textures);
-        parchment = paintMap({ source, smoothed, ocean, coastDistance, lava, ink, textures, districts });
+        const wash = await createWatercolorWash(source, smoothed, ocean, lava, textures, districts);
+        parchment = paintMap({ wash, ocean, coastDistance, ink, textures });
     }
     let output = rawImage(parchment, RGB_CHANNELS);
     const overlays = [];
