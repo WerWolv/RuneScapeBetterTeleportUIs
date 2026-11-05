@@ -51,10 +51,17 @@ function native.ReadDynamicRows(parent, parseRow)
 end
 
 -- Capture the host's original dimensions and offsets before any resizing.
-function native.ReadLayoutHost(window, frameID, contentID, name)
-    local frame = assert(ui.Interfaces:GetComponent(frameID))
-    local content = assert(ui.Interfaces:GetComponent(contentID))
+function native.ReadLayoutHost(window, frameID, contentID, name, allowClosing)
+    local frame = ui.Interfaces:GetComponent(frameID)
+    local content = ui.Interfaces:GetComponent(contentID)
 
+    if allowClosing and (frame == nil or content == nil or window.parent ~= content
+        or content.parent ~= frame or not frame.visibleGlobal) then
+        return nil
+    end
+
+    assert(frame)
+    assert(content)
     assert(window.parent == content and content.parent == frame, "Unexpected " .. name .. " host hierarchy")
 
     return content, { frame, content }, {

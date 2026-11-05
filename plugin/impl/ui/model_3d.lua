@@ -66,6 +66,15 @@ function Model3D.FromNPC(parent, npcID, animID, options)
     return create(parent, ui.ModelType.NPC_MODEL, { npcID }, animID, options)
 end
 
+function Model3D:SetSize(width, height)
+    self.layer:SetSize(width, height)
+    -- ModelGroup children can retain zero dimensions with parent-relative sizing.
+    self.group:SetSize(width, height)
+    for _, model in ipairs(self.models) do
+        model:SetSize(width, height)
+    end
+end
+
 function Model3D:Layout(layout)
     local options = self.options
     local scale = math.min(1, layout.width / 500, layout.height / 400)
@@ -75,7 +84,7 @@ function Model3D:Layout(layout)
         math.floor(options.left * scale),
         layout.height - height - math.floor(options.bottom * scale)
     )
-    self.layer:SetSize(width, height)
+    self:SetSize(width, height)
 
     self.layer:MoveToFront()
 

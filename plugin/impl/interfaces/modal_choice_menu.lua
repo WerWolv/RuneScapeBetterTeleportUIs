@@ -388,6 +388,7 @@ function ModalChoiceMenu:BeginInterface(placement)
     local window, content = menu.window, menu.content
 
     session.layoutParent, session.hostContainers, session.hostPadding = self.interface:GetLayoutHost(window)
+    if session.layoutParent == nil then return false end
 
     -- Include headings outside the window, which UpdateTitle can also modify.
     local controls, visited = {}, {}

@@ -70,7 +70,11 @@ function TeleportMenu:Begin(menu, transition)
     self.session = { menu = matcher.Resolve(menu) }
 
     self:RefreshAvailability()
-    self:BeginInterface(transition)
+    -- Native hosts may detach after discovery but before attachment.
+    if self:BeginInterface(transition) == false then
+        self.session = nil
+        return false
+    end
     self:BeginVisuals()
 end
 

@@ -20,7 +20,41 @@ end
 
 local function releaseInterface(entry)
     releaseActive(entry)
+    cleanup.Release(entry, "originalActive", "Release")
     releaseToggle(entry)
+end
+
+-- Some interfaces retain an enhanced native view when their map is toggled off.
+local function updateOriginal(entry, winner)
+    if winner.CreateOriginalMenu == nil then
+        return
+    end
+
+    if entry.originalActive == nil then
+        entry.originalActive = winner:CreateOriginalMenu()
+    end
+
+    local original = entry.originalActive
+    local snapshot = original:ReadInterface()
+
+    if snapshot == nil then
+        cleanup.Release(entry, "originalActive", "Release")
+        return
+    end
+
+    if not original:Matches(snapshot) then
+        if original.session ~= nil then
+            original:Release()
+        end
+
+        local match = original:Match(snapshot)
+
+        if match == nil or original:Begin(match) == false then
+            return
+        end
+    end
+
+    original:Update(snapshot)
 end
 
 -- Rank read-only candidates and resolve only the winner for an interface snapshot.
@@ -106,6 +140,12 @@ local function updateInterface(entry)
             releaseInterface(entry)
         end
 
+        -- Restore the list before map discovery/layout or disabling this interface.
+        if entry.originalActive ~= nil and (entry.toggle == nil or not entry.toggle.original
+            or not userSettings.Get(entry.originalActive.enabledSetting)) then
+            cleanup.Release(entry, "originalActive", "Release")
+        end
+
         snapshot = entry.interface:ReadInterface()
 
         -- Retrying a failed layout every Draw can exhaust more IDs. Keep the
@@ -141,11 +181,17 @@ local function updateInterface(entry)
         end
 
         if entry.toggle ~= nil and (not winner.supportsOriginalUI or not entry.toggle:Matches(winner, snapshot)) then
+            cleanup.Release(entry, "originalActive", "Release")
             releaseToggle(entry)
+        end
+
+        if winner.supportsOriginalUI and entry.toggle == nil then
+            entry.toggle = MenuUIToggle:New(winner, snapshot)
         end
 
         if entry.toggle ~= nil and entry.toggle.original then
             releaseActive(entry)
+            updateOriginal(entry, winner)
             entry.toggle:Update(snapshot)
 
             return
@@ -158,15 +204,14 @@ local function updateInterface(entry)
 
             releaseActive(entry)
             entry.active = winner
-            winner:Begin(match, transition)
+            if winner:Begin(match, transition) == false then
+                entry.active = nil
+
+                return
+            end
         end
 
         winner:Update(snapshot)
-
-        if winner.supportsOriginalUI and entry.toggle == nil then
-            entry.toggle = MenuUIToggle:New(winner, snapshot)
-            entry.toggle:Attach()
-        end
 
         if entry.toggle ~= nil then
             entry.toggle:Update(snapshot)

@@ -5,6 +5,25 @@
 local interfaceSettings = {
     ["enhancements/fairy_rings/fairy_rings"] = {
         {
+            label = "Interface",
+            settings = {
+                {
+                    key = "fairyRingMapByDefault",
+                    type = "boolean",
+                    label = "Use map by default",
+                    description = "When disabled, opens the enhanced regular UI instead. Applies the next time you open Fairy Rings.",
+                    default = true,
+                },
+                {
+                    key = "showFairyRingMapCodes",
+                    type = "boolean",
+                    label = "Show fairy ring codes",
+                    description = "Displays codes on map icons and Other destinations buttons. When disabled, the list uses compact name-only rows.",
+                    default = false,
+                },
+            },
+        },
+        {
             label = "Search",
             settings = {
                 {

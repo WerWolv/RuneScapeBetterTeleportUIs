@@ -16,7 +16,7 @@ function MenuUIToggle:New(menu, snapshot)
         window = snapshot.window,
         content = snapshot.content,
         scope = menu.pageGroup or menu,
-        original = false,
+        original = menu.UseOriginalUIByDefault ~= nil and menu:UseOriginalUIByDefault() or false,
     }, self)
 end
 
@@ -33,7 +33,7 @@ function MenuUIToggle:Attach()
 
     self.button = ui.Sprite.new(self.root)
     self.button:SetSize(buttonSize, buttonSize)
-    self.button.spriteID = id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_2
+    self.button.spriteID = self.original and id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_4 or id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_2
     self.button.clickthrough = false
 
     self.button:Subscribe(ui.Hook.ONMOUSEOVER, hookID, function()
@@ -54,6 +54,11 @@ function MenuUIToggle:Attach()
 end
 
 function MenuUIToggle:Update(snapshot)
+    -- Attach after the chosen presentation captures its native controls.
+    if self.root == nil then
+        self:Attach()
+    end
+
     self.root.hidden = not settings.Get("showOriginalUIToggle")
 
     local y = gap
