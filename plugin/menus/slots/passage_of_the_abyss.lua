@@ -8,10 +8,10 @@ local PassageOfTheAbyss = SlotMenu:Extend("passageOfTheAbyss")
 
 local slotCount, slotSize, slotGap, slotPadding = 6, 36, 4, 6
 
-local function destinations(destinations)
+local function destinations(locations)
     local result = descriptions.Location("Destinations:")
 
-    for _, dest in ipairs(destinations) do
+    for _, dest in ipairs(locations) do
         result = result .. "        " .. dest .. "<br>"
     end
 
@@ -165,7 +165,7 @@ function PassageOfTheAbyss:Match(snapshot)
         local name     = next(native.labels)
         local itemName = name and name:match("^" .. index .. "%.%s+(.+)$")
 
-        if itemName == nil or native.index ~= index then 
+        if itemName == nil or native.index ~= index then
             return nil, "missing item slot " .. index
         end
 
@@ -174,10 +174,10 @@ function PassageOfTheAbyss:Match(snapshot)
         local normalized = itemName:lower()
 
         if index == slotCount + 1 then
-            if normalized ~= "cancel" then 
+            if normalized ~= "cancel" then
                 return nil, "expected Cancel after the six slots"
             end
-            
+
             group.entries[name] = { hidden = true }
         elseif normalized == "empty slot" then
             group.entries[name] = { empty = true, hidden = true }
@@ -185,7 +185,7 @@ function PassageOfTheAbyss:Match(snapshot)
             local item = self.definition.items[normalized]
 
             if item == nil then
-                return nil, "unknown Passage jewellery: " .. itemName 
+                return nil, "unknown Passage jewellery: " .. itemName
             end
 
             group.entries[name] = {
@@ -196,10 +196,10 @@ function PassageOfTheAbyss:Match(snapshot)
         end
 
         rows[#rows + 1] = {
-            name = name, 
-            entryKey = name, 
-            row = native.row, 
-            click = native.click, 
+            name = name,
+            entryKey = name,
+            row = native.row,
+            click = native.click,
             native = native,
         }
     end
@@ -267,7 +267,7 @@ function PassageOfTheAbyss:CalculateLayout()
     local size      = math.max(1, math.floor(slotSize * scale))
     local gap       = math.floor(spacing * scale)
     local inset     = math.floor(padding * scale)
-    
+
     return {
         width = size * slotCount + gap * (slotCount - 1) + inset * 2,
         height = size + inset * 2,
@@ -313,7 +313,7 @@ function PassageOfTheAbyss:GetHovered()
         local row = slot.row
 
         if slot.item ~= nil and row.click.visibleGlobal and row.click.isMouseOver then
-            return row.name 
+            return row.name
         end
     end
 end

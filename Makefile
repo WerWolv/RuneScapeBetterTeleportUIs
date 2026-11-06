@@ -21,11 +21,12 @@ endif
 OUTPUT_NAME  := $(PACKAGE_NAME)_$(VERSION_FULL).zip
 ZIP_FILE     := $(BUILD_DIR)/$(OUTPUT_NAME)
 STUBS_PATH   := $(BUILD_DIR)/stubs
+LUACHECK     ?= luacheck
 
-.PHONY: all package stubs
+.PHONY: all package stubs check
 
 all:
-	@echo "Available goals: package, stubs"
+	@echo "Available goals: package, stubs, check"
 
 $(BUILD_DIR):
 	@mkdir -p "$@"
@@ -47,3 +48,6 @@ stubs:
 	@rm -rf $(STUBS_PATH)
 	@git clone https://github.com/FriendlyDevelopment/runescape-api-stubs $(STUBS_PATH)
 	@jq '."workspace.library" = [ "$(STUBS_PATH)/types.lua", "$(STUBS_PATH)/generated/" ]' $(STUBS_PATH)/.luarc.json > $(BASE_DIR)/.luarc.json
+
+check:
+	@$(LUACHECK) --config "$(BASE_DIR).luacheckrc" "$(SOURCE_DIR)"

@@ -1,8 +1,6 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local Model3D = require("impl/ui/model_3d")
-local text = require("impl/text")
 local descriptions = require("definitions/descriptions")
 local MenaphosJournal = ModalChoiceMenu:Extend("menaphosJournal")
 

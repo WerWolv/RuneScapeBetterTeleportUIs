@@ -11,27 +11,27 @@ function SixthAgeCircuit:Define()
         icons = teleportIcons.sixthAgeCircuit,
         entries = {
             ["1. Guthix's shrine"] = {
-                description = 
+                description =
                     descriptions.Location("Legends Guild, Ardougne") ..
                     descriptions.Text("Automatons"),
                 point = {x = 190, y = 130}
             },
             ["2. World Gate"] = {
                 showLockWhenDisabled = true,
-                description = 
+                description =
                     descriptions.Location("West of the Arandar Pass Gate"),
                 point = {x = 100, y = 125}
             },
             ["3. Guthix memorial"] = {
                 nameOverride = "Memorial to Guthix",
-                description = 
+                description =
                     descriptions.Location("Piscatoris") ..
                     descriptions.Text("Hall of Memories"),
                 point = {x = 75, y = 70}
             },
             ["4. Guthix temple (Tormented Demons)"] = {
                 nameOverride = "Guthix temple",
-                description = 
+                description =
                     descriptions.Location("Chasm of Tears, Lumbridge") ..
                     descriptions.Text("Tormented Demons"),
                 point = {x = 340, y = 180}

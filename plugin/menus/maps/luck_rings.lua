@@ -25,12 +25,12 @@ function LuckRings:Define()
                 icons = teleportIcons.hazelmeresSignetRing,
                 point = {x = 120, y = 115},
                 possiblyMissing = true
-            }, 
+            },
             ["^%d%. Dwarven Outpost$"] = {
                 icons = teleportIcons.luckOfTheDwarves,
                 point = {x = 154, y = 96},
                 possiblyMissing = true
-            }, 
+            },
             ["^%d%. Nowhere$"] = {hidden = true},
         },
     }

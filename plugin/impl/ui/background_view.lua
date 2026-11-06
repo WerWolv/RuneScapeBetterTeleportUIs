@@ -121,13 +121,13 @@ function backgroundView:Show(background, width, height, vignette)
 
     local crop = geometry.Bounds(background)
     local view = table.concat({
-        background.width, 
-        background.height, 
-        crop.x, 
+        background.width,
+        background.height,
+        crop.x,
         crop.y,
-        crop.width, 
-        crop.height, 
-        width, 
+        crop.width,
+        crop.height,
+        width,
         height
     }, ":")
 
@@ -190,8 +190,8 @@ function backgroundView:Show(background, width, height, vignette)
         else
             local x, y, fullWidth, fullHeight = geometry.Rectangle(
                 background,
-                0, 0, 
-                background.width, background.height, 
+                0, 0,
+                background.width, background.height,
                 width, height
             )
 

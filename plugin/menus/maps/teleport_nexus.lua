@@ -165,8 +165,8 @@ local spells = {
 }
 
 -- Spell configs provide artwork even when the native Nexus is closed or lacks a destination.
-function TeleportNexus:GetCategoryIcon(destination)
-    local spell = config.Struct[assert(spells[destination.categoryKey])]
+function TeleportNexus:GetCategoryIcon(entry)
+    local spell = config.Struct[assert(spells[entry.categoryKey])]
     local sprite = spell:GetParamValue(config.Param.COMBATV2_ABILITY_ICON)
 
     return { sprite = type(sprite) == "number" and sprite or sprite.id }

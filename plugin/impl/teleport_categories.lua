@@ -187,8 +187,8 @@ function TeleportCategories:Includes(destination, key)
         return custom.destinations[destination.categoryKey] == true
     end
 
-    for _, key in ipairs(destination.categories or {}) do
-        if key == selected then
+    for _, categoryKey in ipairs(destination.categories or {}) do
+        if categoryKey == selected then
             return true
         end
     end

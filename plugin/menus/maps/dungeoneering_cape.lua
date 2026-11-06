@@ -7,7 +7,7 @@ local DungeoneeringCapePage2 = ModalChoiceMenu:Extend("dungeoneeringCapePage2")
 local DungeoneeringCapePage3 = ModalChoiceMenu:Extend("dungeoneeringCapePage3")
 
 local function description(level, location)
-    return descriptions.LevelRequirement(level, descriptions.SKILL.DUNGEONEERING) .. 
+    return descriptions.LevelRequirement(level, descriptions.SKILL.DUNGEONEERING) ..
            descriptions.Location(location)
 end
 
@@ -64,7 +64,7 @@ function DungeoneeringCapePage1:Define()
             },
             ["8. Braindeath Island"] = {
                 nameOverride = "'Rum'-geon",
-                description = description(50, "Braindeath Island"),               
+                description = description(50, "Braindeath Island"),
                 point = {x = 457, y = 273},
                 icons = teleportIcons.dungeoneeringDungeon.furnished
             },
