@@ -1,7 +1,7 @@
 local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local resize = require("definitions/artwork_variants").Resize
+local resize = require("impl/utils").Resize
 
 local CrystalTeleportSeed = ModalChoiceMenu:Extend("crystalTeleportSeed")
 local CrystalTeleportSeedPrifddinas = ModalChoiceMenu:Extend("crystalTeleportSeedPrifddinas")

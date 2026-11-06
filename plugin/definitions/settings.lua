@@ -3,7 +3,7 @@
 -- A group's widget can replace the standard group renderer with a custom module.
 -- Interface rows can declare details = { groups... } to open a cog-wheel subpage.
 local interfaceSettings = {
-    ["enhancements/fairy_rings/fairy_rings"] = {
+    ["maps/fairy_rings/fairy_rings"] = {
         {
             label = "Interface",
             settings = {
@@ -54,7 +54,7 @@ local interfaceSettings = {
             },
         },
     },
-    ["maps/jewellery_box"] = {
+    ["maps/jewellery_box/jewellery_box"] = {
         {
             label = "Custom teleport categories",
             description = "Create categories and choose the teleports included in each one",
@@ -64,12 +64,12 @@ local interfaceSettings = {
                     key = "jewelleryBoxCustomCategories",
                     type = "impl/settings/teleport_categories",
                     default = "",
-                    categories = require("definitions/jewellery_box_categories"),
+                    categories = require("menus/maps/jewellery_box/categories"),
                 },
             },
         },
     },
-    ["maps/teleport_nexus"] = {
+    ["maps/teleport_nexus/teleport_nexus"] = {
         {
             label = "Custom teleport categories",
             description = "Create categories and choose the teleports included in each one",
@@ -79,7 +79,7 @@ local interfaceSettings = {
                     key = "nexusCustomCategories",
                     type = "impl/settings/teleport_categories",
                     default = "",
-                    categories = require("definitions/nexus_categories"),
+                    categories = require("menus/maps/teleport_nexus/categories"),
                 },
             },
         },

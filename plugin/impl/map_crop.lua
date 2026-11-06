@@ -3,10 +3,28 @@ local ButtonIcon = require("impl/ui/button_icon")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local settings = require("impl/settings")
 local text = require("impl/text")
-local cropped = require("definitions/artwork_variants").Cropped
 
 local mapCrop = {}
 local padding = 60
+
+local function cropped(background, crop)
+    local result = {}
+    for key, value in pairs(background) do
+        result[key] = value
+    end
+
+    result.crop = function()
+        if settings.Get("cropBackgroundMaps") then
+            if type(crop) == "function" then
+                return crop()
+            end
+            return crop
+        end
+        return geometry.Bounds(background)
+    end
+
+    return result
+end
 
 -- Calculate the same source-image rectangle previously supplied to Cropped by hand.
 local function teleportBounds(source, rows, minWidth)

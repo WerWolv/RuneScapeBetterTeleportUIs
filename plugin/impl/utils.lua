@@ -4,7 +4,7 @@ function utils.IsFinite(value)
     return type(value) == "number" and value == value and math.abs(value) < math.huge
 end
 
-function utils.deepcopy(orig)
+function utils.DeepCopy(orig)
     local orig_type = type(orig)
     local copy
 
@@ -12,15 +12,21 @@ function utils.deepcopy(orig)
         copy = {}
 
         for orig_key, orig_value in next, orig, nil do
-            copy[utils.deepcopy(orig_key)] = utils.deepcopy(orig_value)
+            copy[utils.DeepCopy(orig_key)] = utils.DeepCopy(orig_value)
         end
 
-        setmetatable(copy, utils.deepcopy(getmetatable(orig)))
+        setmetatable(copy, utils.DeepCopy(getmetatable(orig)))
     else
         copy = orig
     end
 
     return copy
+end
+
+function utils.Resize(icon, size)
+    local result = utils.DeepCopy(icon)
+    result.size = size
+    return result
 end
 
 return utils

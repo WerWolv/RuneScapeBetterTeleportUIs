@@ -178,7 +178,7 @@ function matcher.Resolve(menu)
             end
         end
 
-        row.destination = utils.deepcopy(data)
+        row.destination = utils.DeepCopy(data)
         row.destination.hidden = definition.hidden == true
         row.destination.background = definition.background or menu.group.background
         row.destination.icons = definition.icons or menu.group.icons

@@ -2,7 +2,7 @@ local TeleportListMenu = require("impl/interfaces/teleport_list_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local categoryMap = require("impl/ui/category_map_menu")
-local categories = require("definitions/jewellery_box_categories")
+local categories = require("menus/maps/jewellery_box/categories")
 
 local JewelleryBox = categoryMap.Create(TeleportListMenu, "jewelleryBox", categories)
 

@@ -1,7 +1,7 @@
 local TeleportMenu = require("impl/teleport_menu")
 local text = require("impl/text")
 local settings = require("impl/settings")
-local aliases = require("menus/enhancements/fairy_rings/fairy_ring_aliases")
+local aliases = require("menus/maps/fairy_rings/fairy_ring_aliases")
 
 local FairyRingMenu = TeleportMenu:Extend()
 FairyRingMenu.interface = FairyRingMenu

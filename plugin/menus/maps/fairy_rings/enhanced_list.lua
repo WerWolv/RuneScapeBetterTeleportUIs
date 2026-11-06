@@ -1,5 +1,5 @@
 local FairyRingMenu = require("impl/interfaces/fairy_ring_menu")
-local FairyRingWheels = require("menus/enhancements/fairy_rings/fairy_ring_wheels")
+local FairyRingWheels = require("menus/maps/fairy_rings/fairy_ring_wheels")
 local NativeLayout = require("impl/native_layout")
 local cleanup = require("impl/cleanup")
 local TextFieldAutofocus = require("impl/ui/text_field_autofocus")
