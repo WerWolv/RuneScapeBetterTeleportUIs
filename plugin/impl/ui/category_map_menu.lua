@@ -211,7 +211,7 @@ function CategoryMap:BeginVisuals()
     for _, entry in ipairs(self.session.rows) do
         local destination = entry.destination
 
-        destination.icons = utils.deepcopy(destination.icons)
+        destination.icons = utils.DeepCopy(destination.icons)
         if entry.native.spriteID ~= nil then
             destination.icons.sprite = entry.native.spriteID
         end

@@ -1,7 +1,7 @@
 return {
     selectionKey = "jewelleryBoxCategory",
     setting = "jewelleryBoxCustomCategories",
-    menu = "menus/maps/jewellery_box",
+    menu = "menus/maps/jewellery_box/jewellery_box",
     builtins = {
         { key = "duelling", label = "Ring of Duelling" },
         { key = "games", label = "Games Necklace" },

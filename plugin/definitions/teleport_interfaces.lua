@@ -1,11 +1,11 @@
 return {
     {
         name = "Jewellery Boxes",
-        module = "maps/jewellery_box",
+        module = "maps/jewellery_box/jewellery_box",
     },
     {
         name = "Teleport Nexus",
-        module = "maps/teleport_nexus",
+        module = "maps/teleport_nexus/teleport_nexus",
     },
     {
         name = "Wilderness Obelisks",
@@ -89,11 +89,11 @@ return {
     },
     {
         name = "Fairy Rings",
-        module = "enhancements/fairy_rings/fairy_rings",
+        module = "maps/fairy_rings/fairy_rings",
     },
     {
         name = "Tirannwn Quiver",
-        module = "enhancements/tirannwn_quiver",
+        module = "maps/tirannwn_quiver",
     },
     {
         name = "Passage of the Abyss",
