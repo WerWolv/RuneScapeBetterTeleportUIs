@@ -7,7 +7,7 @@ function EnlightenedAmulet:Define()
     return {
         title = "Enlightened Amulet",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.enlightenedAmulet,
+        icons = teleportIcons.jewellery.silverTopaz,
         entries = {
             ["1. Lumbridge Swamp"] = {
                 point = {x = 338, y = 181},

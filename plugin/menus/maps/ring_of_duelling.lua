@@ -7,7 +7,7 @@ function RingOfDuelling:Define()
     return {
         title = "Ring of Duelling",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.ringOfDuelling,
+        icons = teleportIcons.jewellery.goldEmerald,
         entries = {
             ["1. Het's Oasis"] = {
                 --icons = teleportIcons.relicOfHet,

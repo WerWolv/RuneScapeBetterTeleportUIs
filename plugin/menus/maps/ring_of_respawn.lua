@@ -7,7 +7,7 @@ function RingOfRespawn:Define()
     return {
         title = "Respawn Points",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.ringOfRespawn,
+        icons = teleportIcons.jewellery.silverJade,
         entries = {
             ["1. Lumbridge"] = {
                 point = {x = 343, y = 177},

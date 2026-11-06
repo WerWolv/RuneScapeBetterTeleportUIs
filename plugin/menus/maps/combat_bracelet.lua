@@ -7,7 +7,7 @@ function CombatBracelet:Define()
     return {
         title = "Combat Bracelet",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.combatBracelet,
+        icons = teleportIcons.jewellery.goldDragonstone,
         entries = {
             ["1. Warriors' Guild"] = {
                 point = {x = 239, y = 70}

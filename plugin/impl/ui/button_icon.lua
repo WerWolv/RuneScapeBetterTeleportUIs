@@ -1,6 +1,6 @@
 local constants = require("definitions/constants")
 local geometry = require("impl/map_geometry")
-local utils = require("impl/utils")
+local SpriteLayers = require("impl/ui/sprite_layers")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local components = require("impl/ui/components")
 local text = require("impl/text")
@@ -81,18 +81,18 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     local offset = highlighted and 2 or 1
     local width, height = marker.bounds.width, marker.bounds.height
 
-    if marker.shadow == nil or marker.shadowImage ~= image or marker.shadowTint ~= color
-        or marker.shadowOffset ~= offset or marker.shadowWidth ~= width or marker.shadowHeight ~= height then
-        if marker.shadow == nil then
-            marker.shadow = prettyui.Sprite.new(marker.shadowLayer, image, utils.deepcopy(marker.bounds))
-        elseif marker.shadowImage ~= image then
-            marker.shadow:SetSprite(image)
-        end
+    if marker.shadow == nil then
+        marker.shadow = SpriteLayers.New(marker.shadowLayer, image, marker.bounds)
+    else
+        marker.shadow:SetSprite(image)
+    end
 
+    if marker.shadowImage ~= image or marker.shadowTint ~= color
+        or marker.shadowOffset ~= offset or marker.shadowWidth ~= width or marker.shadowHeight ~= height then
         local root = marker.shadow.root
         root:SetPos(marker.bounds.x + offset, marker.bounds.y + offset)
         root:SetSize(width, height)
-        root.rgba = color
+        marker.shadow:SetRGBA(color)
 
         marker.shadowImage, marker.shadowTint, marker.shadowOffset = image, color, offset
         marker.shadowWidth, marker.shadowHeight = width, height
@@ -148,7 +148,7 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
     local normal = icons.normal or icons
 
     if locked then
-        return icons.locked or normal, true
+        return icons.locked or normal, icons.dimWhenLocked ~= false
     end
 
     if disabled then
@@ -181,11 +181,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         if image == nil then
             image = source.image
 
-            if image ~= nil and not image.loaded then
-                image:Load()
-            end
-
-            if image == nil or not image.loaded then
+            if not SpriteLayers.LoadImages(image) then
                 return nil
             end
         end
@@ -227,7 +223,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
                 width = width,
                 height = height,
             }
-            marker.sprite = prettyui.Sprite.new(artwork, image, utils.deepcopy(marker.bounds))
+            marker.sprite = SpriteLayers.New(artwork, image, marker.bounds)
             marker.image = image
         end
 
@@ -281,7 +277,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         end
 
         marker.highlighted, marker.shadowColor = highlighted, shadowColor
-    elseif marker.sprite ~= nil and marker.image ~= image then
+    elseif marker.sprite ~= nil then
         marker.sprite:SetSprite(image)
         marker.image = image
     end
@@ -295,7 +291,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
             marker.itemSprite.colour = dimmed
                 and Vector4.new(0.45, 0.45, 0.45, 1.0) or Vector4.new(1.0, 1.0, 1.0, 1.0)
         else
-            marker.artwork.alpha = dimmed and 0.4 or 1.0
+            marker.sprite:SetAlpha(dimmed and 0.4 or 1.0)
         end
 
         marker.dimmed = dimmed

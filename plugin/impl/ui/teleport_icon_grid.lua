@@ -1,4 +1,5 @@
 local components = require("impl/ui/components")
+local SpriteLayers = require("impl/ui/sprite_layers")
 local teleportTooltip = require("impl/ui/teleport_tooltip")
 local ScrollInput = require("impl/ui/scroll_input")
 local cleanup = require("impl/cleanup")
@@ -43,7 +44,7 @@ function IconGrid:Build(entries, onClick)
             slot.icon:SetPos(4, 4)
             slot.icon:SetSize(32, 32)
         else
-            slot.artwork = prettyui.Sprite.new(root, source.sprite or source.image, {
+            slot.artwork = SpriteLayers.New(root, source.sprite or source.image, {
                 x = 4, y = 4, width = 32, height = 32,
             })
             slot.icon = slot.artwork.root
@@ -116,7 +117,11 @@ function IconGrid:SetSelection(members, enabled)
     for _, slot in ipairs(self.slots) do
         slot.root.enabled = enabled
         slot.selection.hidden = members[slot.key] ~= true
-        slot.icon.alpha = enabled and 1 or 0.4
+        if slot.artwork ~= nil then
+            slot.artwork:SetAlpha(enabled and 1 or 0.4)
+        else
+            slot.icon.alpha = enabled and 1 or 0.4
+        end
     end
 end
 

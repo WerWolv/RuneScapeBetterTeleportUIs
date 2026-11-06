@@ -7,7 +7,7 @@ function DelversAnklet:Define()
     return {
         title = "Delver's Anklet",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.delversAnklet,
+        icons = teleportIcons.jewellery.platinumDragonstone,
         entries = {
             ["1. Brimhaven Dungeon"] = {
                 point = {x = 209, y = 172},

@@ -7,7 +7,7 @@ function DigsitePendant:Define()
     return {
         title = "Digsite",
         background = backgrounds.digsite,
-        icons = teleportIcons.digsitePendant,
+        icons = teleportIcons.jewellery.goldRuby,
         noBackgroundCrop = true,
         entries = {
             ["1. Varrock Dig Site."] = {
