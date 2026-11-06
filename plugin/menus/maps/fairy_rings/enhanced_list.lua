@@ -19,6 +19,36 @@ local component = FairyRingMenu.Component
 local plainText = FairyRingMenu.PlainText
 local logRows = FairyRingMenu.ReadLogRows
 
+local function availableRingCount()
+    local count, seen = 0, {}
+
+    -- The table includes unused combinations with an empty location (column 4).
+    -- Special multi-code routes are individual destinations in the same table.
+    for name, rowID in pairs(id.DBRow) do
+        -- Runtime iteration can expose ID -> name rather than the named lookups
+        -- shown in the generated stubs. Normalize before filtering destinations.
+        if type(name) == "number" and type(rowID) == "string" then
+            name, rowID = rowID, name
+        end
+
+        if type(name) == "string" and type(rowID) == "number"
+            and name:match("^FAIRYRINGS_") and not seen[rowID] then
+            seen[rowID] = true
+            local row = config.DBRow[name]
+
+            if row ~= nil and row.ownerDBTable.id == id.DBTable.FAIRYRINGS then
+                local location = row:GetColumnValues(4)[1]
+
+                if type(location) == "string" and text.Trim(location) ~= "" then
+                    count = count + 1
+                end
+            end
+        end
+    end
+
+    return count
+end
+
 function FairyRings:BeginInterface()
     local session = self.session
     local snapshot = session.menu.snapshot
@@ -27,6 +57,7 @@ function FairyRings:BeginInterface()
     session.cursorOverrides = {}
     session.favouriteIcons = {}
     session.headerControls = {}
+    session.availableRingCount = availableRingCount()
 
     for _, name in ipairs(headerControls) do
         local control = component(name)
@@ -465,6 +496,29 @@ function FairyRings:CalculateLayout()
     return {}
 end
 
+-- They seem to be hardcoding this value in the interface definition and forget to
+-- update it _every single time_ they add a new fairy ring.
+-- Update the value to actually match the number of available fairy rings dynamically
+function FairyRings:UpdateDiscoveredCount()
+    local session = self.session
+    local total = component("LOG_FOUND_TOTAL")
+
+    if total == nil or session.availableRingCount == 0 then
+        return
+    end
+
+    -- Keep the client's live discovered count and formatting; only fix the total.
+    local content = total.content:gsub("(/%s*)%d+", function(separator)
+        return separator .. session.availableRingCount
+    end, 1)
+
+    if content ~= total.content then
+        session.nativeLayout:Apply(function()
+            total.content = content
+        end)
+    end
+end
+
 function FairyRings:ApplyLayout()
     -- Restore selection styling before reading the native shades for filtered stripes.
     if self.session.highlightLayout ~= nil then
@@ -489,6 +543,7 @@ function FairyRings:ApplyLayout()
         self:UpdateScrollbar()
     end
 
+    self:UpdateDiscoveredCount()
     self:HighlightDestination()
 
     FairyRingWheels.Update(self.session)
