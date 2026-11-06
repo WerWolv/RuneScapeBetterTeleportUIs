@@ -1,4 +1,5 @@
 local cleanup = require("impl/cleanup")
+local log = require("impl/log")
 
 local SpriteLayers = {}
 SpriteLayers.__index = SpriteLayers
@@ -20,11 +21,17 @@ function SpriteLayers.LoadImages(images)
     for index = 1, count do
         local image = array and images[index] or images
 
-        if not image.loaded then
-            image:Load()
-        end
+        if type(image) ~= "number" then
+            if not image.loaded then
+                local result = image:Load()
 
-        ready = image.loaded and ready
+                if not image.loaded then
+                    log.Once("Image load failed: " .. tostring(image.path) .. ": " .. tostring(result))
+                end
+            end
+
+            ready = image.loaded and ready
+        end
     end
 
     return ready
@@ -44,6 +51,14 @@ function SpriteLayers.New(parent, images, bounds)
 end
 
 function SpriteLayers:SetSprite(images)
+    -- Resources must load in their owning plugin, before PrettyUI assigns them
+    -- to a native sprite from the dependency's execution context.
+    if images ~= nil and not SpriteLayers.LoadImages(images) then
+        self.root.hidden = true
+        return false
+    end
+
+    self.root.hidden = false
     local array = isArray(images)
     local count = images == nil and 0 or array and #images or 1
 
@@ -80,6 +95,7 @@ function SpriteLayers:SetSprite(images)
     end
 
     self.count = count
+    return true
 end
 
 -- Native layers do not propagate tint or opacity to their drawable children.
