@@ -12,7 +12,7 @@ local offset = {
 
 local function description(slayerLevel, combatLevel, location)
     local result = ""
-    
+
     if slayerLevel > 0 then
         result = result .. descriptions.LevelRequirement(slayerLevel, descriptions.SKILL.SLAYER)
     end

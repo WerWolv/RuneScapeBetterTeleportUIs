@@ -15,10 +15,10 @@ local builtins = {
 }
 
 -- Register nested settings eagerly so their saved values are available before any UI opens.
-local function registerGroups(definitions)
+local function registerGroups(groupDefinitions)
     local groups = {}
 
-    for _, group in ipairs(definitions) do
+    for _, group in ipairs(groupDefinitions) do
         local children = {}
 
         for _, definition in ipairs(group.settings) do

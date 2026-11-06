@@ -1,5 +1,5 @@
 -- This file contains definitions of backgrounds used in the teleport interfaces
--- 
+--
 -- Each entry of this table has the following fields
 -- - width: The width of the map coordinate space (usually the image width)
 -- - height: The height of the map coordinate space (usually the image height)
