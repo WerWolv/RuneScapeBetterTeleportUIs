@@ -1,4 +1,4 @@
-local FairyRingMap = require("menus/maps/fairy_rings")
+local FairyRingMap = require("menus/maps/fairy_rings/map_menu")
 local EnhancedList = require("menus/maps/fairy_rings/enhanced_list")
 local settings = require("impl/settings")
 
