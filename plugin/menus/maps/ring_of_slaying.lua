@@ -79,7 +79,7 @@ function RingOfSlaying:Define()
     return {
         title = "Ring of Slaying",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.ringOfSlaying,
+        icons = teleportIcons.jewellery.goldEnchantedGem,
         entries = {
             ["1. Sumona in Pollnivneach."] = {
                 nameOverride = "Pollnivneach",

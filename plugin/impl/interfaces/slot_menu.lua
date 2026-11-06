@@ -36,6 +36,10 @@ function SlotMenu:UpdateVisuals(layout, hovered)
 end
 
 function SlotMenu:ReleaseVisuals()
+    for _, slot in ipairs(self.slots or {}) do
+        cleanup.Release(slot, "artwork")
+    end
+
     cleanup.Release(self, "slotLayer")
     self.slots = nil
 end

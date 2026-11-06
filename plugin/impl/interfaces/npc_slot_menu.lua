@@ -1,6 +1,7 @@
 local SlotMenu = require("impl/interfaces/slot_menu")
 local ButtonIcon = require("impl/ui/button_icon")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
+local SpriteLayers = require("impl/ui/sprite_layers")
 local components = require("impl/ui/components")
 local text = require("impl/text")
 
@@ -63,11 +64,11 @@ function NpcSlotMenu:BeginVisuals()
                 slot.label = components.CenteredLabel(layer, id.Font.MUSEO_SANS_11PT_REGULAR)
                 slot.label.maxLines = 0
             else
-                local sprite = ui.Sprite.new(layer)
                 local icons = destination.icons
-                sprite.spriteID = ButtonIcon.Source(icons, false, row.disabled, row.locked).sprite
-                sprite.clickthrough = true
-                slot.icon = sprite
+                local source = ButtonIcon.Source(icons, false, row.disabled, row.locked)
+                local width, height = ButtonIcon.Dimensions(icons)
+                slot.artwork = SpriteLayers.New(layer, source.sprite or source.image, { width = width, height = height })
+                slot.icon = slot.artwork.root
             end
         end
     end
@@ -221,7 +222,8 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
             local source
             source, dimmed = ButtonIcon.Source(icons, row.name == hovered, row.disabled, row.locked)
 
-            slot.icon.spriteID = source.sprite
+            slot.artwork:SetSprite(source.sprite or source.image)
+            slot.artwork:SetAlpha(dimmed and 0.4 or 1)
         end
 
         slot.layer.alpha = dimmed and 0.4 or 1

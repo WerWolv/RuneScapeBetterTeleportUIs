@@ -7,7 +7,7 @@ function GamesNecklace:Define()
     return {
         title = "Games necklace",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.gamesNecklace,
+        icons = teleportIcons.jewellery.goldSapphire,
         entries = {
             ["1. Troll Invasion"] = {
                 point = {x = 247, y = 41},

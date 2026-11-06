@@ -7,11 +7,11 @@ function WildernessSword:Define()
     return {
         title = "Wilderness",
         background = backgrounds.wilderness,
-        icons = teleportIcons.obelisk,
+        icons = teleportIcons.lodestone.wilderness,
         entries = {
             ["1. Teleport to Edgeville"] = {
                 nameOverride = "Edgeville",
-                point = {x = 263, y = 825},
+                point = {x = 263, y = 805},
             },
             ["2. Teleport to Herb patch"] = {
                 nameOverride = "Herb patch",

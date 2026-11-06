@@ -7,7 +7,7 @@ function TravellersNecklace:Define()
     return {
         title = "Traveller's Necklace",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.travellersNecklace,
+        icons = teleportIcons.jewellery.silverJade,
         entries = {
             ["1. Wizards' Tower"] = {
                 point = {x = 310, y = 170},

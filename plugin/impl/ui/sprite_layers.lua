@@ -1,0 +1,111 @@
+local cleanup = require("impl/cleanup")
+
+local SpriteLayers = {}
+SpriteLayers.__index = SpriteLayers
+
+local function isArray(image)
+    return type(image) == "table" and (image[1] ~= nil or next(image) == nil)
+end
+
+-- Image resources are objects; only plain sequences represent layered artwork.
+function SpriteLayers.LoadImages(images)
+    if images == nil then
+        return false
+    end
+
+    local array = isArray(images)
+    local count = array and #images or 1
+    local ready = count > 0
+
+    for index = 1, count do
+        local image = array and images[index] or images
+
+        if not image.loaded then
+            image:Load()
+        end
+
+        ready = image.loaded and ready
+    end
+
+    return ready
+end
+
+-- All layers share a rectangle. Array order is back-to-front, including after state changes.
+function SpriteLayers.New(parent, images, bounds)
+    local root = ui.Layer.new(parent)
+    root:SetPos(bounds.x or 0, bounds.y or 0)
+    root:SetSize(bounds.width, bounds.height)
+    root.clickthrough = true
+
+    local self = setmetatable({ root = root, sprites = {}, images = {} }, SpriteLayers)
+    self:SetSprite(images)
+
+    return self
+end
+
+function SpriteLayers:SetSprite(images)
+    local array = isArray(images)
+    local count = images == nil and 0 or array and #images or 1
+
+    -- Keep spare controls for states with fewer layers, avoiding allocation churn on hover.
+    for index = count + 1, #self.sprites do
+        self.sprites[index].root.hidden = true
+    end
+
+    for index = 1, count do
+        local image = array and images[index] or images
+        local sprite = self.sprites[index]
+
+        if sprite == nil then
+            sprite = prettyui.Sprite.new(self.root, image, { width = self.root.width, height = self.root.height })
+            sprite.root:SetSize(0, 0, 1, 1)
+            sprite.root.clickthrough = true
+
+            self.sprites[index] = sprite
+        elseif self.images[index] ~= image then
+            sprite:SetSprite(image)
+        end
+
+        if self.images[index] ~= image then
+            if self.rgba ~= nil then
+                sprite.root.rgba = self.rgba
+            end
+            if self.alpha ~= nil then
+                sprite.root.alpha = self.alpha
+            end
+        end
+
+        sprite.root.hidden = false
+        self.images[index] = image
+    end
+
+    self.count = count
+end
+
+-- Native layers do not propagate tint or opacity to their drawable children.
+function SpriteLayers:SetRGBA(color)
+    self.rgba = color
+    self.alpha = (color & 0xFF) / 255
+
+    for _, sprite in ipairs(self.sprites) do
+        sprite.root.rgba = color
+    end
+end
+
+function SpriteLayers:SetAlpha(alpha)
+    self.alpha = alpha
+
+    for _, sprite in ipairs(self.sprites) do
+        sprite.root.alpha = alpha
+    end
+end
+
+function SpriteLayers:Destroy()
+    for index = #self.sprites, 1, -1 do
+        cleanup.Release(self.sprites, index)
+    end
+
+    cleanup.Release(self, "root")
+end
+
+return SpriteLayers

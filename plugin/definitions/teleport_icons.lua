@@ -1,3 +1,22 @@
+local function jewellery(outer, inner)
+    return {
+        normal = { image = {
+            Plugin.resources.icons.jewellery["outer_" .. outer],
+            Plugin.resources.icons.jewellery["inner_" .. inner],
+        }},
+        hovered = { image = {
+            Plugin.resources.icons.jewellery["outer_hovered_" .. outer],
+            Plugin.resources.icons.jewellery["inner_" .. inner],
+        }},
+        size = 32,
+        shadowColor = 0x00000099,
+        shadowColorHovered = 0x00000099
+    }
+end
+
+-- `image` and `sprite` accept a single resource/ID or an array drawn back-to-front.
+-- Layers share the icon's dimensions, e.g. normal = { image = { baseImage, overlayImage } }.
+-- The same form works in hovered, disabled and locked states, including sprite = { baseID, overlayID }.
 return {
     menaphosFactions = {
         imperial = {
@@ -150,61 +169,6 @@ return {
         size = 40,
         shadowColor = 0x9A4521FF,
         shadowColorHovered = 0x9A4521CC
-    },
-    relicOfHet = {
-        objectID = id.Obj.MENAPHOS_REPUTATION_CONSUMABLE_HET,
-        size = 32,
-        shadowColorHovered = 0xFAF45FCC
-    },
-    castleWarsCape = {
-        objectID = id.Obj.CASTLEWARS_CAPE_FLAG,
-        size = 40,
-        shadowColorHovered = 0x9B8F8DCC
-    },
-    warForgeShield = {
-        objectID = id.Obj.ARCH_TOWER_COWER_SHIELD,
-        size = 40,
-        shadowColorHovered = 0xC07529CC
-    },
-    fistOfGuthixOrb = {
-        objectID = id.Obj.HVH_TELEPORT_TABLET,
-        size = 40,
-        shadowColorHovered = 0x7799B9CC
-    },
-    corporealBeast = {
-        objectID = id.Obj.SUM2_SPIRIT_SHIELD_ELYSIAN,
-        size = 32,
-        shadowColorHovered = 0x376C83CC
-    },
-    tearsOfGuthix = {
-        objectID = id.Obj.WILDY_EVENTS_GENERAL_SKILL_HUNTER_BUTTERFLY,
-        size = 32,
-        shadowColorHovered = 0x4B5075CC
-    },
-    trollInvasion = {
-        objectID = id.Obj.SLAYERGUIDE_TROLL,
-        size = 40,
-        shadowColorHovered = 0x3C3737CC
-    },
-    dice = {
-        objectID = id.Obj.PENG_POW_DICE,
-        size = 32,
-        shadowColorHovered = 0xAAAAAACC
-    },
-    horn = {
-        objectID = id.Obj.BARBASSAULT_HORN_COLLECTOR,
-        size = 40,
-        shadowColorHovered = 0xAAAAAACC
-    },
-    sickle = {
-        objectID = id.Obj.MYQ4_ENCHANT_BLESS_SILVER_SICKLE_EMERALD,
-        size = 32,
-        shadowColorHovered = 0x8E8282CC
-    },
-    squid = {
-        objectID = id.Obj.PENG_POW_SQUID,
-        size = 40,
-        shadowColorHovered = 0x8E8282CC
     },
     shiftingTombs = {
         normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_CITY_0},
@@ -1018,6 +982,35 @@ return {
         imageHeight = 32,
         shadowColor = 0x00000099,
         shadowColorHovered = 0x00000099
+    },
+    jewellery = {
+        silverOpal  = jewellery("silver", "opal"),
+        silverJade  = jewellery("silver", "jade"),
+        silverTopaz = jewellery("silver", "topaz"),
+
+        goldSapphire     = jewellery("gold", "sapphire"),
+        goldEmerald      = jewellery("gold", "emerald"),
+        goldRuby         = jewellery("gold", "ruby"),
+        goldDiamond      = jewellery("gold", "diamond"),
+        goldDragonstone  = jewellery("gold", "dragonstone"),
+        goldOnyx         = jewellery("gold", "onyx"),
+        darkGoldOnyx     = jewellery("dark_gold", "onyx"),
+        goldEnchantedGem = jewellery("gold", "enchanted_gem"),
+
+        ensouledMoonstone   = jewellery("ensouled", "moonstone"),
+        platinumDragonstone = jewellery("platinum", "dragonstone"),
+    },
+    lodestone = {
+        wilderness = {
+            normal = { sprite = id.Sprite.RS3_ICON_LODESTONE_INSIGNIA_21 },
+            locked = { sprite = id.Sprite.RS3_ICON_LODESTONE_INSIGNIA_LOCKED_21 },
+            dimWhenLocked = false,
+            size = 40,
+            imageWidth = 50,
+            imageHeight = 50,
+            shadowColor = 0x00000050,
+            shadowColorHovered = 0x000000FF
+        }
     },
 
     nextArrow = {

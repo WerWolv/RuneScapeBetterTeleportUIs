@@ -368,11 +368,15 @@ function CategoryMap:UpdateVisuals(layout, hovered)
             local alpha = entry.destination.searchMatch == false and 0.2 or 1.0
 
             -- Set opacity on drawable controls; native layers do not fade their children.
-            local drawable = marker.itemSprite or marker.sprite.root
-            drawable.alpha = (entry.disabled and 0.4 or 1.0) * alpha
+            local iconAlpha = (marker.dimmed and 0.4 or 1.0) * alpha
+            if marker.itemSprite ~= nil then
+                marker.itemSprite.alpha = iconAlpha
+            else
+                marker.sprite:SetAlpha(iconAlpha)
+            end
 
             if marker.shadow ~= nil then
-                marker.shadow.root.alpha = (marker.shadowTint & 0xFF) / 255 * alpha
+                marker.shadow:SetAlpha((marker.shadowTint & 0xFF) / 255 * alpha)
             end
 
             if marker.hotkey ~= nil then

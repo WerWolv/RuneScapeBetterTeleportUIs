@@ -7,7 +7,7 @@ function AmuletOfGlory:Define()
     return {
         title = "Amulet of Glory",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.amuletOfGlory,
+        icons = teleportIcons.jewellery.goldDragonstone,
         entries = {
             ["1. Edgeville"] = {
                 point = {x = 302, y = 86},
