@@ -26,7 +26,10 @@ function ScrollInput.For(view, step, parent)
     local state = handlers[view]
 
     if state == nil then
-        state = { step = step or 32, parent = parent }
+        state = {
+            step = step or 12,
+            parent = parent,
+        }
 
         state.callback = function(component, delta)
             if view.root == nil then
@@ -35,7 +38,10 @@ function ScrollInput.For(view, step, parent)
 
             if view.scrollable ~= false then
                 local previous = view.scrollY
-                view:SetScrollPosition(previous + delta * state.step)
+                -- Bound each wheel event to one step while retaining fractional
+                -- trackpad movement. Large deltas must not skip an entire pane.
+                local movement = math.max(-1, math.min(1, delta))
+                view:SetScrollPosition(previous + movement * state.step)
 
                 if view.scrollY ~= previous then
                     return false
