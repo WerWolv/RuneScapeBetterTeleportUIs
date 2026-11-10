@@ -83,7 +83,7 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
 
     if marker.shadow == nil then
         marker.shadow = SpriteLayers.New(marker.shadowLayer, image, marker.bounds)
-    else
+    elseif marker.shadowImage ~= image then
         marker.shadow:SetSprite(image)
     end
 
@@ -131,7 +131,10 @@ end
 
 -- Create an icon collection attached to the map viewport.
 function buttonIcon.New(parent)
-    return setmetatable({ parent = parent, markers = {} }, buttonIcon)
+    return setmetatable({
+        parent = parent,
+        markers = {},
+    }, buttonIcon)
 end
 
 -- Destroy every marker and discard cached rendering state.
@@ -277,7 +280,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         end
 
         marker.highlighted, marker.shadowColor = highlighted, shadowColor
-    elseif marker.sprite ~= nil then
+    elseif marker.sprite ~= nil and marker.image ~= image then
         marker.sprite:SetSprite(image)
         marker.image = image
     end
@@ -307,13 +310,10 @@ end
 
 -- Position visible icons and hide markers for hidden, cropped-out or unavailable artwork.
 function buttonIcon:Update(menu, hovered)
-    for _, marker in pairs(self.markers) do
-        marker.layer.hidden = true
-
-        if marker.hotkey ~= nil then
-            marker.hotkey:Hide()
-        end
-    end
+    self.generation = (self.generation or 0) + 1
+    local generation = self.generation
+    local width, height = self.parent.width, self.parent.height
+    local reorder = self.hovered ~= hovered
 
     for _, row in ipairs(menu.rows) do
         local destination = row.destination
@@ -324,31 +324,60 @@ function buttonIcon:Update(menu, hovered)
                 destination.showLockWhenDisabled, destination.hotkey)
 
             if marker ~= nil then
-                local x, y = geometry.Project(menu.background, point, self.parent.width, self.parent.height)
+                local x, y = geometry.Project(menu.background, point, width, height)
+                x, y = x - marker.width / 2, y - marker.height / 2
 
-                marker.layer:SetPos(x - marker.width / 2, y - marker.height / 2)
-                marker.layer.hidden = false
-                marker.layer:MoveToFront()
+                if marker.x ~= x or marker.y ~= y then
+                    marker.layer:SetPos(x, y)
+                    marker.x, marker.y = x, y
+                end
 
-                marker.hotkey:Update(marker.layer, {
-                    width = marker.width,
-                    height = marker.height,
-                    offset = destination.hotkeyOffset,
-                    disabled = row.disabled,
-                    hidden = row.locked or (icons.hotkeyOnHover and row.name ~= hovered),
-                })
+                if marker.visible ~= true then
+                    marker.layer.hidden = false
+                    reorder = true
+                end
+
+                marker.visible = true
+                marker.generation = generation
+
+                local options = marker.hotkeyOptions or { preserveOrder = true }
+                marker.hotkeyOptions = options
+                options.width, options.height = marker.width, marker.height
+                options.offset, options.disabled = destination.hotkeyOffset, row.disabled
+                options.hidden = row.locked or (icons.hotkeyOnHover and row.name ~= hovered)
+                marker.hotkey:Update(marker.layer, options)
             end
         end
     end
 
-    if hovered ~= nil and self.markers[hovered] ~= nil then
-        local marker = self.markers[hovered]
-        marker.layer:MoveToFront()
+    for _, marker in pairs(self.markers) do
+        if marker.generation ~= generation and marker.visible ~= false then
+            marker.layer.hidden = true
+            marker.hotkey:Hide()
+            marker.visible = false
+        end
+    end
 
-        if marker.hotkey ~= nil then
+    -- Reordering every marker and badge every Draw repeatedly shuffles the same
+    -- native sibling list. Restore display order only when visibility/hover changes.
+    if reorder then
+        for _, row in ipairs(menu.rows) do
+            local marker = self.markers[row.name]
+
+            if marker ~= nil and marker.generation == generation then
+                marker.layer:MoveToFront()
+                marker.hotkey:MoveToFront()
+            end
+        end
+
+        if hovered ~= nil and self.markers[hovered] ~= nil and self.markers[hovered].generation == generation then
+            local marker = self.markers[hovered]
+            marker.layer:MoveToFront()
             marker.hotkey:MoveToFront()
         end
     end
+
+    self.hovered = hovered
 end
 
 return buttonIcon

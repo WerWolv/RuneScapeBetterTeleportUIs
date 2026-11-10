@@ -37,7 +37,7 @@ local function teleportBounds(source, rows, minWidth, scale)
         local point = destination.point
 
         if not destination.hidden and point ~= nil
-            and geometry.Contains(source, point) then
+            and geometry.Contains(source, point, bounds) then
             local width, height = 0, 0
 
             if destination.icons ~= nil then
@@ -86,7 +86,13 @@ end
 -- Icons use interface pixels. The full source's fitted scale is a conservative
 -- lower bound: zooming into a smaller crop can only make its map scale larger.
 function mapCrop.SetViewport(menu, width, height)
-    if menu.cropSource == nil then return end
+    if menu.cropSource == nil then
+        return
+    end
+
+    -- Invalidate once per layout pass, rather than rescanning every destination
+    -- for each Bounds/Contains/Project call while drawing the same map.
+    menu.cropCache = nil
     local bounds = geometry.Bounds(menu.cropSource)
     menu.cropScale = math.min(math.max(1, width) / bounds.width, math.max(1, height) / bounds.height)
 end
@@ -101,7 +107,21 @@ function mapCrop.Attach(menu)
             return geometry.Bounds(source)
         end
 
-        return teleportBounds(source, menu.rows, menu.cropMinWidth, menu.cropScale)
+        local hotkeys = settings.Get("showTeleportHotkeys")
+        local cache = menu.cropCache
+
+        if cache == nil or cache.minWidth ~= menu.cropMinWidth or cache.scale ~= menu.cropScale
+            or cache.hotkeys ~= hotkeys then
+            cache = {
+                minWidth = menu.cropMinWidth,
+                scale = menu.cropScale,
+                hotkeys = hotkeys,
+                bounds = teleportBounds(source, menu.rows, menu.cropMinWidth, menu.cropScale),
+            }
+            menu.cropCache = cache
+        end
+
+        return cache.bounds
     end)
 
     menu.background = background

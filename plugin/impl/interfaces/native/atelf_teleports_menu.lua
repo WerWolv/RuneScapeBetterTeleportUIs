@@ -3,6 +3,7 @@ local NativeLayout = require("impl/interfaces/native/native_layout")
 
 local AtelfTeleportsMenu = TeleportMenu:Extend()
 AtelfTeleportsMenu.interface = AtelfTeleportsMenu
+AtelfTeleportsMenu.cacheNativeSnapshot = true
 AtelfTeleportsMenu.interfaceName = "ATELF_TELEPORTS (" .. id.Interface.ATELF_TELEPORTS .. ")"
 
 -- Discover the native quiver button by component identity rather than its changing display label.

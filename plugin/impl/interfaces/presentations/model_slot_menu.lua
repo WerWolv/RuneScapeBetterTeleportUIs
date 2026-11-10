@@ -4,9 +4,9 @@ local HotkeyBadge = require("impl/ui/hotkey_badge")
 local SpriteLayers = require("impl/ui/sprite_layers")
 local components = require("impl/ui/components")
 local text = require("impl/text")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 
 local ModelSlotMenu = {}
-
 
 local slotSize, rowGap, inset = 112, 8, 12
 local modelInset = 6
@@ -18,7 +18,7 @@ function ModelSlotMenu:UpdateTitle()
     local title = self.session.title
 
     if title ~= nil then
-        title.control.alpha = 0
+        NativeLayout.Set(title.control, "alpha", 0)
     end
 end
 
@@ -29,13 +29,17 @@ end
 
 function ModelSlotMenu:ValidateDestination(definition)
     local sources = (definition.npcID ~= nil and 1 or 0)
-        + (definition.objectID ~= nil and 1 or 0) + (definition.modelID ~= nil and 1 or 0)
+        + (definition.objectID ~= nil and 1 or 0)
+        + (definition.modelID ~= nil and 1 or 0)
+
     if sources > 1 then
         return false, "needs only one of npcID, objectID or modelID"
     end
+
     if definition.modelType ~= nil and definition.modelID == nil then
         return false, "needs modelID when modelType is specified"
     end
+
     if sources == 1 or definition.icons ~= nil or self.definition.icons ~= nil then
         return true
     end
@@ -46,15 +50,30 @@ end
 -- Build passive model cards; the original native rows remain the only click targets.
 function ModelSlotMenu:BeginVisuals()
     SlotMenu.BeginVisuals(self)
+    self.modelLayout, self.appliedModelLayout = nil, nil
+    self.modelRectangles = {}
+
+    local targets = {}
+
+    for _, row in ipairs(self.session.rows) do
+        local rectangle = { entry = row }
+        targets[row] = rectangle
+        self.modelRectangles[#self.modelRectangles + 1] = rectangle
+    end
 
     for _, row in ipairs(self.session.menu.rows) do
         local destination = row.destination
 
         if not destination.hidden then
             local slot = self:CreateSlot(row, hasModel(destination))
+            slot.targetRectangle = targets[row]
+            slot.hotkeyOptions = { preserveOrder = true }
+
             local layer = slot.layer
-            slot.hotkey = HotkeyBadge.New(self.slotLayer,
-                row.native and row.native.shortcut or text.Hotkey(row.name))
+            slot.hotkey = HotkeyBadge.New(
+                self.slotLayer,
+                row.native and row.native.shortcut or text.Hotkey(row.name)
+            )
 
             if hasModel(destination) then
                 -- Clip model drawing to the slot interior, excluding its border and name label.
@@ -64,14 +83,19 @@ function ModelSlotMenu:BeginVisuals()
 
                 local model = ui.Model.new(viewport)
                 model.clickthrough = true
+
                 if destination.npcID ~= nil then
                     model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
                 elseif destination.objectID ~= nil then
                     model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
                 else
-                    model:SetModel(destination.modelType or ui.ModelType.MODEL,
-                        destination.modelID, destination.secondaryModelID)
+                    model:SetModel(
+                        destination.modelType or ui.ModelType.MODEL,
+                        destination.modelID,
+                        destination.secondaryModelID
+                    )
                 end
+
                 model.modelWidth = slotSize
                 model.modelHeight = slotSize
                 model.viewDistance = destination.viewDistance or 600
@@ -88,6 +112,7 @@ function ModelSlotMenu:BeginVisuals()
                         model[property] = value
                     end
                 end
+
                 if destination.orthographic ~= nil then
                     model.orthographic = destination.orthographic
                 end
@@ -100,7 +125,10 @@ function ModelSlotMenu:BeginVisuals()
                 local icons = destination.icons
                 local source = ButtonIcon.Source(icons, false, row.disabled, row.locked)
                 local width, height = ButtonIcon.Dimensions(icons)
-                slot.artwork = SpriteLayers.New(layer, source.sprite or source.image, { width = width, height = height })
+                slot.artwork = SpriteLayers.New(layer, source.sprite or source.image, {
+                    width = width,
+                    height = height,
+                })
                 slot.icon = slot.artwork.root
             end
         end
@@ -115,8 +143,14 @@ function ModelSlotMenu:CalculateLayout()
     local gridWidth = columns * slotSize + inset * 2
     local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
     local availableHeight = (session.layoutHeight or session.layoutParent.height) - session.top - session.bottom - 16
-    local scale = math.max(0.01, math.min(1,
-        availableWidth / gridWidth))
+    local cached = self.modelLayout
+
+    if cached ~= nil and cached.availableWidth == availableWidth and cached.availableHeight == availableHeight
+        and cached.columns == columns and cached.rows == rows then
+        return cached.layout
+    end
+
+    local scale = math.max(0.01, math.min(1, availableWidth / gridWidth))
     local nameHeight, artworkHeight, verticalGap
 
     -- Text does not scale with the models. Wrap at the displayed width and reserve its full height.
@@ -129,8 +163,9 @@ function ModelSlotMenu:CalculateLayout()
                 local font = config.Font.FromID(slot.label.font)
                 local lines = font:SplitString(self:GetDisplayName(slot.row), width, false, false, false)
                 slot.label.content = table.concat(lines, "<br>")
-                local height = font:GetStringHeightAndLineCount(slot.label.content, width,
-                    font.baseline, false, false, false)
+                local height = font:GetStringHeightAndLineCount(
+                    slot.label.content, width, font.baseline, false, false, false
+                )
                 local padding = 0
 
                 if #lines > 1 then
@@ -143,8 +178,7 @@ function ModelSlotMenu:CalculateLayout()
         end
 
         artworkHeight = rows * slotSize + (rows - 1) * verticalGap + inset * 2
-        local fittedScale = math.max(0.01, math.min(scale,
-            (availableHeight - rows * nameHeight) / artworkHeight))
+        local fittedScale = math.max(0.01, math.min(scale, (availableHeight - rows * nameHeight) / artworkHeight))
 
         if fittedScale >= scale then
             break
@@ -155,7 +189,7 @@ function ModelSlotMenu:CalculateLayout()
 
     local gridHeight = artworkHeight + rows * nameHeight / scale
 
-    return {
+    local layout = {
         width = math.max(1, math.floor(gridWidth * scale)),
         height = math.max(1, math.floor(gridHeight * scale)),
         scale = scale,
@@ -165,20 +199,33 @@ function ModelSlotMenu:CalculateLayout()
         labelHeight = nameHeight / scale,
         rowGap = verticalGap,
     }
+
+    self.modelLayout = {
+        availableWidth = availableWidth,
+        availableHeight = availableHeight,
+        columns = columns,
+        rows = rows,
+        layout = layout,
+    }
+
+    return layout
 end
 
 -- Align each full card, including its name, with its client-owned teleport operation.
 function ModelSlotMenu:ApplyLayout(layout)
     self:LayoutWindow(layout.width, layout.height)
-    self.slotLayer:SetSize(layout.width, layout.height)
+
+    local resized = self.appliedModelLayout ~= layout
+
+    if resized then
+        self.slotLayer:SetSize(layout.width, layout.height)
+    end
 
     local origin = self.slotLayer.xyGlobal
-    local rectangles = {}
+    local rectangles = self.modelRectangles
 
-    for _, row in ipairs(self.session.rows) do
-        if row.destination.hidden then
-            rectangles[#rectangles + 1] = { entry = row, x = origin.x, y = origin.y, width = 0, height = 0 }
-        end
+    for _, rectangle in ipairs(rectangles) do
+        rectangle.x, rectangle.y, rectangle.width, rectangle.height = origin.x, origin.y, 0, 0
     end
 
     local function scaled(value)
@@ -193,47 +240,60 @@ function ModelSlotMenu:ApplyLayout(layout)
         local y = inset + math.floor(index / layout.columns) * (slotSize + layout.labelHeight + layout.rowGap)
         local width, height = slotSize, slotSize + layout.labelHeight
 
-        if slot.model ~= nil then
-            slot.background:SetSize(scaled(slotSize), scaled(slotSize))
-            slot.viewport:SetPos(scaled(modelInset), scaled(modelInset))
-            slot.viewport:SetSize(scaled(slotSize - modelInset * 2), scaled(slotSize - modelInset * 2))
-            slot.model:SetPos(0, 0)
-            slot.model:SetSize(slot.viewport.width, slot.viewport.height)
+        local iconWidth, iconHeight
 
-            local offset = destination.modelOffset or { x = 0, y = 0 }
-            local screenOffset = slot.model.screenOffset
-            screenOffset.x = scaled(offset.x or 0)
-            screenOffset.y = scaled(offset.y or 0)
-            screenOffset.z = 0
-            slot.model.screenOffset = screenOffset
-
-            slot.label:SetPos(0, scaled(slotSize))
-            slot.label:SetSize(scaled(width), scaled(layout.labelHeight))
-        else
-            local iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
-
-            slot.icon:SetSize(scaled(iconWidth), scaled(iconHeight))
+        if slot.model == nil then
+            iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
 
             if destination.anchor == "bottomRight" then
                 x = layout.gridWidth - inset - iconWidth
                 y = layout.gridHeight - inset - iconHeight
                 width, height = iconWidth, iconHeight
-                slot.icon:SetPos(0, 0)
-            else
-                slot.icon:SetPos(scaled((slotSize - iconWidth) / 2), scaled((slotSize - iconHeight) / 2))
             end
         end
 
-        slot.layer:SetPos(scaled(x), scaled(y))
-        slot.layer:SetSize(scaled(width), scaled(height))
+        -- Model animation advances in the client. Only resize/reposition its
+        -- component when the card layout changes, rather than invalidating it every Draw.
+        if resized then
+            if slot.model ~= nil then
+                slot.background:SetSize(scaled(slotSize), scaled(slotSize))
+                slot.viewport:SetPos(scaled(modelInset), scaled(modelInset))
+                slot.viewport:SetSize(scaled(slotSize - modelInset * 2), scaled(slotSize - modelInset * 2))
+                slot.model:SetPos(0, 0)
+                slot.model:SetSize(slot.viewport.width, slot.viewport.height)
 
-        if not row.locked then
-            rectangles[#rectangles + 1] = {
-                entry = row, x = origin.x + scaled(x), y = origin.y + scaled(y),
-                width = scaled(width), height = scaled(height),
-            }
+                local offset = destination.modelOffset
+                local screenOffset = slot.model.screenOffset
+                screenOffset.x = scaled(offset and offset.x or 0)
+                screenOffset.y = scaled(offset and offset.y or 0)
+                screenOffset.z = 0
+                slot.model.screenOffset = screenOffset
+
+                slot.label:SetPos(0, scaled(slotSize))
+                slot.label:SetSize(scaled(width), scaled(layout.labelHeight))
+            else
+                slot.icon:SetSize(scaled(iconWidth), scaled(iconHeight))
+
+                if destination.anchor == "bottomRight" then
+                    slot.icon:SetPos(0, 0)
+                else
+                    slot.icon:SetPos(scaled((slotSize - iconWidth) / 2), scaled((slotSize - iconHeight) / 2))
+                end
+            end
+
+            slot.layer:SetPos(scaled(x), scaled(y))
+            slot.layer:SetSize(scaled(width), scaled(height))
+        end
+
+        local rectangle = slot.targetRectangle
+
+        if rectangle ~= nil then
+            rectangle.x, rectangle.y = origin.x + scaled(x), origin.y + scaled(y)
+            rectangle.width, rectangle.height = scaled(width), scaled(height)
         end
     end
+
+    self.appliedModelLayout = layout
     self:LayoutRows(rectangles, layout.width, layout.height)
 end
 
@@ -250,39 +310,61 @@ function ModelSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
         local dimmed = row.disabled
+        local highlighted = row.name == hovered
 
         if slot.label ~= nil then
-            slot.label.rgba = row.name == hovered and 0xFFFFFFFF or 0xFFE3A3FF
+            if slot.highlighted ~= highlighted then
+                slot.label.rgba = highlighted and 0xFFFFFFFF or 0xFFE3A3FF
+            end
         else
             local icons = row.destination.icons
             local source
-            source, dimmed = ButtonIcon.Source(icons, row.name == hovered, row.disabled, row.locked)
+            source, dimmed = ButtonIcon.Source(icons, highlighted, row.disabled, row.locked)
 
-            slot.artwork:SetSprite(source.sprite or source.image)
+            local image = source.sprite or source.image
+
+            if slot.image ~= image then
+                slot.artwork:SetSprite(image)
+                slot.image = image
+            end
+
             slot.artwork:SetAlpha(dimmed and 0.4 or 1)
         end
 
-        slot.layer.alpha = dimmed and 0.4 or 1
-        slot.hotkey:Update(slot.layer, {
-            scale = layout.scale,
-            inset = math.floor(4 * layout.scale),
-            disabled = row.disabled,
-            hidden = row.locked,
-        })
-
-        if slot.background ~= nil then
-            slot.background.rgb = row.name == hovered and 0xFFFFFF or 0xC0C0C0
+        if slot.dimmed ~= dimmed then
+            slot.layer.alpha = dimmed and 0.4 or 1
+            slot.dimmed = dimmed
         end
+
+        local options = slot.hotkeyOptions
+        options.scale, options.inset = layout.scale, math.floor(4 * layout.scale)
+        options.disabled, options.hidden = row.disabled, row.locked
+        slot.hotkey:Update(slot.layer, options)
+
+        if slot.background ~= nil and slot.highlighted ~= highlighted then
+            slot.background.rgb = highlighted and 0xFFFFFF or 0xC0C0C0
+        end
+
+        slot.highlighted = highlighted
     end
 
     SlotMenu.UpdateVisuals(self, layout, hovered)
 end
 
+function ModelSlotMenu:ReleaseVisuals()
+    SlotMenu.ReleaseVisuals(self)
+    self.modelLayout, self.appliedModelLayout, self.modelRectangles = nil, nil, nil
+end
+
 function ModelSlotMenu.Create(interface, key)
     local class = SlotMenu.Create(interface, key)
+
     for name, method in pairs(ModelSlotMenu) do
-        if name ~= "Create" then class[name] = method end
+        if name ~= "Create" then
+            class[name] = method
+        end
     end
+
     return class
 end
 

@@ -41,7 +41,67 @@ end
 
 -- Reuse the active session only while its native controls and labels are unchanged.
 function TeleportMenu:Matches(snapshot)
-    return self.session ~= nil and matcher.SameSnapshot(self.session.menu.snapshot, snapshot)
+    return self.session ~= nil
+        and (self.session.menu.snapshot == snapshot or matcher.SameSnapshot(self.session.menu.snapshot, snapshot))
+end
+
+local function componentIdentity(control)
+    return {
+        interfaceID = control.interfaceID,
+        staticID = control.staticID,
+        categoryID = control.categoryID,
+        dynamicID = control.dynamicID,
+    }
+end
+
+local function currentComponent(identity)
+    if identity.categoryID >= 0 and identity.dynamicID >= 0 then
+        return ui.Interfaces:GetComponent(
+            identity.interfaceID, identity.staticID, identity.categoryID, identity.dynamicID
+        )
+    end
+
+    return ui.Interfaces:GetComponent(identity.interfaceID, identity.staticID)
+end
+
+-- Destination lists are fixed for an opening. Check only native host identities
+-- until closure/replacement, leaving interactive state to the menu's Update path.
+function TeleportMenu:GetSnapshot()
+    -- Choice dialogs can transition between picker pages without replacing their
+    -- host. Fixed-list adapters opt in; page-driven dialogs keep live discovery.
+    if not self.cacheNativeSnapshot then
+        return self:ReadInterface()
+    end
+
+    local cached = rawget(self, "interfaceSnapshot")
+
+    if cached ~= nil then
+        local window = currentComponent(cached.window)
+
+        if window ~= nil and window == cached.snapshot.window and window.visibleGlobal
+            and window.parent == cached.parent and currentComponent(cached.content) == cached.snapshot.content then
+            return cached.snapshot
+        end
+
+        self:InvalidateSnapshot()
+    end
+
+    local snapshot = self:ReadInterface()
+
+    if snapshot ~= nil then
+        self.interfaceSnapshot = {
+            snapshot = snapshot,
+            window = componentIdentity(snapshot.window),
+            content = componentIdentity(snapshot.content),
+            parent = snapshot.window.parent,
+        }
+    end
+
+    return snapshot
+end
+
+function TeleportMenu:InvalidateSnapshot()
+    self.interfaceSnapshot = nil
 end
 
 -- Read availability from the normalized native option unless an interface overrides it.

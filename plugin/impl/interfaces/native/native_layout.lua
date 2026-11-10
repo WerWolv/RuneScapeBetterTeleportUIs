@@ -3,6 +3,7 @@ local cleanup = require("impl/cleanup")
 
 local NativeLayout = {}
 NativeLayout.__index = NativeLayout
+local activeLayout
 
 local positionFields = { "x", "y", "xParentPc", "yParentPc", "xSelfPc", "ySelfPc" }
 local sizeFields     = { "width", "height", "widthParentPc", "heightParentPc" }
@@ -50,16 +51,188 @@ end
 
 -- Capture native control identities before plugin-owned visuals are added to the window.
 function NativeLayout.FromControls(controls)
-    local self = setmetatable({ controls = {}, changes = {} }, NativeLayout)
+    local self = setmetatable({
+        controls = {},
+        changes = {},
+        byKey = {},
+        tracked = setmetatable({}, { __mode = "k" }),
+    }, NativeLayout)
 
     for _, control in ipairs(controls) do
-        self.controls[#self.controls + 1] = {
-            control = control,
-            parent = control.parent,
-        }
+        local key = components.Key(control)
+
+        if self.byKey[key] == nil then
+            local entry = {
+                control = control,
+                parent = control.parent,
+            }
+            self.controls[#self.controls + 1] = entry
+            self.byKey[key] = entry
+            self.tracked[control] = entry
+        end
     end
 
     return self
+end
+
+local function trackedEntry(layout, control)
+    local entry = layout.tracked[control]
+
+    if entry == nil then
+        -- GetComponent/iteration can return distinct Lua wrappers for the same
+        -- native component. Their table keys differ even when __eq says equal.
+        entry = layout.byKey[components.Key(control)]
+
+        if entry ~= nil and entry.control == control then
+            layout.tracked[control] = entry
+        else
+            entry = nil
+        end
+    end
+
+    return entry
+end
+
+local function record(context, control, field, previous, current)
+    if previous == current then
+        return
+    end
+
+    local entry
+
+    while context ~= nil do
+        entry = trackedEntry(context.layout, control)
+
+        if entry ~= nil then
+            break
+        end
+
+        context = context.parent
+    end
+
+    if context == nil then
+        return
+    end
+
+    local layout = context.layout
+    control = entry.control
+    local change = layout.changes[control]
+
+    if change == nil then
+        change = {
+            original = {},
+            applied = {},
+        }
+        layout.changes[control] = change
+    end
+
+    if change.applied[field] == nil or change.applied[field] ~= previous then
+        change.original[field] = previous
+    end
+
+    change.applied[field] = current
+end
+
+-- Write-through tracking avoids two complete UI snapshots on every Draw. Only
+-- properties actually written belong to this layout; native updates remain live.
+function NativeLayout:Track(callback)
+    local previous = activeLayout
+    activeLayout = {
+        layout = self,
+        parent = previous,
+    }
+
+    local ok, message = pcall(callback)
+    activeLayout = previous
+
+    if not ok then
+        error(message, 0)
+    end
+end
+
+function NativeLayout.Set(control, field, value)
+    local previous = field == "header" and control.headerText.content or control[field]
+
+    if previous == value then
+        return
+    end
+
+    local ok, message = pcall(function()
+        if field == "header" then
+            control.headerText.content = value
+        else
+            control[field] = value
+        end
+    end)
+    local current = field == "header" and control.headerText.content or control[field]
+    record(activeLayout, control, field, previous, current)
+
+    if not ok then
+        error(message, 0)
+    end
+end
+
+local function setValues(control, property, fields, values, method)
+    local source = property and control[property] or control
+    local before = {}
+
+    for index, field in ipairs(fields) do
+        before[index] = source[field]
+    end
+
+    local ok, message = pcall(method, control, table.unpack(values))
+    local current = property and control[property] or control
+
+    for index, field in ipairs(fields) do
+        record(activeLayout, control, field, before[index], current[field])
+    end
+
+    if not ok then
+        error(message, 0)
+    end
+end
+
+function NativeLayout.SetPos(control, x, y, xParentPc, yParentPc, xSelfPc, ySelfPc)
+    xParentPc, yParentPc, xSelfPc, ySelfPc = xParentPc or 0, yParentPc or 0, xSelfPc or 0, ySelfPc or 0
+    local position = control.position
+
+    if position.x == x and position.y == y
+        and position.xParentPc == xParentPc and position.yParentPc == yParentPc
+        and position.xSelfPc == xSelfPc and position.ySelfPc == ySelfPc then
+        return
+    end
+
+    setValues(control, "position", positionFields, { x, y, xParentPc, yParentPc, xSelfPc, ySelfPc }, control.SetPos)
+end
+
+function NativeLayout.SetSize(control, width, height, widthParentPc, heightParentPc)
+    widthParentPc, heightParentPc = widthParentPc or 0, heightParentPc or 0
+    local size = control.size
+
+    if size.width == width and size.height == height
+        and size.widthParentPc == widthParentPc and size.heightParentPc == heightParentPc then
+        return
+    end
+
+    setValues(control, "size", sizeFields, { width, height, widthParentPc, heightParentPc }, control.SetSize)
+end
+
+local scrollPositionFields, scrollSizeFields = { "scrollX", "scrollY" }, { "scrollWidth", "scrollHeight" }
+
+function NativeLayout.SetScrollPos(control, x, y)
+    if control.scrollX == x and control.scrollY == y then
+        return
+    end
+
+    setValues(control, nil, scrollPositionFields, { x, y }, control.SetScrollPos)
+end
+
+function NativeLayout.SetScrollSize(control, width, height)
+    if control.scrollWidth == width and control.scrollHeight == height then
+        return
+    end
+
+    setValues(control, nil, scrollSizeFields, { width, height }, control.SetScrollSize)
 end
 
 -- Capture a complete subtree when the caller does not already have explicit controls.
@@ -98,7 +271,10 @@ function NativeLayout:Apply(callback)
                     local change = self.changes[control]
 
                     if change == nil then
-                        change = { original = {}, applied = {} }
+                        change = {
+                            original = {},
+                            applied = {},
+                        }
                         self.changes[control] = change
                     end
 

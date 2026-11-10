@@ -44,7 +44,11 @@ function SpriteLayers.New(parent, images, bounds)
     root:SetSize(bounds.width, bounds.height)
     root.clickthrough = true
 
-    local self = setmetatable({ root = root, sprites = {}, images = {} }, SpriteLayers)
+    local self = setmetatable({
+        root = root,
+        sprites = {},
+        images = {},
+    }, SpriteLayers)
     self:SetSprite(images)
 
     return self
@@ -72,7 +76,10 @@ function SpriteLayers:SetSprite(images)
         local sprite = self.sprites[index]
 
         if sprite == nil then
-            sprite = prettyui.Sprite.new(self.root, image, { width = self.root.width, height = self.root.height })
+            sprite = prettyui.Sprite.new(self.root, image, {
+                width = self.root.width,
+                height = self.root.height,
+            })
             sprite.root:SetSize(0, 0, 1, 1)
             sprite.root.clickthrough = true
 
@@ -100,6 +107,10 @@ end
 
 -- Native layers do not propagate tint or opacity to their drawable children.
 function SpriteLayers:SetRGBA(color)
+    if self.rgba == color and self.alpha == (color & 0xFF) / 255 then
+        return
+    end
+
     self.rgba = color
     self.alpha = (color & 0xFF) / 255
 
@@ -109,6 +120,10 @@ function SpriteLayers:SetRGBA(color)
 end
 
 function SpriteLayers:SetAlpha(alpha)
+    if self.alpha == alpha then
+        return
+    end
+
     self.alpha = alpha
 
     for _, sprite in ipairs(self.sprites) do

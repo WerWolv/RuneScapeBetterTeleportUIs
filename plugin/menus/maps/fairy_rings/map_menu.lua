@@ -11,8 +11,10 @@ local text = require("impl/text")
 
 local FairyRings = ModalChoiceMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
+FairyRings.cacheNativeSnapshot = true
 FairyRings.interfaceName = FairyRingMenu.interfaceName
 FairyRings.nativeInterface = {
+    trackedLayout = true,
     id = id.Interface.FAIRYRINGS,
     prefix = "FAIRYRINGS__",
     window = "MAINMODAL_WINDOW",
@@ -134,9 +136,11 @@ function FairyRings:ApplyLayout(layout)
     local rows = self.mapLayout:ReadRows()
 
     for _, row in ipairs(rows) do
-        row.code = table.concat(row.codes, "-"):upper()
-        row.key = row.code .. ":" .. row.location
-        row.point = #row.codes == 1 and destinations[row.code] or nil
+        if row.code == nil then
+            row.code = table.concat(row.codes, "-"):upper()
+            row.key = row.code .. ":" .. row.location
+            row.point = #row.codes == 1 and destinations[row.code] or nil
+        end
     end
 
     self:LayoutWindow(layout.width + layout.sidebarWidth, layout.height)

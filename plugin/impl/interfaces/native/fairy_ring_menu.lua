@@ -5,6 +5,7 @@ local aliases = require("menus/maps/fairy_rings/fairy_ring_aliases")
 
 local FairyRingMenu = TeleportMenu:Extend()
 FairyRingMenu.interface = FairyRingMenu
+FairyRingMenu.cacheNativeSnapshot = true
 FairyRingMenu.interfaceName = "FAIRYRINGS (" .. id.Interface.FAIRYRINGS .. ")"
 FairyRingMenu.logColumns = {
     "FAVOURITE_BUILD", "FAVOURITE_CLICK", "BG_BUILD",
@@ -123,7 +124,10 @@ function FairyRingMenu:Define()
         }
     end
 
-    return { title = "Fairy Ring Teleport Network", entries = entries }
+    return {
+        title = "Fairy Ring Teleport Network",
+        entries = entries,
+    }
 end
 
 -- Wheel identities remain stable while the native log is rebuilt or sorted.

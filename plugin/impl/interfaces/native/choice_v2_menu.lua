@@ -6,6 +6,7 @@ local ChoiceV2Menu = ModalChoiceMenu:Extend()
 ChoiceV2Menu.interface = ChoiceV2Menu
 ChoiceV2Menu.interfaceName = "CHOICE_V2 (" .. id.Interface.CHOICE_V2 .. ")"
 ChoiceV2Menu.nativeInterface = {
+    trackedLayout = true,
     id = id.Interface.CHOICE_V2,
     prefix = "CHOICE_V2__",
     window = "WINDOW",

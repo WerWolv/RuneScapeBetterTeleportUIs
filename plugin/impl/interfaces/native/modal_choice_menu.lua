@@ -14,6 +14,7 @@ ModalChoiceMenu.interface = ModalChoiceMenu
 ModalChoiceMenu.interfaceName = "MODAL_CHOICE (" .. id.Interface.MODAL_CHOICE .. ")"
 ModalChoiceMenu.supportsOriginalUI = true
 ModalChoiceMenu.nativeInterface = {
+    trackedLayout = true,
     id = id.Interface.MODAL_CHOICE,
     prefix = "MODAL_CHOICE__",
     window = "MODAL_DIALOG_WINDOW",
@@ -135,18 +136,27 @@ function ModalChoiceMenu:ReadInterface()
             local labels = self.interface:ReadOptionLabels(row, index)
 
             if not isWithin(click, row) then
-                self:ReportMatch({ "Not matched: OPTION_CLICK_" .. index .. " is not a child of OPTION_" .. index .. "." })
+                self:ReportMatch({
+                    "Not matched: OPTION_CLICK_" .. index .. " is not a child of OPTION_" .. index .. ".",
+                })
 
                 return nil
             end
 
             if not isWithin(row, options) then
-                self:ReportMatch({ "Not matched: OPTION_" .. index .. " is outside " .. (native.options or native.window) .. "." })
+                self:ReportMatch({
+                    "Not matched: OPTION_" .. index .. " is outside " .. (native.options or native.window) .. ".",
+                })
 
                 return nil
             end
 
-            rows[#rows + 1] = { row = row, click = click, labels = labels, index = index }
+            rows[#rows + 1] = {
+                row = row,
+                click = click,
+                labels = labels,
+                index = index,
+            }
         end
     end
 
@@ -219,16 +229,16 @@ function ModalChoiceMenu:UpdateTitle()
 
     -- The identified heading may use a menu-specific prompt such as "Teleport to where?".
     if session.title ~= nil then
-        session.title.control.content = session.menu.title
+        NativeLayout.Set(session.title.control, "content", session.menu.title)
 
         if native.titleFont ~= nil then
-            session.title.control.font = native.titleFont
+            NativeLayout.Set(session.title.control, "font", native.titleFont)
         end
 
         knownTitles[session.title.control] = true
     end
 
-    if #session.titles > 0 then
+    if session.titlesScanned then
         local valid = true
 
         for _, title in ipairs(session.titles) do
@@ -240,9 +250,9 @@ function ModalChoiceMenu:UpdateTitle()
             end
 
             if title.header then
-                control.headerText.content = session.menu.title
+                NativeLayout.Set(control, "header", session.menu.title)
             else
-                control.content = session.menu.title
+                NativeLayout.Set(control, "content", session.menu.title)
             end
         end
 
@@ -272,9 +282,9 @@ function ModalChoiceMenu:UpdateTitle()
                     knownTitles[control] = true
 
                     if header then
-                        control.headerText.content = session.menu.title
+                        NativeLayout.Set(control, "header", session.menu.title)
                     else
-                        control.content = session.menu.title
+                        NativeLayout.Set(control, "content", session.menu.title)
                     end
 
                     session.titles[#session.titles + 1] = {
@@ -297,6 +307,8 @@ function ModalChoiceMenu:UpdateTitle()
             components.Walk(control, inspect, visited)
         end
     end
+
+    session.titlesScanned = true
 end
 
 -- Preserve placement across pages without retaining native controls or plugin-owned artwork.
@@ -367,7 +379,10 @@ function ModalChoiceMenu:BeginInterface(placement)
     local window, content = menu.window, menu.content
 
     session.layoutParent, session.hostContainers, session.hostPadding = self.interface:GetLayoutHost(window)
-    if session.layoutParent == nil then return false end
+
+    if session.layoutParent == nil then
+        return false
+    end
 
     -- Include headings outside the window, which UpdateTitle can also modify.
     local controls, visited = {}, {}
@@ -513,7 +528,10 @@ end
 
 -- Track overrides for maps and every modal subclass, including partially failed updates.
 function ModalChoiceMenu:Update(snapshot)
-    self.session.nativeLayout:Apply(function()
+    -- Adapters opt in after routing all native writes through NativeLayout.
+    local apply = self.interface.nativeInterface.trackedLayout and NativeLayout.Track or NativeLayout.Apply
+
+    apply(self.session.nativeLayout, function()
         self:UpdateLayoutHost(self.session, self:GetSizeMultiplier())
         TeleportMenu.Update(self, snapshot)
     end)
@@ -537,18 +555,38 @@ function ModalChoiceMenu:HeaderLayout()
     -- Keep breathing room between the title and both header controls.
     left, right = left + 15, right + 15
 
-    local measured, width = pcall(function()
-        local font = config.Font.FromID(title.control.font)
+    local fontID = title and title.control.font
+    local content = title and title.control.content
+    local measurement = session.headerMeasurement
 
-        return math.max(
-            font:GetStringWidth(session.menu.title, false),
-            font:GetStringWidth(title.control.content, false)
-        )
-    end)
+    if measurement == nil or measurement.font ~= fontID or measurement.content ~= content
+        or measurement.title ~= session.menu.title then
+        local measured, width = false, nil
 
-    width = measured and width or #text.StripFormatting(session.menu.title) * 8
+        if fontID ~= nil then
+            measured, width = pcall(function()
+                local font = config.Font.FromID(fontID)
+                local titleWidth = font:GetStringWidth(session.menu.title, false)
 
-    return { left = left, right = right, width = left + width + right }
+                return content == session.menu.title and titleWidth
+                    or math.max(titleWidth, font:GetStringWidth(content, false))
+            end)
+        end
+
+        measurement = {
+            font = fontID,
+            content = content,
+            title = session.menu.title,
+            width = measured and width or #text.StripFormatting(session.menu.title) * 8,
+        }
+        session.headerMeasurement = measurement
+    end
+
+    return {
+        left = left,
+        right = right,
+        width = left + measurement.width + right,
+    }
 end
 
 -- Definitions can enlarge or shrink the layout budget while retaining the native header.
@@ -564,8 +602,8 @@ end
 local function setRect(control, x, y, width, height)
     local parentPosition = control.parent.xyGlobal
 
-    control:SetPos(math.floor(x - parentPosition.x), math.floor(y - parentPosition.y))
-    control:SetSize(width, height)
+    NativeLayout.SetPos(control, math.floor(x - parentPosition.x), math.floor(y - parentPosition.y))
+    NativeLayout.SetSize(control, width, height)
 end
 
 -- Follow native movement, constraining the final fitted host at viewport edges.
@@ -622,7 +660,7 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     if title ~= nil then
         local header = self:HeaderLayout()
 
-        title.control.maxLines = 1
+        NativeLayout.Set(title.control, "maxLines", 1)
         setRect(
             title.control,
             origin.x + header.left, origin.y + title.top,
@@ -630,7 +668,14 @@ function ModalChoiceMenu:LayoutWindow(width, height)
         )
     end
 
-    -- Expand intermediate clipping containers before moving their individual rows.
+    self:LayoutRowContainers(origin.x + session.left, origin.y + session.top, width, height)
+    session.dragOutline:Update(window)
+end
+
+-- Expand intermediate clipping containers before moving their individual rows.
+function ModalChoiceMenu:LayoutRowContainers(x, y, width, height)
+    local session = self.session
+    local window, content = session.window, session.content
     local expanded = {}
 
     for _, entry in ipairs(session.rows) do
@@ -645,28 +690,26 @@ function ModalChoiceMenu:LayoutWindow(width, height)
             local control = ancestors[index]
 
             if control ~= content and not expanded[control] then
-                setRect(control, origin.x + session.left, origin.y + session.top, width, height)
-                control.clickthrough = true
+                setRect(control, x, y, width, height)
+                NativeLayout.Set(control, "clickthrough", true)
                 expanded[control] = true
             end
         end
     end
-
-    session.dragOutline:Update(window)
 end
 
 -- Suppress native child artwork without hiding controls from matching or input.
 function ModalChoiceMenu:HideRowArtwork(entry)
     components.Walk(entry.row, function(control)
-        control.alpha = 0
+        NativeLayout.Set(control, "alpha", 0)
     end)
 end
 
 -- Position a native row and its input hierarchy without replacing its actions or hooks.
 function ModalChoiceMenu:LayoutRow(entry, x, y, width, height)
     setRect(entry.row, x, y, width, height)
-    entry.row.alpha = 0
-    entry.row.clickthrough = entry.row ~= entry.click
+    NativeLayout.Set(entry.row, "alpha", 0)
+    NativeLayout.Set(entry.row, "clickthrough", entry.row ~= entry.click)
 
     if entry.row == entry.click then
         self:HideRowArtwork(entry)
@@ -681,9 +724,9 @@ function ModalChoiceMenu:LayoutRow(entry, x, y, width, height)
 
     for index = #chain, 1, -1 do
         control = chain[index]
-        control:SetPos(0, 0)
-        control:SetSize(width, height)
-        control.clickthrough = control ~= entry.click
+        NativeLayout.SetPos(control, 0, 0)
+        NativeLayout.SetSize(control, width, height)
+        NativeLayout.Set(control, "clickthrough", control ~= entry.click)
     end
 end
 

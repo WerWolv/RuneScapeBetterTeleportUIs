@@ -15,7 +15,7 @@ end
 
 -- Native wrappers may refer to the same component through multiple collection paths.
 function components.Key(control)
-    return table.concat({ control.interfaceID, control.staticID, control.categoryID, control.dynamicID }, ":")
+    return string.format("%s:%s:%s:%s", control.interfaceID, control.staticID, control.categoryID, control.dynamicID)
 end
 
 -- Visit each component once. Returning false prunes that component's descendants.

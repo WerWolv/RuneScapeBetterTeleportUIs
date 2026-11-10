@@ -1,4 +1,5 @@
 local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 local SlotMenu = require("impl/interfaces/presentations/slot_menu").Create(ModalChoiceMenu)
 local userSettings = require("impl/settings")
 local components = require("impl/ui/components")
@@ -181,7 +182,10 @@ function PassageOfTheAbyss:Match(snapshot)
 
             group.entries[name] = { hidden = true }
         elseif normalized == "empty slot" then
-            group.entries[name] = { empty = true, hidden = true }
+            group.entries[name] = {
+                empty = true,
+                hidden = true,
+            }
         else
             local item = self.definition.items[normalized]
 
@@ -234,8 +238,8 @@ function PassageOfTheAbyss:UpdateTitle()
     SlotMenu.UpdateTitle(self)
 
     if prompt ~= nil then
-        prompt.content = text
-        prompt.alpha = 0
+        NativeLayout.Set(prompt, "content", text)
+        NativeLayout.Set(prompt, "alpha", 0)
     end
 end
 

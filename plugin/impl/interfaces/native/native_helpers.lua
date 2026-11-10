@@ -1,4 +1,5 @@
 local components = require("impl/ui/components")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 
 local native = {}
 
@@ -83,8 +84,8 @@ function native.SizeWindowHost(session, width, height)
     local padding = session.hostPadding
     local contentWidth, contentHeight = width + 16, height + 16
 
-    frame:SetSize(contentWidth + padding.width, contentHeight + padding.height)
-    content:SetSize(-padding.width, -padding.height, 1.0, 1.0)
+    NativeLayout.SetSize(frame, contentWidth + padding.width, contentHeight + padding.height)
+    NativeLayout.SetSize(content, -padding.width, -padding.height, 1.0, 1.0)
 end
 
 -- Native dragging can clamp with the saved window size before Lua restores
@@ -100,7 +101,8 @@ function native.ClampWindowHost(session)
     if offsetX ~= 0 or offsetY ~= 0 then
         local position = frame.position
 
-        frame:SetPos(
+        NativeLayout.SetPos(
+            frame,
             position.x + offsetX, position.y + offsetY,
             position.xParentPc, position.yParentPc,
             position.xSelfPc, position.ySelfPc

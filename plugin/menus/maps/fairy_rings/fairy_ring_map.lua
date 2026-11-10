@@ -63,7 +63,11 @@ function View:Build()
     self.list = prettyui.SimpleView.new(self.root, {
         width = 240,
         height = 200,
-        layout = { padding = 0, startY = 0, rowGap = 0 },
+        layout = {
+            padding = 0,
+            startY = 0,
+            rowGap = 0,
+        },
     })
     -- The list provides scrolling/artwork; native log controls own row clicks.
     self.list.root.clickthrough = true
@@ -132,7 +136,10 @@ function View:CreateItem(row)
     local parent = row.point and self.root or self.list.content
     local target = ui.Layer.new(parent)
     target.clickthrough = true
-    local item = { target = target, mapped = row.point ~= nil }
+    local item = {
+        target = target,
+        mapped = row.point ~= nil,
+    }
     self.items[row.key] = item
 
     if item.mapped then
@@ -195,6 +202,12 @@ function View:LayoutMarker(item, showCodes)
     local row = item.row
     local x, y = geometry.Project(backgrounds.runescapeSurface, row.point, self.layout.width, self.layout.mapHeight)
 
+    if item.markerX == x and item.markerY == y and item.showCodes == showCodes then
+        return
+    end
+
+    item.markerX, item.markerY, item.showCodes = x, y, showCodes
+
     -- Extend the clipping parent upward without moving the artwork or code.
     item.target:SetPos(math.floor(x - markerWidth / 2), math.floor(y - 18 - markerTopPadding))
     item.target:SetSize(markerWidth, markerHeight + markerTopPadding)
@@ -207,10 +220,20 @@ end
 function View:LayoutListRow(item, index, showCodes)
     local target, row = item.target, item.row
     local height = showCodes and listRowHeight or compactListRowHeight
-    target:SetPos(0, index * (height + listRowGap))
-    target:SetSize(math.max(1, self.list.viewport.width), height)
+    local width = math.max(1, self.list.viewport.width)
     local showHotkey = row.shortcut ~= nil and row.shortcut ~= "" and settings.Get("showTeleportHotkeys")
-    local badgeSpace = showHotkey and HotkeyBadge.Size(row.shortcut, target.width) + 8 or 0
+    local badgeSpace = showHotkey and HotkeyBadge.Size(row.shortcut, width) + 8 or 0
+
+    if item.listIndex == index and item.listWidth == width and item.showCodes == showCodes
+        and item.badgeSpace == badgeSpace and item.listName == row.name and item.listCode == row.code then
+        return
+    end
+
+    item.listIndex, item.listWidth, item.showCodes = index, width, showCodes
+    item.badgeSpace, item.listName, item.listCode = badgeSpace, row.name, row.code
+
+    target:SetPos(0, index * (height + listRowGap))
+    target:SetSize(width, height)
     item.label:SetPos(10, 5)
     item.label:SetSize(math.max(1, target.width - 10 - math.max(20, badgeSpace)), 17)
     item.label.content = row.code:gsub("(%a)(%a)(%a)", "%1 %2 %3"):gsub("%-", "      ")
@@ -224,15 +247,32 @@ end
 
 function View:UpdateItem(item, selectedName)
     local row = item.row
-    item.hotkey.label.content = row.shortcut or ""
-    item.selected = text.Trim(row.location) == selectedName
+    local shortcut = row.shortcut or ""
+
+    if item.hotkey.label.content ~= shortcut then
+        item.hotkey.label.content = shortcut
+    end
+
+    local selected = text.Trim(row.location) == selectedName
+
+    -- Changing item-sprite outlineWidth invalidates its rendered icon. Do not
+    -- regenerate every fairy-ring sprite on every frame for an unchanged selection.
+    if item.icon ~= nil and item.selected ~= selected then
+        item.icon.outlineWidth = selected and selectedOutlineWidth or 0
+    end
+    item.selected = selected
 
     local alpha = item.matches and 1 or 0.2
+
+    if item.alpha == alpha then
+        return
+    end
+
+    item.alpha = alpha
 
     if item.icon ~= nil then
         item.shadow.alpha = alpha
         item.icon.alpha = alpha
-        item.icon.outlineWidth = item.selected and selectedOutlineWidth or 0
     end
 
     if item.name ~= nil then
@@ -311,10 +351,14 @@ function View:Update(rows, selectedName)
             -- Grow artwork only; native hitboxes and labels stay stationary.
             local size = (item == hovered or item.selected) and hoveredIconSize or iconSize
             local x, y = (markerWidth - size) / 2, markerTopPadding + (iconSize - size) / 2
-            item.shadow:SetPos(x + 1, y + 1)
-            item.shadow:SetSize(size, size)
-            item.icon:SetPos(x, y)
-            item.icon:SetSize(size, size)
+
+            if item.iconSize ~= size then
+                item.shadow:SetPos(x + 1, y + 1)
+                item.shadow:SetSize(size, size)
+                item.icon:SetPos(x, y)
+                item.icon:SetSize(size, size)
+                item.iconSize = size
+            end
         else
             item.selection.rgba = item.selected and 0x66512EFF or item == hovered and 0x484036FF or item.stripe
         end

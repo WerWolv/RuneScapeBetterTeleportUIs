@@ -35,7 +35,7 @@ local function updateOriginal(entry, winner)
     end
 
     local original = entry.originalActive
-    local snapshot = original:ReadInterface()
+    local snapshot = original:GetSnapshot()
 
     if snapshot == nil then
         cleanup.Release(entry, "originalActive", "Release")
@@ -77,7 +77,8 @@ local function selectMenu(entry, snapshot)
             end
 
             if settings.debugMatching then
-                matches[#matches + 1] = menu.key .. " (" .. #snapshot.nativeRows .. " matches, " .. candidate.unusedEntries .. " unused entries)"
+                matches[#matches + 1] = menu.key .. " (" .. #snapshot.nativeRows .. " matches, "
+                    .. candidate.unusedEntries .. " unused entries)"
             end
         elseif settings.debugMatching then
             failures[#failures + 1] = "  " .. menu.key .. ": " .. reason
@@ -146,7 +147,7 @@ local function updateInterface(entry)
             cleanup.Release(entry, "originalActive", "Release")
         end
 
-        snapshot = entry.interface:ReadInterface()
+        snapshot = entry.interface:GetSnapshot()
 
         -- Retrying a failed layout every Draw can exhaust more IDs. Keep the
         -- restored native dialog until it closes or a different window replaces it.
@@ -253,7 +254,10 @@ function teleportMaps.Start()
         local entry = byInterface[interface]
 
         if entry == nil then
-            entry = { interface = interface, menus = {} }
+            entry = {
+                interface = interface,
+                menus = {},
+            }
             byInterface[interface] = entry
             discovered[#discovered + 1] = entry
         end
@@ -294,6 +298,7 @@ function teleportMaps.Stop()
 
     for _, entry in ipairs(interfaces or {}) do
         releaseInterface(entry)
+        entry.interface:InvalidateSnapshot()
     end
 
     interfaces = nil

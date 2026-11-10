@@ -81,9 +81,10 @@ function MapMenu:ApplyLayout(layout)
     self.backgroundView.layer:SetPos(math.floor((contentWidth - width) / 2), 0)
 
     local imagePosition = self.backgroundView.layer.xyGlobal
-    local rectangles = {}
+    local rectangles = session.rowRectangles or {}
+    session.rowRectangles = rectangles
 
-    for _, entry in ipairs(session.rows) do
+    for index, entry in ipairs(session.rows) do
         local destination = entry.destination
         local hitWidth, hitHeight = 0, 0
         local x, y
@@ -102,11 +103,12 @@ function MapMenu:ApplyLayout(layout)
             x, y = x - hitWidth / 2, y - hitHeight / 2
         end
 
-        rectangles[#rectangles + 1] = {
-            entry = entry, x = imagePosition.x + x, y = imagePosition.y + y,
-            width = hitWidth, height = hitHeight,
-        }
+        local rectangle = rectangles[index] or { entry = entry }
+        rectangle.x, rectangle.y = imagePosition.x + x, imagePosition.y + y
+        rectangle.width, rectangle.height = hitWidth, hitHeight
+        rectangles[index] = rectangle
     end
+
     self:LayoutRows(rectangles, width, height)
 end
 
@@ -146,7 +148,9 @@ end
 function MapMenu.Create(interface, key)
     local class = interface:Extend(key)
     for name, method in pairs(MapMenu) do
-        if name ~= "Create" then class[name] = method end
+        if name ~= "Create" then
+            class[name] = method
+        end
     end
     return class
 end

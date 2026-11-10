@@ -1,12 +1,15 @@
 local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local ScrollingListMenu = require("impl/interfaces/native/scrolling_list_menu")
 local native = require("impl/interfaces/native/native_helpers")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 local text = require("impl/text")
 
 local TeleportListMenu = ScrollingListMenu:Extend()
 TeleportListMenu.interface = TeleportListMenu
+TeleportListMenu.cacheNativeSnapshot = true
 TeleportListMenu.interfaceName = "TELEPORT_LIST (" .. id.Interface.TELEPORT_LIST .. ")"
 TeleportListMenu.nativeInterface = {
+    trackedLayout = true,
     id = id.Interface.TELEPORT_LIST,
     prefix = "TELEPORT_LIST__",
     window = "MAINMODAL_WINDOW",
@@ -77,9 +80,21 @@ function TeleportListMenu:ReadInterface()
     local buttons = component("BUTTON_LAYER")
 
     for _, pair in ipairs({
-        { name = "MAINMODAL_WINDOW_BACKGROUND", control = background, parent = window },
-        { name = "MAINMODAL_WINDOW_CONTENT", control = content, parent = window },
-        { name = "BUTTON_LAYER", control = buttons, parent = content },
+        {
+            name = "MAINMODAL_WINDOW_BACKGROUND",
+            control = background,
+            parent = window,
+        },
+        {
+            name = "MAINMODAL_WINDOW_CONTENT",
+            control = content,
+            parent = window,
+        },
+        {
+            name = "BUTTON_LAYER",
+            control = buttons,
+            parent = content,
+        },
     }) do
         if not isWithin(pair.control, pair.parent) then
             self:ReportMatch({ "Not matched: missing or unexpectedly parented " .. pair.name .. "." })
@@ -131,6 +146,10 @@ function TeleportListMenu:ReadInterface()
 end
 
 function TeleportListMenu:Matches(snapshot)
+    if self.session ~= nil and self.session.menu.snapshot == snapshot then
+        return true
+    end
+
     if not ModalChoiceMenu.Matches(self, snapshot) then
         return false
     end
@@ -167,7 +186,7 @@ function TeleportListMenu:PositionLayoutHost()
         local host = session.hostContainers[1]
         local viewportOrigin, parentOrigin = viewport.xyGlobal, host.parent.xyGlobal
 
-        host:SetPos(
+        NativeLayout.SetPos(host,
             viewportOrigin.x - parentOrigin.x + math.max(0, math.floor((viewport.width - host.width) / 2)),
             viewportOrigin.y - parentOrigin.y + math.max(0, math.floor((viewport.height - host.height) / 2))
         )

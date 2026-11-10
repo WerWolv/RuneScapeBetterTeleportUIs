@@ -6,8 +6,10 @@ local text = require("impl/text")
 
 local PortalNexusMenu = ScrollingListMenu:Extend()
 PortalNexusMenu.interface = PortalNexusMenu
+PortalNexusMenu.cacheNativeSnapshot = true
 PortalNexusMenu.interfaceName = "PORTAL_NEXUS (" .. id.Interface.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS .. ")"
 PortalNexusMenu.nativeInterface = {
+    trackedLayout = true,
     id = id.Interface.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS,
     prefix = "CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS__",
     window = "MAINMODAL_WINDOW",
@@ -58,9 +60,10 @@ local function readRow(row)
             click = control
         end
 
-        if control.type == ui.ComponentType.LABEL then
+        local kind = control.type
+        if kind == ui.ComponentType.LABEL then
             labels[#labels + 1] = control
-        elseif control.type == ui.ComponentType.SPRITE then
+        elseif kind == ui.ComponentType.SPRITE then
             sprites[#sprites + 1] = control
         end
 
@@ -71,14 +74,15 @@ local function readRow(row)
         return nil
     end
 
-    table.sort(labels, function(a, b)
-        return a.dynamicID < b.dynamicID
-    end)
+    if labels[1].dynamicID > labels[2].dynamicID then
+        labels[1], labels[2] = labels[2], labels[1]
+    end
 
     local shortcut = text.Clean(labels[1].content):gsub("%.$", "")
     local name = text.Clean(labels[2].content)
+    local spriteID = sprites[1].spriteID
 
-    if name == "" or sprites[1].spriteID < 0 then
+    if name == "" or spriteID < 0 then
         return nil
     end
 
@@ -87,7 +91,7 @@ local function readRow(row)
         click = click or row,
         labels = { [name] = true },
         shortcut = shortcut,
-        spriteID = sprites[1].spriteID,
+        spriteID = spriteID,
     }
 end
 
@@ -129,6 +133,10 @@ end
 
 -- A recycled row can keep its name while its native shortcut or artwork changes.
 function PortalNexusMenu:Matches(snapshot)
+    if self.session ~= nil and self.session.menu.snapshot == snapshot then
+        return true
+    end
+
     if not ModalChoiceMenu.Matches(self, snapshot) then
         return false
     end

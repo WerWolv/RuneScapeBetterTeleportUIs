@@ -53,7 +53,11 @@ function Filters:Build(rows)
     self.view = prettyui.SimpleView.new(self.root, {
         width = sidebarWidth,
         height = 240,
-        layout = { padding = 12, startY = 12, rowGap = 10 },
+        layout = {
+            padding = 12,
+            startY = 12,
+            rowGap = 10,
+        },
     })
     self.onScrollWheel = ScrollInput.For(self.view)
 
@@ -188,6 +192,8 @@ function CategoryMap:UpdateLayoutHost(session, sizeMultiplier)
 end
 
 function CategoryMap:CalculateLayout()
+    self.filters:Update()
+
     local layout = MapMenu.CalculateLayout(self)
     local session = self.session
     local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
@@ -210,7 +216,10 @@ function CategoryMap:BeginVisuals()
             destination.icons.sprite = entry.native.spriteID
         end
         destination.hotkey = entry.native.shortcut
-        destination.hotkeyOffset = { x = 10, y = -10 }
+        destination.hotkeyOffset = {
+            x = 10,
+            y = -10,
+        }
     end
 
     MapMenu.BeginVisuals(self)
@@ -224,26 +233,31 @@ function CategoryMap:ApplyLayout(layout)
     local width, height = layout.width, layout.height
     local contentWidth = width + layout.panelWidth
 
-    self.filters:Update()
     self:LayoutWindow(contentWidth, height)
 
     self.backgroundView:Show(session.menu.background, width, height, self.definition.vignette)
     local origin = self.backgroundView.layer.xyGlobal
-    local rectangles = {}
-    for _, entry in ipairs(session.rows) do
+    local rectangles = session.rowRectangles or {}
+    session.rowRectangles = rectangles
+
+    for index, entry in ipairs(session.rows) do
         local x, y, w, h = 0, 0, 0, 0
+
         if not entry.destination.hidden and not entry.disabled then
             x, y = geometry.Project(session.menu.background, entry.destination.point, width, height)
             w, h = ButtonIcon.Dimensions(entry.destination.icons)
         end
+
         if x == nil then
             x, y, w, h = 0, 0, 0, 0
         end
-        rectangles[#rectangles + 1] = {
-            entry = entry, x = origin.x + math.floor(x - w / 2), y = origin.y + math.floor(y - h / 2),
-            width = w, height = h,
-        }
+
+        local rectangle = rectangles[index] or { entry = entry }
+        rectangle.x, rectangle.y = origin.x + math.floor(x - w / 2), origin.y + math.floor(y - h / 2)
+        rectangle.width, rectangle.height = w, h
+        rectangles[index] = rectangle
     end
+
     self:LayoutRows(rectangles, width, height)
     self.filters:Layout(width, layout.panelWidth, height)
 end

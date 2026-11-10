@@ -16,7 +16,12 @@ function geometry.Bounds(background)
         crop = crop()
     end
 
-    crop = crop or { x = 0, y = 0, width = background.width, height = background.height }
+    crop = crop or {
+        x = 0,
+        y = 0,
+        width = background.width,
+        height = background.height,
+    }
 
     assert(
         type(crop) == "table" and
@@ -47,8 +52,8 @@ local function contains(crop, point)
 end
 
 -- Report whether a destination is visible within the background's crop.
-function geometry.Contains(background, point)
-    return contains(geometry.Bounds(background), point)
+function geometry.Contains(background, point, bounds)
+    return contains(bounds or geometry.Bounds(background), point)
 end
 
 -- Convert a full-map point into displayed coordinates, returning nil outside the crop.
