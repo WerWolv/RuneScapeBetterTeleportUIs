@@ -15,7 +15,7 @@ View.__index = View
 
 local markerWidth, markerHeight = 44, 48
 local iconSize, hoveredIconSize = 32, 34
-local selectedOutlineWidth = 4
+local selectedOutlineWidth = 3
 local markerTopPadding = selectedOutlineWidth + (hoveredIconSize - iconSize) / 2
 -- Anchor badges to the normal icon's top-right corner within the fixed marker.
 local markerHotkeyOffset = {
@@ -112,6 +112,7 @@ end
 local function destroyItem(item)
     cleanup.Release(item, "tooltip")
     cleanup.Release(item, "hotkey")
+    cleanup.Release(item, "shadow")
     cleanup.Release(item, "icon")
     cleanup.Release(item, "target")
 end
@@ -135,6 +136,8 @@ function View:CreateItem(row)
     self.items[row.key] = item
 
     if item.mapped then
+        item.shadow = components.ItemSprite(target, id.Obj.INVENT_FAIRY_RING)
+        item.shadow.rgb = 0x000000
         item.icon = components.ItemSprite(target, id.Obj.INVENT_FAIRY_RING)
     else
         item.selection = ui.Rectangle.new(target)
@@ -227,6 +230,7 @@ function View:UpdateItem(item, selectedName)
     local alpha = item.matches and 1 or 0.2
 
     if item.icon ~= nil then
+        item.shadow.alpha = alpha
         item.icon.alpha = alpha
         item.icon.outlineWidth = item.selected and selectedOutlineWidth or 0
     end
@@ -306,7 +310,10 @@ function View:Update(rows, selectedName)
         if item.mapped then
             -- Grow artwork only; native hitboxes and labels stay stationary.
             local size = (item == hovered or item.selected) and hoveredIconSize or iconSize
-            item.icon:SetPos((markerWidth - size) / 2, markerTopPadding + (iconSize - size) / 2)
+            local x, y = (markerWidth - size) / 2, markerTopPadding + (iconSize - size) / 2
+            item.shadow:SetPos(x + 1, y + 1)
+            item.shadow:SetSize(size, size)
+            item.icon:SetPos(x, y)
             item.icon:SetSize(size, size)
         else
             item.selection.rgba = item.selected and 0x66512EFF or item == hovered and 0x484036FF or item.stripe
