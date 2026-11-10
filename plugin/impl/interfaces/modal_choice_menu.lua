@@ -599,16 +599,18 @@ function ModalChoiceMenu:CalculateLayout()
 
     session.menu.cropMinWidth = nil
 
-    local crop = geometry.Bounds(session.menu.background)
     local availableWidth = session.layoutWidth or session.layoutParent.width
     local availableHeight = session.layoutHeight or session.layoutParent.height
     local maxWidth = math.min(
         math.max(constants.maxWidth * self:GetSizeMultiplier(), minWidth),
         availableWidth - session.left - session.right - 16
     )
+    local maxHeight = availableHeight - session.top - session.bottom - 16
+    mapCrop.SetViewport(session.menu, maxWidth, maxHeight)
+    local crop = geometry.Bounds(session.menu.background)
     local scale = math.min(
         maxWidth / crop.width,
-        (availableHeight - session.top - session.bottom - 16) / crop.height
+        maxHeight / crop.height
     )
 
     session.menu.cropMinWidth = math.ceil(minWidth / scale)

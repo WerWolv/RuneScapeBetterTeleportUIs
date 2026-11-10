@@ -5,7 +5,7 @@ local settings = require("impl/settings")
 local text = require("impl/text")
 
 local mapCrop = {}
-local padding = 60
+local padding = 30
 
 local function cropped(background, crop)
     local result = {}
@@ -27,8 +27,9 @@ local function cropped(background, crop)
 end
 
 -- Calculate the same source-image rectangle previously supplied to Cropped by hand.
-local function teleportBounds(source, rows, minWidth)
+local function teleportBounds(source, rows, minWidth, scale)
     local bounds = geometry.Bounds(source)
+    scale = scale or 1
     local left, top, right, bottom
 
     for _, row in ipairs(rows) do
@@ -41,15 +42,17 @@ local function teleportBounds(source, rows, minWidth)
 
             if destination.icons ~= nil then
                 width, height = ButtonIcon.Dimensions(destination.icons)
+                local hoverWidth, hoverHeight = ButtonIcon.Dimensions(destination.icons, true)
+                width, height = math.max(width, hoverWidth), math.max(height, hoverHeight)
             end
 
-            local marginX = math.ceil(width / 2) + padding
-            local marginY = math.ceil(height / 2) + padding
+            local marginX = math.ceil(width / (2 * scale)) + padding
+            local marginY = math.ceil(height / (2 * scale)) + padding
             local badgeRadius = 0
             local key = text.Hotkey(row.name or "")
 
             if key ~= nil and not row.locked and settings.Get("showTeleportHotkeys") then
-                badgeRadius = math.ceil(HotkeyBadge.Size(key, width) / 2)
+                badgeRadius = math.ceil(HotkeyBadge.Size(key, width) / (2 * scale))
             end
 
             left = math.min(left or point.x, point.x - marginX)
@@ -80,16 +83,25 @@ local function teleportBounds(source, rows, minWidth)
     }
 end
 
+-- Icons use interface pixels. The full source's fitted scale is a conservative
+-- lower bound: zooming into a smaller crop can only make its map scale larger.
+function mapCrop.SetViewport(menu, width, height)
+    if menu.cropSource == nil then return end
+    local bounds = geometry.Bounds(menu.cropSource)
+    menu.cropScale = math.min(math.max(1, width) / bounds.width, math.max(1, height) / bounds.height)
+end
+
 -- Each open map owns its crop; shared backgrounds and their intrinsic regions stay reusable.
 -- Set noBackgroundCrop = true on the menu definition to opt out of automatic zooming.
 function mapCrop.Attach(menu)
     local source = menu.background
+    menu.cropSource = source
     local background = cropped(source, function()
         if menu.group.noBackgroundCrop then
             return geometry.Bounds(source)
         end
 
-        return teleportBounds(source, menu.rows, menu.cropMinWidth)
+        return teleportBounds(source, menu.rows, menu.cropMinWidth, menu.cropScale)
     end)
 
     menu.background = background
