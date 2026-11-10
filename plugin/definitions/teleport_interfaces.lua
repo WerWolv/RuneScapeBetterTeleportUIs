@@ -156,6 +156,10 @@ return {
         module = "maps/quest_cape",
     },
     {
+        name = "Player Owned House entrance portal",
+        module = "maps/poh_portal"
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },

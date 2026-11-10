@@ -1012,6 +1012,14 @@ return {
             shadowColorHovered = 0x000000FF
         }
     },
+    house = {
+        normal = { sprite = id.Sprite.RP_HOUSE },
+        size = 48,
+        imageWidth = 64,
+        imageHeight = 64,
+        shadowColor = 0x00000050,
+        shadowColorHovered = 0x000000FF
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
