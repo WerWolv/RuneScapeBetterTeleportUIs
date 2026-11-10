@@ -1,8 +1,9 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local descriptions = require("definitions/descriptions")
 local teleportIcons = require("definitions/teleport_icons")
-local SixthAgeCircuit = ModalChoiceMenu:Extend("sixthAgeCircuit")
+local SixthAgeCircuit = MapMenu.Create(ModalChoiceMenu, "sixthAgeCircuit")
 
 function SixthAgeCircuit:Define()
     return {

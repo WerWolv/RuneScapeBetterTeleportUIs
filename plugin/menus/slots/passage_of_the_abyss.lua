@@ -1,4 +1,5 @@
-local SlotMenu = require("impl/interfaces/slot_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local SlotMenu = require("impl/interfaces/presentations/slot_menu").Create(ModalChoiceMenu)
 local userSettings = require("impl/settings")
 local components = require("impl/ui/components")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
@@ -283,14 +284,16 @@ function PassageOfTheAbyss:ApplyLayout(layout)
     self.slotLayer:SetSize(layout.width, layout.height)
 
     local origin = self.slotLayer.xyGlobal
+    local rectangles = {}
 
     for index, row in ipairs(self.session.rows) do
         local slot = self.slots[index]
         local x    = layout.inset + (index - 1) * (layout.slotSize + layout.gap)
         local size = slot and slot.item and layout.slotSize or 0
 
-        self:HideRowArtwork(row)
-        self:LayoutRow(row, origin.x + x, origin.y + layout.inset, size, size)
+        rectangles[#rectangles + 1] = {
+            entry = row, x = origin.x + x, y = origin.y + layout.inset, width = size, height = size,
+        }
 
         if slot ~= nil then
             slot.layer:SetPos(x, layout.inset)
@@ -305,6 +308,7 @@ function PassageOfTheAbyss:ApplyLayout(layout)
             end
         end
     end
+    self:LayoutRows(rectangles, layout.width, layout.height)
 end
 
 -- Determine hover using the original item-slot controls instead of map coordinates.

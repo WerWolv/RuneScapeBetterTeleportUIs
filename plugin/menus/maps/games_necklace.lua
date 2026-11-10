@@ -1,7 +1,8 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local GamesNecklace = ModalChoiceMenu:Extend("gamesNecklace")
+local GamesNecklace = MapMenu.Create(ModalChoiceMenu, "gamesNecklace")
 
 function GamesNecklace:Define()
     return {

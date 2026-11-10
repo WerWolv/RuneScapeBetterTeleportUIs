@@ -1,6 +1,7 @@
-local NpcSlotMenu = require("impl/interfaces/npc_slot_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
 local descriptions = require("definitions/descriptions")
-local FerociousRing = NpcSlotMenu:Extend("ferociousRing")
+local FerociousRing = ModelSlotMenu.Create(ModalChoiceMenu, "ferociousRing")
 
 local function description(slayerLevel, combatLevel, location)
     local result = ""

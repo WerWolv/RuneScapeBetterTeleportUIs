@@ -1,8 +1,8 @@
-local AtelfTeleportsMenu = require("impl/interfaces/atelf_teleports_menu")
+local AtelfTeleportsMenu = require("impl/interfaces/native/atelf_teleports_menu")
 local textUtils = require("impl/text")
 local componentUtils = require("impl/ui/components")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
-local NativeLayout = require("impl/native_layout")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 local cleanup = require("impl/cleanup")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
 

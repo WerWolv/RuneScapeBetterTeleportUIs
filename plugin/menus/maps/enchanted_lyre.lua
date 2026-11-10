@@ -1,7 +1,8 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local EnchantedLyre = ModalChoiceMenu:Extend("enchantedLyre")
+local EnchantedLyre = MapMenu.Create(ModalChoiceMenu, "enchantedLyre")
 
 function EnchantedLyre:Define()
     return {

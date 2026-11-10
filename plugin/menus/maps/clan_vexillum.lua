@@ -1,7 +1,8 @@
-local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
+local ChoiceV2Menu = require("impl/interfaces/native/choice_v2_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local ClanVexillum = ChoiceV2Menu:Extend("clanVexillum")
+local ClanVexillum = MapMenu.Create(ChoiceV2Menu, "clanVexillum")
 
 function ClanVexillum:Define()
     return {

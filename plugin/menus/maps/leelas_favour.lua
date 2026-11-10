@@ -1,9 +1,10 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local Model3D = require("impl/ui/model_3d")
 local text = require("impl/text")
-local LeelasFavour = ModalChoiceMenu:Extend("leelasFavour")
+local LeelasFavour = MapMenu.Create(ModalChoiceMenu, "leelasFavour")
 
 function LeelasFavour:Define()
     return {
@@ -44,7 +45,7 @@ function LeelasFavour:Define()
 end
 
 function LeelasFavour:BeginVisuals()
-    ModalChoiceMenu.BeginVisuals(self)
+    MapMenu.BeginVisuals(self)
 
     for _, row in ipairs(self.session.rows) do
         if row.entryKey ==  "5. Soul Obelisk" then
@@ -73,7 +74,7 @@ function LeelasFavour:BeginVisuals()
 end
 
 function LeelasFavour:ApplyLayout(layout)
-    ModalChoiceMenu.ApplyLayout(self, layout)
+    MapMenu.ApplyLayout(self, layout)
 
     if self.obeliskPortrait ~= nil then
         local portrait, row = self.obeliskPortrait, self.obeliskRow
@@ -94,11 +95,11 @@ function LeelasFavour:GetHovered()
         return row.name
     end
 
-    return ModalChoiceMenu.GetHovered(self)
+    return MapMenu.GetHovered(self)
 end
 
 function LeelasFavour:UpdateVisuals(layout, hovered)
-    ModalChoiceMenu.UpdateVisuals(self, layout, hovered)
+    MapMenu.UpdateVisuals(self, layout, hovered)
 
     if self.obeliskPortrait ~= nil and not self.obeliskPortrait.layer.hidden then
         self.obeliskPortrait:Update(self.obeliskRow.disabled, hovered == self.obeliskRow.name)
@@ -106,7 +107,7 @@ function LeelasFavour:UpdateVisuals(layout, hovered)
 end
 
 function LeelasFavour:ReleaseVisuals()
-    ModalChoiceMenu.ReleaseVisuals(self)
+    MapMenu.ReleaseVisuals(self)
     self.obeliskPortrait, self.obeliskRow = nil, nil
 end
 

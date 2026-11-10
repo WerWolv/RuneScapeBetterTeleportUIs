@@ -1,5 +1,6 @@
-local NpcSlotMenu = require("impl/interfaces/npc_slot_menu")
-local KethsiRing = NpcSlotMenu:Extend("kethsiRing")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
+local KethsiRing = ModelSlotMenu.Create(ModalChoiceMenu, "kethsiRing")
 
 function KethsiRing:Define()
     return {

@@ -1,10 +1,11 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local descriptions = require("definitions/descriptions")
-local DungeoneeringCapePage1 = ModalChoiceMenu:Extend("dungeoneeringCapePage1")
-local DungeoneeringCapePage2 = ModalChoiceMenu:Extend("dungeoneeringCapePage2")
-local DungeoneeringCapePage3 = ModalChoiceMenu:Extend("dungeoneeringCapePage3")
+local DungeoneeringCapePage1 = MapMenu.Create(ModalChoiceMenu, "dungeoneeringCapePage1")
+local DungeoneeringCapePage2 = MapMenu.Create(ModalChoiceMenu, "dungeoneeringCapePage2")
+local DungeoneeringCapePage3 = MapMenu.Create(ModalChoiceMenu, "dungeoneeringCapePage3")
 
 local function description(level, location)
     return descriptions.LevelRequirement(level, descriptions.SKILL.DUNGEONEERING) ..

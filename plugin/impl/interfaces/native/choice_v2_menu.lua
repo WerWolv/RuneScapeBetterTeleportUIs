@@ -1,5 +1,5 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local native = require("impl/interfaces/native_helpers")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local native = require("impl/interfaces/native/native_helpers")
 local text = require("impl/text")
 
 local ChoiceV2Menu = ModalChoiceMenu:Extend()

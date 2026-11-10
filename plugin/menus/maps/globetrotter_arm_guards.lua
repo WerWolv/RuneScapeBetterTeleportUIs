@@ -1,7 +1,8 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local GlobetrotterArmGuards = ModalChoiceMenu:Extend("globeTrotterArmGuards")
+local GlobetrotterArmGuards = MapMenu.Create(ModalChoiceMenu, "globeTrotterArmGuards")
 local descriptions = require("definitions/descriptions")
 
 local function chargesRemaining(count)

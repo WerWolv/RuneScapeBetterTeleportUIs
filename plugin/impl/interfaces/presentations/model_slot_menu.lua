@@ -1,18 +1,19 @@
-local SlotMenu = require("impl/interfaces/slot_menu")
+local SlotMenu = require("impl/interfaces/presentations/slot_menu")
 local ButtonIcon = require("impl/ui/button_icon")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local SpriteLayers = require("impl/ui/sprite_layers")
 local components = require("impl/ui/components")
 local text = require("impl/text")
 
-local NpcSlotMenu = SlotMenu:Extend()
+local ModelSlotMenu = {}
+
 
 local slotSize, rowGap, inset = 112, 8, 12
 local modelInset = 6
 
 -- The model cards identify the choices without the native selection prompt.
-function NpcSlotMenu:UpdateTitle()
-    SlotMenu.UpdateTitle(self)
+function ModelSlotMenu:UpdateTitle()
+    self.interface.UpdateTitle(self)
 
     local title = self.session.title
 
@@ -21,28 +22,41 @@ function NpcSlotMenu:UpdateTitle()
     end
 end
 
--- Cards use NPCs or navigation artwork rather than map coordinates.
-function NpcSlotMenu:ValidateDestination(definition)
-    if definition.npcID ~= nil or definition.icons ~= nil then
+-- NPC/item shortcuts retain existing definitions; modelID accepts any ModelType.
+local function hasModel(definition)
+    return definition.npcID ~= nil or definition.objectID ~= nil or definition.modelID ~= nil
+end
+
+function ModelSlotMenu:ValidateDestination(definition)
+    local sources = (definition.npcID ~= nil and 1 or 0)
+        + (definition.objectID ~= nil and 1 or 0) + (definition.modelID ~= nil and 1 or 0)
+    if sources > 1 then
+        return false, "needs only one of npcID, objectID or modelID"
+    end
+    if definition.modelType ~= nil and definition.modelID == nil then
+        return false, "needs modelID when modelType is specified"
+    end
+    if sources == 1 or definition.icons ~= nil or self.definition.icons ~= nil then
         return true
     end
 
-    return false, "needs an NPC ID or navigation artwork"
+    return false, "needs npcID, objectID, modelID or navigation artwork"
 end
 
 -- Build passive model cards; the original native rows remain the only click targets.
-function NpcSlotMenu:BeginVisuals()
+function ModelSlotMenu:BeginVisuals()
     SlotMenu.BeginVisuals(self)
 
     for _, row in ipairs(self.session.menu.rows) do
         local destination = row.destination
 
         if not destination.hidden then
-            local slot = self:CreateSlot(row, destination.npcID ~= nil)
+            local slot = self:CreateSlot(row, hasModel(destination))
             local layer = slot.layer
-            slot.hotkey = HotkeyBadge.New(self.slotLayer, text.Hotkey(row.name))
+            slot.hotkey = HotkeyBadge.New(self.slotLayer,
+                row.native and row.native.shortcut or text.Hotkey(row.name))
 
-            if destination.npcID ~= nil then
+            if hasModel(destination) then
                 -- Clip model drawing to the slot interior, excluding its border and name label.
                 local viewport = ui.Layer.new(layer)
                 viewport.clickthrough = true
@@ -50,13 +64,32 @@ function NpcSlotMenu:BeginVisuals()
 
                 local model = ui.Model.new(viewport)
                 model.clickthrough = true
-                model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
+                if destination.npcID ~= nil then
+                    model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
+                elseif destination.objectID ~= nil then
+                    model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
+                else
+                    model:SetModel(destination.modelType or ui.ModelType.MODEL,
+                        destination.modelID, destination.secondaryModelID)
+                end
                 model.modelWidth = slotSize
                 model.modelHeight = slotSize
                 model.viewDistance = destination.viewDistance or 600
 
                 if destination.animID ~= nil then
                     model.animID = destination.animID
+                end
+
+                for _, property in ipairs({ "rotation", "worldOffset" }) do
+                    if destination[property] ~= nil then
+                        local value = model[property]
+                        local configured = destination[property]
+                        value.x, value.y, value.z = configured.x or 0, configured.y or 0, configured.z or 0
+                        model[property] = value
+                    end
+                end
+                if destination.orthographic ~= nil then
+                    model.orthographic = destination.orthographic
                 end
 
                 slot.model = model
@@ -75,10 +108,10 @@ function NpcSlotMenu:BeginVisuals()
 end
 
 -- Menus can set columns and rows; the default keeps both Slayer Cape pages the same size.
-function NpcSlotMenu:CalculateLayout()
+function ModelSlotMenu:CalculateLayout()
     local session = self.session
     local columns = self.definition.columns or 5
-    local rows = self.definition.rows or 2
+    local rows = math.max(self.definition.rows or 2, math.ceil(#self.slots / columns))
     local gridWidth = columns * slotSize + inset * 2
     local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
     local availableHeight = (session.layoutHeight or session.layoutParent.height) - session.top - session.bottom - 16
@@ -135,16 +168,16 @@ function NpcSlotMenu:CalculateLayout()
 end
 
 -- Align each full card, including its name, with its client-owned teleport operation.
-function NpcSlotMenu:ApplyLayout(layout)
+function ModelSlotMenu:ApplyLayout(layout)
     self:LayoutWindow(layout.width, layout.height)
     self.slotLayer:SetSize(layout.width, layout.height)
 
     local origin = self.slotLayer.xyGlobal
+    local rectangles = {}
 
     for _, row in ipairs(self.session.rows) do
         if row.destination.hidden then
-            self:HideRowArtwork(row)
-            self:LayoutRow(row, origin.x, origin.y, 0, 0)
+            rectangles[#rectangles + 1] = { entry = row, x = origin.x, y = origin.y, width = 0, height = 0 }
         end
     end
 
@@ -195,13 +228,16 @@ function NpcSlotMenu:ApplyLayout(layout)
         slot.layer:SetSize(scaled(width), scaled(height))
 
         if not row.locked then
-            self:HideRowArtwork(row)
-            self:LayoutRow(row, origin.x + scaled(x), origin.y + scaled(y), scaled(width), scaled(height))
+            rectangles[#rectangles + 1] = {
+                entry = row, x = origin.x + scaled(x), y = origin.y + scaled(y),
+                width = scaled(width), height = scaled(height),
+            }
         end
     end
+    self:LayoutRows(rectangles, layout.width, layout.height)
 end
 
-function NpcSlotMenu:GetHovered()
+function ModelSlotMenu:GetHovered()
     for _, row in ipairs(self.session.rows) do
         if not row.destination.hidden and row.click.visibleGlobal and row.click.isMouseOver then
             return row.name
@@ -210,7 +246,7 @@ function NpcSlotMenu:GetHovered()
 end
 
 -- Use native availability and hover for card styling and the existing PrettyUI tooltips.
-function NpcSlotMenu:UpdateVisuals(layout, hovered)
+function ModelSlotMenu:UpdateVisuals(layout, hovered)
     for _, slot in ipairs(self.slots) do
         local row = slot.row
         local dimmed = row.disabled
@@ -242,4 +278,12 @@ function NpcSlotMenu:UpdateVisuals(layout, hovered)
     SlotMenu.UpdateVisuals(self, layout, hovered)
 end
 
-return NpcSlotMenu
+function ModelSlotMenu.Create(interface, key)
+    local class = SlotMenu.Create(interface, key)
+    for name, method in pairs(ModelSlotMenu) do
+        if name ~= "Create" then class[name] = method end
+    end
+    return class
+end
+
+return ModelSlotMenu

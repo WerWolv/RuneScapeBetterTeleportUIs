@@ -1,4 +1,4 @@
-local NativeLayout = require("impl/native_layout")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 local components = require("impl/ui/components")
 
 local NativeDragOutline = {}

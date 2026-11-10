@@ -1,8 +1,9 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local descriptions = require("definitions/descriptions")
-local MenaphosJournal = ModalChoiceMenu:Extend("menaphosJournal")
+local MenaphosJournal = MapMenu.Create(ModalChoiceMenu, "menaphosJournal")
 
 local function chargesRemaining(count)
     local noun = tonumber(count) == 1 and "tablet" or "tablets"

@@ -1,7 +1,7 @@
-local PortalNexusMenu = require("impl/interfaces/portal_nexus_menu")
+local PortalNexusMenu = require("impl/interfaces/native/portal_nexus_menu")
 local backgrounds = require("definitions/backgrounds")
 local descriptions = require("definitions/descriptions")
-local categoryMap = require("impl/ui/category_map_menu")
+local categoryMap = require("impl/interfaces/presentations/category_map_menu")
 local categories = require("menus/maps/teleport_nexus/categories")
 
 local TeleportNexus = categoryMap.Create(PortalNexusMenu, "teleportNexus", categories)

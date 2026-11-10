@@ -27,7 +27,7 @@ function TeleportMenu:Define()
     error("Teleport menu must implement Define")
 end
 
--- Let interface subclasses impose their own artwork and placement requirements.
+-- Let presentations impose their own artwork and placement requirements.
 function TeleportMenu:ValidateDestination(definition, background)
     return true
 end
@@ -131,12 +131,12 @@ function TeleportMenu:ReadInterface()
     error("Teleport interface must implement ReadInterface")
 end
 
--- Require interface classes to calculate their content layout.
+-- Require presentations to calculate their content layout.
 function TeleportMenu:CalculateLayout()
     error("Teleport interface must implement CalculateLayout")
 end
 
--- Require interface classes to apply positions to native controls.
+-- Presentations render artwork and submit target rectangles to their native adapter.
 function TeleportMenu:ApplyLayout(layout)
     error("Teleport interface must implement ApplyLayout")
 end

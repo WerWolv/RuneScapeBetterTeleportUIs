@@ -1,7 +1,8 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local UnderworldGrimoire = ModalChoiceMenu:Extend("underworldGrimoire")
+local UnderworldGrimoire = MapMenu.Create(ModalChoiceMenu, "underworldGrimoire")
 
 function UnderworldGrimoire:Define()
     return {

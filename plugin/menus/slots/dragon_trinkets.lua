@@ -1,7 +1,8 @@
-local NpcSlotMenu = require("impl/interfaces/npc_slot_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
 local descriptions= require("definitions/descriptions")
-local ChromaticDragonTrinkets = NpcSlotMenu:Extend("chromaticDragonTrinkets")
-local MetallicDragonTrinkets = NpcSlotMenu:Extend("metallicDragonTrinkets")
+local ChromaticDragonTrinkets = ModelSlotMenu.Create(ModalChoiceMenu, "chromaticDragonTrinkets")
+local MetallicDragonTrinkets = ModelSlotMenu.Create(ModalChoiceMenu, "metallicDragonTrinkets")
 
 local function description(location)
 

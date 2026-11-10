@@ -1,5 +1,5 @@
 local TeleportMenu = require("impl/teleport_menu")
-local NativeLayout = require("impl/native_layout")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 
 local AtelfTeleportsMenu = TeleportMenu:Extend()
 AtelfTeleportsMenu.interface = AtelfTeleportsMenu

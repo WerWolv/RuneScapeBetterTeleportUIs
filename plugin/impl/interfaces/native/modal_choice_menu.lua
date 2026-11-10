@@ -1,15 +1,10 @@
 local TeleportMenu = require("impl/teleport_menu")
-local nativeHelpers = require("impl/interfaces/native_helpers")
-local NativeLayout = require("impl/native_layout")
-local NativeDragOutline = require("impl/ui/native_drag_outline")
+local nativeHelpers = require("impl/interfaces/native/native_helpers")
+local NativeLayout = require("impl/interfaces/native/native_layout")
+local NativeDragOutline = require("impl/interfaces/native/native_drag_outline")
 local cleanup = require("impl/cleanup")
 local teleportTooltip = require("impl/ui/teleport_tooltip")
-local geometry = require("impl/map_geometry")
-local mapCrop = require("impl/map_crop")
 local MenuUIToggle = require("impl/ui/menu_ui_toggle")
-local constants = require("definitions/constants")
-local BackgroundView = require("impl/ui/background_view")
-local ButtonIcon = require("impl/ui/button_icon")
 local components = require("impl/ui/components")
 local text = require("impl/text")
 local utils = require("impl/utils")
@@ -31,7 +26,7 @@ ModalChoiceMenu.nativeInterface = {
 }
 
 local knownTitles = setmetatable({}, { __mode = "k" })
-local frameInset, hitboxScale = 5, 0.75
+local frameInset = 5
 local modalHost
 
 -- Gather visible text without visiting a native component twice.
@@ -171,22 +166,6 @@ function ModalChoiceMenu:ReadInterface()
         prompt = prompt,
         closeButton = component(self, native.close),
     }
-end
-
--- Require visible map destinations to have artwork, coordinates and a shared background.
-function ModalChoiceMenu:ValidateDestination(definition, background)
-    local entryBackground = definition.background or self.definition.background
-    local icons = definition.icons or self.definition.icons
-
-    if definition.point == nil or icons == nil or entryBackground == nil then
-        return false, "needs point, icons and background (including group defaults)"
-    end
-
-    if background ~= nil and entryBackground ~= background then
-        return false, "uses a different background from the other visible entries"
-    end
-
-    return true
 end
 
 -- Treat controls as unavailable only when invisible or all named actions are explicitly hidden.
@@ -423,7 +402,7 @@ function ModalChoiceMenu:BeginInterface(placement)
     session.window, session.content = window, content
     session.parent = window.parent
 
-    -- Maps fill the frame interior rather than retaining the native text list's padding.
+    -- Presentations fill the frame interior rather than retaining the native text list's padding.
     session.left = frameInset
     session.top = math.max(32, contentPos.y - windowPos.y)
     session.right = frameInset
@@ -540,13 +519,6 @@ function ModalChoiceMenu:Update(snapshot)
     end)
 end
 
--- Create the map's plugin-owned background and marker views for this menu instance.
-function ModalChoiceMenu:BeginVisuals()
-    mapCrop.Attach(self.session.menu)
-    self.backgroundView = BackgroundView.New(self.session.content)
-    self.iconView = ButtonIcon.New(self.backgroundView.layer)
-end
-
 -- Measure only horizontal header clearance; retain the native title-bar height.
 function ModalChoiceMenu:HeaderLayout()
     local session = self.session
@@ -579,54 +551,13 @@ function ModalChoiceMenu:HeaderLayout()
     return { left = left, right = right, width = left + width + right }
 end
 
--- Definitions can enlarge or shrink a map while keeping its native header and icons readable.
+-- Definitions can enlarge or shrink the layout budget while retaining the native header.
 function ModalChoiceMenu:GetSizeMultiplier()
     local multiplier = self.session.menu.group.sizeMultiplier or 1
 
-    assert(utils.IsFinite(multiplier) and multiplier > 0, "Map sizeMultiplier must be a positive number")
+    assert(utils.IsFinite(multiplier) and multiplier > 0, "Menu sizeMultiplier must be a positive number")
 
     return multiplier
-end
-
--- Supply the header's minimum width to the crop, then scale uniformly within the host.
-function ModalChoiceMenu:CalculateLayout()
-    local session = self.session
-
-    self:UpdateTitle()
-
-    local header = self:HeaderLayout()
-    local minWidth = math.max(1, header.width - session.left - session.right)
-
-    session.menu.cropMinWidth = nil
-
-    local availableWidth = session.layoutWidth or session.layoutParent.width
-    local availableHeight = session.layoutHeight or session.layoutParent.height
-    local maxWidth = math.min(
-        math.max(constants.maxWidth * self:GetSizeMultiplier(), minWidth),
-        availableWidth - session.left - session.right - 16
-    )
-    local maxHeight = availableHeight - session.top - session.bottom - 16
-    mapCrop.SetViewport(session.menu, maxWidth, maxHeight)
-    local crop = geometry.Bounds(session.menu.background)
-    local scale = math.min(
-        maxWidth / crop.width,
-        maxHeight / crop.height
-    )
-
-    session.menu.cropMinWidth = math.ceil(minWidth / scale)
-    crop = geometry.Bounds(session.menu.background)
-    scale = math.min(scale, maxWidth / crop.width)
-
-    local width = math.max(1, math.floor(crop.width * scale))
-
-    return {
-        width = width,
-        height = math.max(1, math.floor(crop.height * scale)),
-
-        -- A tall map or a crop opt-out may not supply enough artwork width
-        -- for the header. Reserve content space without stretching the map.
-        contentWidth = math.max(width, math.min(math.ceil(minWidth), math.floor(maxWidth))),
-    }
 end
 
 -- Apply a global rectangle in a native control's parent coordinate space.
@@ -756,69 +687,12 @@ function ModalChoiceMenu:LayoutRow(entry, x, y, width, height)
     end
 end
 
--- Align original click targets with the map's destination markers.
-function ModalChoiceMenu:ApplyLayout(layout)
-    local session = self.session
-    local width, height = layout.width, layout.height
-
-    self.backgroundView:Show(session.menu.background, width, height, self.definition.vignette)
-
-    local contentWidth = layout.contentWidth or width
-
-    self:LayoutWindow(contentWidth, height)
-    self.backgroundView.layer:SetPos(math.floor((contentWidth - width) / 2), 0)
-
-    local imagePosition = self.backgroundView.layer.xyGlobal
-
-    for _, entry in ipairs(session.rows) do
-        local destination = entry.destination
-        local hitWidth, hitHeight = 0, 0
-        local x, y
-
-        if not destination.hidden then
-            local iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
-
-            hitWidth = math.max(1, math.floor(iconWidth * hitboxScale))
-            hitHeight = math.max(1, math.floor(iconHeight * hitboxScale))
-            x, y = geometry.Project(destination.background, destination.point, width, height)
-        end
-
-        if x == nil then
-            x, y, hitWidth, hitHeight = 0, 0, 0, 0
-        else
-            x, y = x - hitWidth / 2, y - hitHeight / 2
-        end
-
-        self:LayoutRow(entry, imagePosition.x + x, imagePosition.y + y, hitWidth, hitHeight)
+-- Presentations supply global rectangles; adapters retain ownership of native input.
+function ModalChoiceMenu:LayoutRows(rectangles, width, height)
+    for _, rectangle in ipairs(rectangles) do
+        self:HideRowArtwork(rectangle.entry)
+        self:LayoutRow(rectangle.entry, rectangle.x, rectangle.y, rectangle.width, rectangle.height)
     end
-end
-
--- Return the hovered native destination only when its map point is visible.
-function ModalChoiceMenu:GetHovered()
-    local menu = self.session.menu
-
-    for _, entry in ipairs(menu.rows) do
-        local destination = entry.destination
-
-        if not entry.locked and not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
-            and geometry.Contains(menu.background, destination.point) then
-            return entry.name
-        end
-    end
-end
-
--- Refresh icon states and show only the hovered destination's tooltip.
-function ModalChoiceMenu:UpdateVisuals(layout, hovered)
-    self.iconView:Update(self.session.menu, hovered)
-
-    -- Apply the edge shading to icons and badges, including the raised hover marker.
-    local vignette = self.backgroundView.vignette
-
-    if vignette ~= nil then
-        vignette:MoveToFront()
-    end
-
-    self:UpdateTooltips(hovered)
 end
 
 -- Maps and slot menus share native tooltip attachments and hover selection.
@@ -830,13 +704,6 @@ function ModalChoiceMenu:UpdateTooltips(hovered)
             tooltip:Hide()
         end
     end
-end
-
--- Destroy this menu's artwork even if the native interface has already closed.
-function ModalChoiceMenu:ReleaseVisuals()
-    self:ReleaseTooltips()
-    cleanup.Release(self, "iconView")
-    cleanup.Release(self, "backgroundView")
 end
 
 -- Remove plugin hooks before restoring surviving native controls to their client layout.

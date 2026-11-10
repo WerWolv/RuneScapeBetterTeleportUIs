@@ -1,8 +1,9 @@
-local NpcSlotMenu = require("impl/interfaces/npc_slot_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
 local teleportIcons = require("definitions/teleport_icons")
 local descriptions = require("definitions/descriptions")
-local SlayerCapePage1 = NpcSlotMenu:Extend("slayerCapePage1")
-local SlayerCapePage2 = NpcSlotMenu:Extend("slayerCapePage2")
+local SlayerCapePage1 = ModelSlotMenu.Create(ModalChoiceMenu, "slayerCapePage1")
+local SlayerCapePage2 = ModelSlotMenu.Create(ModalChoiceMenu, "slayerCapePage2")
 
 local distance = 400
 local offset = {

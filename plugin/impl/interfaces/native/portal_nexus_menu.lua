@@ -1,9 +1,10 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local native = require("impl/interfaces/native_helpers")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ScrollingListMenu = require("impl/interfaces/native/scrolling_list_menu")
+local native = require("impl/interfaces/native/native_helpers")
 local components = require("impl/ui/components")
 local text = require("impl/text")
 
-local PortalNexusMenu = ModalChoiceMenu:Extend()
+local PortalNexusMenu = ScrollingListMenu:Extend()
 PortalNexusMenu.interface = PortalNexusMenu
 PortalNexusMenu.interfaceName = "PORTAL_NEXUS (" .. id.Interface.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS .. ")"
 PortalNexusMenu.nativeInterface = {

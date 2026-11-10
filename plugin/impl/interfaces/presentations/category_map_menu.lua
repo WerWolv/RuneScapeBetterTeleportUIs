@@ -1,5 +1,4 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local components = require("impl/ui/components")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local geometry = require("impl/map_geometry")
 local ButtonIcon = require("impl/ui/button_icon")
 local utils = require("impl/utils")
@@ -179,14 +178,9 @@ function Filters:Destroy()
     cleanup.Release(self, "root")
 end
 
--- Native rows collapse and move on every selection; attach after stable probes exist.
-function CategoryMap:GetTooltipTarget()
-    return nil
-end
-
 -- Reserve sidebar space in the movable host, bounded by the viewport on small screens.
 function CategoryMap:UpdateLayoutHost(session, sizeMultiplier)
-    ModalChoiceMenu.UpdateLayoutHost(self, session, sizeMultiplier)
+    self.interface.UpdateLayoutHost(self, session, sizeMultiplier)
 
     local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
 
@@ -194,7 +188,7 @@ function CategoryMap:UpdateLayoutHost(session, sizeMultiplier)
 end
 
 function CategoryMap:CalculateLayout()
-    local layout = ModalChoiceMenu.CalculateLayout(self)
+    local layout = MapMenu.CalculateLayout(self)
     local session = self.session
     local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
     local panelWidth = math.min(sidebarWidth, math.floor(availableWidth * 0.4))
@@ -219,59 +213,10 @@ function CategoryMap:BeginVisuals()
         destination.hotkeyOffset = { x = 10, y = -10 }
     end
 
-    ModalChoiceMenu.BeginVisuals(self)
-    self.session.pointerTargets = {}
-
-    for index, entry in ipairs(self.session.rows) do
-        local target = ui.Layer.new(self.backgroundView.layer)
-
-        target.clickthrough = true
-        target.hidden = true
-        self.session.pointerTargets[index] = target
-
-        if not entry.destination.hidden then
-            self:AttachTooltip(entry, target)
-        end
-
-        -- PrettyUI enables input on attachment; the native row must keep the action.
-        target.clickthrough = true
-    end
+    MapMenu.BeginVisuals(self)
 
     self.filters = Filters.New(self.session.content, self.categoryDefinition, self.session.rows)
     self.filters:Build(self.session.rows)
-end
-
--- Native hit testing handles the client's mouse/UI coordinate conversion.
--- Passive probes keep the unhovered icon bounds as the artwork grows around them.
-function CategoryMap:FindPointerRow(width, height)
-    for index, entry in ipairs(self.session.rows) do
-        local target = self.session.pointerTargets[index]
-        local x, y = geometry.Project(self.session.menu.background, entry.destination.point, width, height)
-
-        target.hidden = entry.destination.hidden or entry.disabled or x == nil
-
-        if not target.hidden then
-            local w, h = ButtonIcon.Dimensions(entry.destination.icons)
-
-            target:SetPos(math.floor(x - w / 2), math.floor(y - h / 2))
-            target:SetSize(w, h)
-        end
-    end
-
-    -- Match marker draw order if icon bounds overlap.
-    for index = #self.session.rows, 1, -1 do
-        local target = self.session.pointerTargets[index]
-
-        if target.visibleGlobal and target.isMouseOver then
-            return self.session.rows[index], target
-        end
-    end
-end
-
-function CategoryMap:GetHovered()
-    local row = self.session.pointerRow
-
-    return row ~= nil and row.click.visibleGlobal and row.name or nil
 end
 
 function CategoryMap:ApplyLayout(layout)
@@ -282,84 +227,30 @@ function CategoryMap:ApplyLayout(layout)
     self.filters:Update()
     self:LayoutWindow(contentWidth, height)
 
-    -- Every list wrapper shares the map's local origin. Avoid converting native
-    -- dynamic rows through xyGlobal while their ancestors are being relaid out.
-    for _, control in ipairs(session.menu.snapshot.scrollContainers) do
-        if control ~= session.content then
-            control:SetPos(0, 0)
-            control:SetSize(width, height)
-            control.clickthrough = true
-        end
-
-        if control.scrollable then
-            control:SetScrollSize(control == session.content and contentWidth or width, height)
-            control:SetScrollPos(0, 0)
-        end
-    end
-
-    local scrollbar = session.menu.snapshot.scrollbar
-
-    if scrollbar ~= nil then
-        scrollbar.hidden = true
-    end
-
-    for _, control in ipairs(session.menu.snapshot.categoryArtwork or {}) do
-        control.hidden = true
-    end
-
     self.backgroundView:Show(session.menu.background, width, height, self.definition.vignette)
-
-    local selected, target = self:FindPointerRow(width, height)
-    local hitWidth, hitHeight = target and target.width or 0, target and target.height or 0
-    local scrolling = session.menu.snapshot.scrolling
-
-    -- A panel always stacks its children. Zero-sized rows and zero spacing put
-    -- the sole active row at its origin, regardless of destination/list order.
-    -- Keep rows present for discovery and native keyboard shortcut handlers.
-    if scrolling.type == ui.ComponentType.PANEL then
-        scrolling.spacing = 0
-    end
-
+    local origin = self.backgroundView.layer.xyGlobal
+    local rectangles = {}
     for _, entry in ipairs(session.rows) do
-        self:LayoutRow(
-            entry, 0, 0,
-            entry == selected and hitWidth or 0,
-            entry == selected and hitHeight or 0
-        )
-    end
-
-    -- Move the wrapper (whose parent is a free-positioned Layer), not its rows.
-    scrolling:SetPos(target and target.position.x or 0, target and target.position.y or 0)
-    scrolling:SetSize(hitWidth, hitHeight)
-
-    if scrolling.scrollable then
-        scrolling:SetScrollSize(hitWidth, hitHeight)
-        scrolling:SetScrollPos(0, 0)
-    end
-
-    session.pointerRow = selected
-    self.filters:Layout(width, layout.panelWidth, height)
-end
-
--- Keep the native action owner, but remove the old full-width row's input footprint.
-function CategoryMap:LayoutRow(entry, x, y, width, height)
-    entry.row:SetPos(math.floor(x), math.floor(y))
-    entry.row:SetSize(width, height)
-
-    components.Walk(entry.row, function(control)
-        control.alpha = 0
-        control.clickthrough = width == 0 or height == 0 or control ~= entry.click
-
-        if control ~= entry.row then
-            control:SetPos(0, 0)
-            control:SetSize(width, height)
+        local x, y, w, h = 0, 0, 0, 0
+        if not entry.destination.hidden and not entry.disabled then
+            x, y = geometry.Project(session.menu.background, entry.destination.point, width, height)
+            w, h = ButtonIcon.Dimensions(entry.destination.icons)
         end
-    end)
+        if x == nil then
+            x, y, w, h = 0, 0, 0, 0
+        end
+        rectangles[#rectangles + 1] = {
+            entry = entry, x = origin.x + math.floor(x - w / 2), y = origin.y + math.floor(y - h / 2),
+            width = w, height = h,
+        }
+    end
+    self:LayoutRows(rectangles, width, height)
+    self.filters:Layout(width, layout.panelWidth, height)
 end
 
 -- Search emphasizes matches without removing destinations or changing native input.
 function CategoryMap:UpdateVisuals(layout, hovered)
-    ModalChoiceMenu.UpdateVisuals(self, layout, hovered)
+    MapMenu.UpdateVisuals(self, layout, hovered)
 
     for _, entry in ipairs(self.session.rows) do
         local marker = self.iconView.markers[entry.name]
@@ -389,13 +280,13 @@ end
 function CategoryMap:ReleaseVisuals()
     cleanup.Release(self, "filters")
 
-    ModalChoiceMenu.ReleaseVisuals(self)
+    MapMenu.ReleaseVisuals(self)
 end
 
 -- Compose presentation onto a native interface without changing its discovery/matching.
 return {
     Create = function(interface, key, categories)
-        local class = interface:Extend(key)
+        local class = MapMenu.Create(interface, key)
         for name, method in pairs(CategoryMap) do
             class[name] = method
         end

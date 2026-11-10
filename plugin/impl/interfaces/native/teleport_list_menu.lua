@@ -1,8 +1,9 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local native = require("impl/interfaces/native_helpers")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local ScrollingListMenu = require("impl/interfaces/native/scrolling_list_menu")
+local native = require("impl/interfaces/native/native_helpers")
 local text = require("impl/text")
 
-local TeleportListMenu = ModalChoiceMenu:Extend()
+local TeleportListMenu = ScrollingListMenu:Extend()
 TeleportListMenu.interface = TeleportListMenu
 TeleportListMenu.interfaceName = "TELEPORT_LIST (" .. id.Interface.TELEPORT_LIST .. ")"
 TeleportListMenu.nativeInterface = {

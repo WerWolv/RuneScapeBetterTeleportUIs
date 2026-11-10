@@ -1,6 +1,5 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
 local cleanup = require("impl/cleanup")
-local SlotMenu = ModalChoiceMenu:Extend()
+local SlotMenu = {}
 
 -- Own all passive card artwork independently of the native input controls.
 function SlotMenu:BeginVisuals()
@@ -42,6 +41,14 @@ function SlotMenu:ReleaseVisuals()
 
     cleanup.Release(self, "slotLayer")
     self.slots = nil
+end
+
+function SlotMenu.Create(interface, key)
+    local class = interface:Extend(key)
+    for name, method in pairs(SlotMenu) do
+        if name ~= "Create" then class[name] = method end
+    end
+    return class
 end
 
 return SlotMenu

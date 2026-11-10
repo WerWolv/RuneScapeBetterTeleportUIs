@@ -1,9 +1,10 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local Model3D = require("impl/ui/model_3d")
 local cleanup = require("impl/cleanup")
-local RingOfSlaying = ModalChoiceMenu:Extend("ringOfSlaying")
+local RingOfSlaying = MapMenu.Create(ModalChoiceMenu, "ringOfSlaying")
 
 local slayerMasters = {
     [1] = {
@@ -113,7 +114,7 @@ end
 
 -- The shared portrait owns drawing; the original Slayer options row owns input.
 function RingOfSlaying:BeginVisuals()
-    ModalChoiceMenu.BeginVisuals(self)
+    MapMenu.BeginVisuals(self)
     self.session.slayerMaster = currentSlayerMaster()
 
     local master = self.session.slayerMaster
@@ -148,7 +149,7 @@ function RingOfSlaying:BeginVisuals()
 end
 
 function RingOfSlaying:ApplyLayout(layout)
-    ModalChoiceMenu.ApplyLayout(self, layout)
+    MapMenu.ApplyLayout(self, layout)
 
     local portrait = self.masterPortrait
 
@@ -176,11 +177,11 @@ function RingOfSlaying:GetHovered()
         return row.name
     end
 
-    return ModalChoiceMenu.GetHovered(self)
+    return MapMenu.GetHovered(self)
 end
 
 function RingOfSlaying:UpdateVisuals(layout, hovered)
-    ModalChoiceMenu.UpdateVisuals(self, layout, hovered)
+    MapMenu.UpdateVisuals(self, layout, hovered)
 
     local portrait = self.masterPortrait
 
@@ -200,7 +201,7 @@ function RingOfSlaying:ReleaseVisuals()
         end)
     end
 
-    ModalChoiceMenu.ReleaseVisuals(self)
+    MapMenu.ReleaseVisuals(self)
     self.masterPortrait = nil
 end
 

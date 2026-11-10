@@ -1,9 +1,10 @@
-local ModalChoiceMenu = require("impl/interfaces/modal_choice_menu")
-local ChoiceV2Menu = require("impl/interfaces/choice_v2_menu")
+local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
+local MapMenu = require("impl/interfaces/presentations/map_menu")
+local ChoiceV2Menu = require("impl/interfaces/native/choice_v2_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
-local PirateSpellSheet = ChoiceV2Menu:Extend("pirateSpellSheet")
-local BigBookOPiracy = ModalChoiceMenu:Extend("bigBookOPiracy")
+local PirateSpellSheet = MapMenu.Create(ChoiceV2Menu, "pirateSpellSheet")
+local BigBookOPiracy = MapMenu.Create(ModalChoiceMenu, "bigBookOPiracy")
 
 function PirateSpellSheet:Define()
     return {

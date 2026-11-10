@@ -1,5 +1,5 @@
-local FairyRingMenu = require("impl/interfaces/fairy_ring_menu")
-local NativeLayout = require("impl/native_layout")
+local FairyRingMenu = require("impl/interfaces/native/fairy_ring_menu")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 local components = require("impl/ui/components")
 local cleanup = require("impl/cleanup")
 local text = require("impl/text")
