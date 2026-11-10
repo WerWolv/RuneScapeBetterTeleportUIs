@@ -1012,6 +1012,14 @@ return {
             shadowColorHovered = 0x000000FF
         }
     },
+    portal = {
+        normal = { sprite = id.Sprite.SLISKE2_QUEST_BTN_PORTAL_2 },
+        hovered = { sprite = id.Sprite.SLISKE2_QUEST_BTN_PORTAL_3 },
+        locked = { sprite = id.Sprite.SLISKE2_QUEST_BTN_PORTAL_4 },
+        size = 32,
+        imageWidth = 28,
+        imageHeight = 28,
+    },
     house = {
         normal = { sprite = id.Sprite.RP_HOUSE },
         size = 48,

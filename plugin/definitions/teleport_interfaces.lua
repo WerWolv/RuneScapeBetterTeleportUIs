@@ -160,6 +160,10 @@ return {
         module = "maps/poh_portal"
     },
     {
+        name = "Clan Vexillum",
+        module = "maps/clan_vexillum"
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
