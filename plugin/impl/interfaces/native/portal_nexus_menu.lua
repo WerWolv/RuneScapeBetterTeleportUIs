@@ -9,6 +9,7 @@ PortalNexusMenu.interface = PortalNexusMenu
 PortalNexusMenu.cacheNativeSnapshot = true
 PortalNexusMenu.interfaceName = "PORTAL_NEXUS (" .. id.Interface.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS .. ")"
 PortalNexusMenu.nativeInterface = {
+    independentDrag = true,
     id = id.Interface.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS,
     prefix = "CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS__",
     window = "MAINMODAL_WINDOW",

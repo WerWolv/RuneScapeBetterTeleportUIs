@@ -9,6 +9,7 @@ TeleportListMenu.interface = TeleportListMenu
 TeleportListMenu.cacheNativeSnapshot = true
 TeleportListMenu.interfaceName = "TELEPORT_LIST (" .. id.Interface.TELEPORT_LIST .. ")"
 TeleportListMenu.nativeInterface = {
+    independentDrag = true,
     id = id.Interface.TELEPORT_LIST,
     prefix = "TELEPORT_LIST__",
     window = "MAINMODAL_WINDOW",
@@ -173,26 +174,6 @@ function TeleportListMenu:GetLayoutHost(window)
         id.Component.TOPLEVEL_V2__FULLMODAL_WINDOW_CONTENT,
         "TELEPORT_LIST"
     )
-end
-
-function TeleportListMenu:PositionLayoutHost()
-    local session = self.session
-
-    -- Center the fitted window once instead of inheriting FULLMODAL's old
-    -- off-screen placement. Leave subsequent movement to the native interface.
-    if not session.hostPlaced then
-        local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
-        local host = session.hostContainers[1]
-        local viewportOrigin, parentOrigin = viewport.xyGlobal, host.parent.xyGlobal
-
-        NativeLayout.SetPos(host,
-            viewportOrigin.x - parentOrigin.x + math.max(0, math.floor((viewport.width - host.width) / 2)),
-            viewportOrigin.y - parentOrigin.y + math.max(0, math.floor((viewport.height - host.height) / 2))
-        )
-        session.hostPlaced = true
-    end
-
-    return ModalChoiceMenu.PositionLayoutHost(self)
 end
 
 return TeleportListMenu
