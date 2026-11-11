@@ -33,10 +33,7 @@ $(BUILD_DIR):
 
 $(ZIP_FILE):$(SOURCE_FILES) $(PACKAGE_DOCS) $(BASE_DIR)/Makefile | $(BUILD_DIR)
 	@rm -rf "$(STAGE_DIR)"
-	@mkdir -p "$(STAGE_DIR)/licenses"
 	@cp -a "$(SOURCE_DIR)/." "$(STAGE_DIR)/"
-	@cp "$(BASE_DIR)README.md" "$(STAGE_DIR)/README.md"
-	@cp "$(BASE_DIR)LICENSE.md" "$(STAGE_DIR)/licenses/LICENSE.md"
 
 	@cd "$(STAGE_DIR)" && \
 		zip -qr -FS "$@" .
