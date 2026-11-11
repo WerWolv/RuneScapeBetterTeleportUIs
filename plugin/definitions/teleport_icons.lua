@@ -1028,6 +1028,64 @@ return {
         shadowColor = 0x00000050,
         shadowColorHovered = 0x000000FF
     },
+    arcIslands = {
+        tuaiLeit = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_1_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_1_OVR },
+            size = 128,
+            imageWidth = 128,
+            imageHeight = 128
+        },
+        whalesMaw = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_2_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_2_OVR },
+            size = 64,
+            imageWidth = 64,
+            imageHeight = 64
+        },
+        waiko = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_3_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_3_OVR },
+            size = 128,
+            imageWidth = 128,
+            imageHeight = 128
+        },
+        goshima = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_4_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_4_OVR },
+            size = 128,
+            imageWidth = 128,
+            imageHeight = 128
+        },
+        turtleIslands = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_5_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_5_OVR },
+            size = 176,
+            imageWidth = 176,
+            imageHeight = 96
+        },
+        aminishi = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_6_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_6_OVR },
+            size = 128,
+            imageWidth = 128,
+            imageHeight = 128
+        },
+        cyclosis = {
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_7_NML },   
+            hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_7_OVR },
+            size = 64,
+            imageWidth = 64,
+            imageHeight = 64
+        },
+        ship = {
+            normal = { sprite = id.Sprite.ELR_MAP_SHIP_ILLUSTRATION },
+            size = 210,
+            imageWidth = 210,
+            imageHeight = 164,
+            shadowColorHovered = 0x00000099
+        }
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },

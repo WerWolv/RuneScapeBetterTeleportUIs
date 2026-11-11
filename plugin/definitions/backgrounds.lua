@@ -108,5 +108,10 @@ return {
         sprites = {{ id.Sprite.MYQ6_QUEST_ROWBOAT_TRANSPORT_MAP }},
         width = 744,
         height = 441
+    },
+    arcParchment = {
+        sprites = {{ id.Sprite.ELR_ARC_MAP_PARCHMENT }},
+        width = 736,
+        height = 414
     }
 }

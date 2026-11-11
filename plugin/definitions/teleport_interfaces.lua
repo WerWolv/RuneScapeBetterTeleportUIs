@@ -164,6 +164,10 @@ return {
         module = "maps/clan_vexillum"
     },
     {
+        name = "Arc Journal",
+        module = "maps/arc_journal"
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
     },
