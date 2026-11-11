@@ -709,6 +709,10 @@ function ModalChoiceMenu:LayoutWindow(width, height)
         session.windowDrag:Update()
     else
         session.dragOutline:Update(window)
+
+        if session.dragOutline.layout ~= nil then
+            session.nativeLayout:PreservePosition(session.hostContainers[1])
+        end
     end
 
     local dragging = session.windowDrag ~= nil and session.windowDrag.drag ~= nil

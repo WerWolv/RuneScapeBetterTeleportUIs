@@ -205,6 +205,19 @@ function NativeLayout.SetPos(control, x, y, xParentPc, yParentPc, xSelfPc, ySelf
     setValues(control, "position", positionFields, { x, y, xParentPc, yParentPc, xSelfPc, ySelfPc }, control.SetPos)
 end
 
+-- Once native dragging takes over, its complete position (including anchors)
+-- belongs to the client. Do not restore fragments of a previously loaded position.
+function NativeLayout:PreservePosition(control)
+    local entry = trackedEntry(self, control)
+    local change = entry and self.changes[entry.control]
+
+    if change ~= nil then
+        for _, field in ipairs(positionFields) do
+            change.original[field], change.applied[field] = nil, nil
+        end
+    end
+end
+
 function NativeLayout.SetSize(control, width, height, widthParentPc, heightParentPc)
     widthParentPc, heightParentPc = widthParentPc or 0, heightParentPc or 0
     local size = control.size
