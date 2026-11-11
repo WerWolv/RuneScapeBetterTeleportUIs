@@ -9,7 +9,6 @@ TeleportListMenu.interface = TeleportListMenu
 TeleportListMenu.cacheNativeSnapshot = true
 TeleportListMenu.interfaceName = "TELEPORT_LIST (" .. id.Interface.TELEPORT_LIST .. ")"
 TeleportListMenu.nativeInterface = {
-    trackedLayout = true,
     id = id.Interface.TELEPORT_LIST,
     prefix = "TELEPORT_LIST__",
     window = "MAINMODAL_WINDOW",
