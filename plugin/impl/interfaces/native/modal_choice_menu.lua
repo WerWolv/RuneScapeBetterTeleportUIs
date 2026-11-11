@@ -2,6 +2,7 @@ local TeleportMenu = require("impl/teleport_menu")
 local nativeHelpers = require("impl/interfaces/native/native_helpers")
 local NativeLayout = require("impl/interfaces/native/native_layout")
 local NativeDragOutline = require("impl/interfaces/native/native_drag_outline")
+local WindowDrag = require("impl/interfaces/native/window_drag")
 local cleanup = require("impl/cleanup")
 local teleportTooltip = require("impl/ui/teleport_tooltip")
 local MenuUIToggle = require("impl/ui/menu_ui_toggle")
@@ -331,6 +332,7 @@ function ModalChoiceMenu:GetTransitionState(nextMenu, match)
         top = session.top,
         right = session.right,
         bottom = session.bottom,
+        windowPosition = session.windowPosition,
     }
 end
 
@@ -410,7 +412,10 @@ function ModalChoiceMenu:BeginInterface(placement)
     end
 
     session.nativeLayout = NativeLayout.FromControls(controls)
-    session.dragOutline = NativeDragOutline.New(session.hostContainers[1])
+
+    if not native.independentDrag then
+        session.dragOutline = NativeDragOutline.New(session.hostContainers[1])
+    end
 
     local windowPos, contentPos = window.xyGlobal, content.xyGlobal
 
@@ -501,6 +506,12 @@ function ModalChoiceMenu:BeginInterface(placement)
             end
         end
     end)
+
+    -- Independent dragging keeps placement in the plugin instead of native window settings.
+    if native.independentDrag then
+        session.windowPosition = placement and placement.windowPosition or self.windowPosition
+        WindowDrag.New(session)
+    end
 end
 
 function ModalChoiceMenu:GetTooltipTarget(entry)
@@ -606,12 +617,31 @@ local function setRect(control, x, y, width, height)
     NativeLayout.SetSize(control, width, height)
 end
 
--- Follow native movement, constraining the final fitted host at viewport edges.
+-- Follow native or plugin-owned placement, constraining the fitted host at viewport edges.
 -- The content inset is local and never added back into the host's position.
 function ModalChoiceMenu:PositionLayoutHost()
-    nativeHelpers.ClampWindowHost(self.session)
+    local session = self.session
 
-    local position = self.session.layoutParent.xyGlobal
+    if session.windowDrag ~= nil and session.windowPosition ~= nil then
+        local frame = session.hostContainers[1]
+        local parent = frame.parent.xyGlobal
+        NativeLayout.SetPos(frame, session.windowPosition.x - parent.x, session.windowPosition.y - parent.y)
+    end
+
+    nativeHelpers.ClampWindowHost(session)
+
+    if session.windowDrag ~= nil then
+        local origin = session.hostContainers[1].xyGlobal
+        local previous = session.windowPosition
+
+        if previous == nil or previous.x ~= origin.x or previous.y ~= origin.y then
+            session.windowPosition = { x = origin.x, y = origin.y }
+        end
+
+        self.windowPosition = session.windowPosition
+    end
+
+    local position = session.layoutParent.xyGlobal
 
     return position.x + 8, position.y + 8
 end
@@ -669,7 +699,12 @@ function ModalChoiceMenu:LayoutWindow(width, height)
     end
 
     self:LayoutRowContainers(origin.x + session.left, origin.y + session.top, width, height)
-    session.dragOutline:Update(window)
+
+    if session.windowDrag ~= nil then
+        session.windowDrag:Update()
+    else
+        session.dragOutline:Update(window)
+    end
 end
 
 -- Expand intermediate clipping containers before moving their individual rows.
@@ -777,6 +812,7 @@ function ModalChoiceMenu:ReleaseInterface()
     end
 
     self:ReleaseTooltips()
+    cleanup.Release(self.session, "windowDrag")
     cleanup.Release(self.session, "dragOutline", "Restore")
     cleanup.Release(self.session, "nativeLayout", "Restore")
 

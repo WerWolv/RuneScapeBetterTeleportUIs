@@ -7,6 +7,8 @@ ChoiceV2Menu.interface = ChoiceV2Menu
 ChoiceV2Menu.interfaceName = "CHOICE_V2 (" .. id.Interface.CHOICE_V2 .. ")"
 ChoiceV2Menu.nativeInterface = {
     trackedLayout = true,
+    -- Native message-window dragging also saves the chat-box placement.
+    independentDrag = true,
     id = id.Interface.CHOICE_V2,
     prefix = "CHOICE_V2__",
     window = "WINDOW",
@@ -21,7 +23,7 @@ ChoiceV2Menu.nativeInterface = {
     directButtons = true,
 }
 
--- Keep the native message window as the movable host.
+-- Borrow the message window for native input, restoring its geometry on release.
 function ChoiceV2Menu:GetLayoutHost(window)
     return native.ReadLayoutHost(
         window,
@@ -31,7 +33,7 @@ function ChoiceV2Menu:GetLayoutHost(window)
     )
 end
 
--- Match the modal's available area without overwriting the client's drag offsets.
+-- Match the modal's available area while maintaining a separate menu position.
 function ChoiceV2Menu:GetLayoutBudget(session, sizeMultiplier)
     local baseWidth, baseHeight = ModalChoiceMenu:GetModalHostSize()
 
