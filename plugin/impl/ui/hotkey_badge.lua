@@ -38,7 +38,7 @@ function HotkeyBadge:Update(anchor, options)
     options = options or {}
     local root = self.root
     local hidden = options.hidden == true or not anchor.visibleGlobal
-        or self.label.content == "" or not userSettings.Get("showTeleportHotkeys")
+        or self.label.content == "" or not (options.forceVisible == true or userSettings.Get("showTeleportHotkeys"))
 
     if self.hidden ~= hidden then
         root.hidden = hidden

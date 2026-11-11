@@ -16,6 +16,7 @@ View.__index = View
 local markerWidth, markerHeight = 44, 48
 local iconSize, hoveredIconSize = 32, 34
 local selectedOutlineWidth = 3
+local favouriteColour = 0xFFD700FF
 local markerTopPadding = selectedOutlineWidth + (hoveredIconSize - iconSize) / 2
 -- Anchor badges to the normal icon's top-right corner within the fixed marker.
 local markerHotkeyOffset = {
@@ -217,11 +218,12 @@ function View:LayoutMarker(item, showCodes)
     item.label.hidden = not showCodes
 end
 
-function View:LayoutListRow(item, index, showCodes)
+function View:LayoutListRow(item, index, showCodes, showFavourites)
     local target, row = item.target, item.row
     local height = showCodes and listRowHeight or compactListRowHeight
     local width = math.max(1, self.list.viewport.width)
-    local showHotkey = row.shortcut ~= nil and row.shortcut ~= "" and settings.Get("showTeleportHotkeys")
+    local showHotkey = row.shortcut ~= nil and row.shortcut ~= ""
+        and (showFavourites or settings.Get("showTeleportHotkeys"))
     local badgeSpace = showHotkey and HotkeyBadge.Size(row.shortcut, width) + 8 or 0
 
     if item.listIndex == index and item.listWidth == width and item.showCodes == showCodes
@@ -245,7 +247,7 @@ function View:LayoutListRow(item, index, showCodes)
     item.stripe = index % 2 == 0 and 0x25211CE6 or 0x302B25E6
 end
 
-function View:UpdateItem(item, selectedName)
+function View:UpdateItem(item, selectedName, showFavourites)
     local row = item.row
     local shortcut = row.shortcut or ""
 
@@ -254,13 +256,40 @@ function View:UpdateItem(item, selectedName)
     end
 
     local selected = text.Trim(row.location) == selectedName
+    -- Native favourite shortcut labels identify favourites after each log rebuild.
+    local favourite = showFavourites == true and shortcut ~= ""
+    local outlineWidth = favourite and 1 or selected and selectedOutlineWidth or 0
+    local outlineColour = favourite and favouriteColour or 0x00000000
 
     -- Changing item-sprite outlineWidth invalidates its rendered icon. Do not
-    -- regenerate every fairy-ring sprite on every frame for an unchanged selection.
-    if item.icon ~= nil and item.selected ~= selected then
-        item.icon.outlineWidth = selected and selectedOutlineWidth or 0
+    -- regenerate every fairy-ring sprite on every frame for an unchanged highlight.
+    if item.icon ~= nil then
+        if item.outlineWidth ~= outlineWidth then
+            item.icon.outlineWidth = outlineWidth
+            item.outlineWidth = outlineWidth
+        end
+
+        if item.outlineColour ~= outlineColour then
+            item.icon.shadowRGBA = outlineColour
+            item.outlineColour = outlineColour
+        end
+    elseif favourite and item.favouriteBorder == nil then
+        -- List rows have no object sprite; outline their existing passive target.
+        local border = ui.Rectangle.new(item.target)
+        border:SetSize(0, 0, 1.0, 1.0)
+        border.fill = false
+        border.outlineThickness = 1
+        border.rgba = favouriteColour
+        border.clickthrough = true
+        item.favouriteBorder = border
     end
+
+    if item.favouriteBorder ~= nil and item.favouriteHighlighted ~= favourite then
+        item.favouriteBorder.hidden = not favourite
+    end
+
     item.selected = selected
+    item.favouriteHighlighted = favourite
 
     local alpha = item.matches and 1 or 0.2
 
@@ -303,6 +332,7 @@ end
 
 function View:Update(rows, selectedName)
     local showCodes = settings.Get("showFairyRingMapCodes")
+    local showFavourites = Keyboard.IsShiftDown()
     local query = text.Trim(self.search:GetText()):lower()
     local codeQuery = query:gsub("[%s%-]", "")
     local exactCode = false
@@ -326,11 +356,11 @@ function View:Update(rows, selectedName)
         if item.mapped then
             self:LayoutMarker(item, showCodes)
         else
-            self:LayoutListRow(item, listIndex, showCodes)
+            self:LayoutListRow(item, listIndex, showCodes, showFavourites)
             listIndex = listIndex + 1
         end
 
-        self:UpdateItem(item, selectedName)
+        self:UpdateItem(item, selectedName, showFavourites)
         ordered[#ordered + 1] = item
     end
 
@@ -365,6 +395,7 @@ function View:Update(rows, selectedName)
 
         item.hotkey:Update(item.target, {
             disabled = false,
+            forceVisible = item.favouriteHighlighted,
             inset = not item.mapped and 4 or nil,
             offset = item.mapped and markerHotkeyOffset or nil,
         })

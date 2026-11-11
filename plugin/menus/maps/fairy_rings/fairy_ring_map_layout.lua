@@ -234,7 +234,20 @@ function FairyRingMapLayout:UpdatePointer(view, hovered)
         x, y, width, height = view:TargetRectangle(hovered)
     end
 
-    local click = hovered and hovered.row.click
+    local favourite = hovered ~= nil and Keyboard.IsShiftDown()
+    local columnName = favourite and "FAVOURITE_CLICK" or "TEXT_CLICK"
+    -- Route the real favourite action under the pointer while Shift is held.
+    -- Missing favourite controls must not fall back to selecting/teleporting.
+    local click
+
+    if hovered ~= nil then
+        if favourite then
+            click = hovered.row.favouriteClick
+        else
+            click = hovered.row.click
+        end
+    end
+
     local previous = self.pointer
 
     if previous ~= nil and previous.layout == self.rowLayout and previous.click == click
@@ -258,7 +271,7 @@ function FairyRingMapLayout:UpdatePointer(view, hovered)
                     NativeLayout.Set(column, "spacing", 0)
                 end
 
-                if hovered ~= nil and name == "TEXT_CLICK" then
+                if click ~= nil and name == columnName then
                     setRect(column, x, y, width, height)
                 else
                     setRect(column, origin.x, origin.y, 0, 0)
@@ -266,7 +279,7 @@ function FairyRingMapLayout:UpdatePointer(view, hovered)
 
                 NativeLayout.Set(column, "clickthrough", true)
                 column:IterateDynamicComponents(function(control)
-                    local active = hovered ~= nil and control == hovered.row.click
+                    local active = click ~= nil and control == click
                     NativeLayout.Set(control, "alpha", 0)
                     NativeLayout.Set(control, "clickthrough", not active)
                     NativeLayout.SetPos(control, 0, 0)
@@ -304,8 +317,8 @@ function FairyRingMapLayout:UpdatePointer(view, hovered)
 
     -- Raise the click branch above overlapping wheel/instruction wrappers,
     -- without reordering individual rows inside their native panel.
-    if hovered ~= nil and hovered.row.click ~= nil then
-        raiseBranch(hovered.row.click.parent, window)
+    if click ~= nil then
+        raiseBranch(click.parent, window)
     end
 
     if session.close ~= nil then
