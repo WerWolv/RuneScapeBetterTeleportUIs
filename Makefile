@@ -34,6 +34,7 @@ $(BUILD_DIR):
 $(ZIP_FILE):$(SOURCE_FILES) $(PACKAGE_DOCS) $(BASE_DIR)/Makefile | $(BUILD_DIR)
 	@rm -rf "$(STAGE_DIR)"
 	@cp -a "$(SOURCE_DIR)/." "$(STAGE_DIR)/"
+	@jq '."version" = "$(VERSION)"' $(SOURCE_DIR)/plugin.json > $(STAGE_DIR)/plugin.json
 
 	@cd "$(STAGE_DIR)" && \
 		zip -qr -FS "$@" .
