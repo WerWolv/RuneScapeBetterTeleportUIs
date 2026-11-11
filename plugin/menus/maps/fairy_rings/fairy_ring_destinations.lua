@@ -5,7 +5,7 @@ return {
     AIR = { x = 191, y = 169 }, -- Island south of Witchaven
     AJR = { x = 222, y = 43  }, -- Fremennik Slayer Dungeon
     AJQ = { x = 335, y = 175 }, -- Dorgesh-Kaan
-    AJS = { x = 160, y = 10  }, -- Penguin island
+    AJS = { x = 100, y = 18  }, -- Penguin island
     AKQ = { x = 87,  y = 50  }, -- Piscatoris
     AKS = { x = 155, y = 241 }, -- Feldip Hills
     AKP = { x = 450, y = 280 }, -- Your House
@@ -27,7 +27,7 @@ return {
     CIQ = { x = 147, y = 186 }, -- South of Tree Gnome Village
     CJR = { x = 208, y = 64  }, -- Sinclair Mansion
     CJS = { x = 250, y = 250 }, -- Kharazi Jungle
-    CIP = { x = 180, y = 10  }, -- Miscellania
+    CIP = { x = 120, y = 20  }, -- Miscellania
     CKQ = { x = 330, y = 295 }, -- Menaphos
     CKR = { x = 231, y = 210 }, -- South of Tai Bwo Wannai
     CKS = { x = 409, y = 90  }, -- West of Canifis
@@ -42,7 +42,7 @@ return {
     DKP = { x = 275, y = 209 }, -- North of Ship Yard
     DKR = { x = 324, y = 90  }, -- Edgeville / Grand Exchange
     DKS = { x = 220, y = 15  }, -- Polar hunter area
-    DKQ = { x = 255, y = 10  }, -- Glacor Cave
+    DKQ = { x = 255, y = 20  }, -- Glacor Cave
     DLQ = { x = 408, y = 227 }, -- North of Nardah
     DLR = { x = 55,  y = 203 }, -- Poison Waste
     DLP = { x = 550, y = 115 }, -- Havenhythe, Amberfell
