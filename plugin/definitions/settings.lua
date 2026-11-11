@@ -125,7 +125,7 @@ return {
                 type = "boolean",
                 label = "Show original UI toggle",
                 description = "Displays a button to temporarily switch between the original and enhanced menus",
-                default = false,
+                default = true,
             },
         },
     },
