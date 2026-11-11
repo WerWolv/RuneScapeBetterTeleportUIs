@@ -129,14 +129,18 @@ function ScrollingListMenu:LayoutRows(rectangles, width, height)
         self:LayoutStackedRow(entry, active, active and hitWidth or 0, active and hitHeight or 0)
     end
 
+    -- A zero-sized container stops native shortcut processing for every row.
+    -- Keep it traversable without giving any unhovered row a mouse hitbox.
+    local containerWidth, containerHeight = math.max(1, hitWidth), math.max(1, hitHeight)
+
     scrolling:SetPos(
         selected and math.floor(selected.x - origin.x) or 0,
         selected and math.floor(selected.y - origin.y) or 0
     )
-    scrolling:SetSize(hitWidth, hitHeight)
+    scrolling:SetSize(containerWidth, containerHeight)
 
     if scrolling.scrollable then
-        scrolling:SetScrollSize(hitWidth, hitHeight)
+        scrolling:SetScrollSize(containerWidth, containerHeight)
         scrolling:SetScrollPos(0, 0)
     end
 end
