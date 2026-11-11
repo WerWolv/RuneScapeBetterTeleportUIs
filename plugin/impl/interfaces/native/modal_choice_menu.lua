@@ -9,6 +9,7 @@ local MenuUIToggle = require("impl/ui/menu_ui_toggle")
 local components = require("impl/ui/components")
 local text = require("impl/text")
 local utils = require("impl/utils")
+local settings = require("impl/settings")
 
 local ModalChoiceMenu = TeleportMenu:Extend()
 ModalChoiceMenu.interface = ModalChoiceMenu
@@ -507,9 +508,13 @@ function ModalChoiceMenu:BeginInterface(placement)
         end
     end)
 
+    session.positionKey = self.enabledSetting or self.key
+    session.windowPosition = placement and placement.windowPosition
+        or settings.GetWindowPosition(session.positionKey) or self.windowPosition
+    session.restoreWindowPosition = session.windowPosition ~= nil
+
     -- Independent dragging keeps placement in the plugin instead of native window settings.
     if native.independentDrag then
-        session.windowPosition = placement and placement.windowPosition or self.windowPosition
         WindowDrag.New(session)
     end
 end
@@ -622,24 +627,24 @@ end
 function ModalChoiceMenu:PositionLayoutHost()
     local session = self.session
 
-    if session.windowDrag ~= nil and session.windowPosition ~= nil then
+    if session.windowPosition ~= nil and (session.windowDrag ~= nil or session.restoreWindowPosition) then
         local frame = session.hostContainers[1]
         local parent = frame.parent.xyGlobal
         NativeLayout.SetPos(frame, session.windowPosition.x - parent.x, session.windowPosition.y - parent.y)
     end
 
+    session.restoreWindowPosition = nil
     nativeHelpers.ClampWindowHost(session)
 
-    if session.windowDrag ~= nil then
-        local origin = session.hostContainers[1].xyGlobal
-        local previous = session.windowPosition
+    local origin = session.hostContainers[1].xyGlobal
+    local previous = session.windowPosition
 
-        if previous == nil or previous.x ~= origin.x or previous.y ~= origin.y then
-            session.windowPosition = { x = origin.x, y = origin.y }
-        end
-
-        self.windowPosition = session.windowPosition
+    if previous == nil or previous.x ~= origin.x or previous.y ~= origin.y then
+        session.windowPosition = { x = origin.x, y = origin.y }
     end
+
+    self.windowPosition = session.windowPosition
+    session.appliedWindowPosition = session.windowPosition
 
     local position = session.layoutParent.xyGlobal
 
@@ -704,6 +709,25 @@ function ModalChoiceMenu:LayoutWindow(width, height)
         session.windowDrag:Update()
     else
         session.dragOutline:Update(window)
+    end
+
+    local dragging = session.windowDrag ~= nil and session.windowDrag.drag ~= nil
+        or session.dragOutline ~= nil and session.dragOutline.layout ~= nil
+
+    if not dragging then
+        self:SaveWindowPosition()
+    end
+end
+
+-- Persist settled, clamped geometry rather than every pointer update. The cached
+-- applied position also remains safe to save after the client closes the window.
+function ModalChoiceMenu:SaveWindowPosition()
+    local session = self.session
+    local position = session.appliedWindowPosition
+
+    if position ~= nil and position ~= session.savedWindowPosition then
+        settings.SetWindowPosition(session.positionKey, position)
+        session.savedWindowPosition = position
     end
 end
 
@@ -810,6 +834,10 @@ function ModalChoiceMenu:ReleaseInterface()
     if self.session == nil then
         return
     end
+
+    cleanup.Try("save window position", function()
+        self:SaveWindowPosition()
+    end)
 
     self:ReleaseTooltips()
     cleanup.Release(self.session, "windowDrag")

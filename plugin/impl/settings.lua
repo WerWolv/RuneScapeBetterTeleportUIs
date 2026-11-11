@@ -1,11 +1,13 @@
 local definitions = require("definitions/settings")
 local Group = require("impl/settings/group")
 local Page = require("impl/settings/page")
+local utils = require("impl/utils")
 
 local settings = {}
 local eventID = "teleportMapsSettings"
 local instances, byKey = {}, {}
 local pages = {}
+local windowPositions = {}
 local view, parent
 local builtins = {
     boolean = "impl/settings/boolean",
@@ -54,6 +56,43 @@ end
 
 function settings.Set(key, value)
     assert(byKey[key], "Unknown setting: " .. tostring(key)):Set(value)
+end
+
+local function validPosition(position)
+    return type(position) == "table" and utils.IsFinite(position.x) and utils.IsFinite(position.y)
+end
+
+-- Menu module keys keep separate interfaces independent while sharing a position across pages.
+function settings.GetWindowPosition(key)
+    if key == nil then
+        return nil
+    end
+
+    if windowPositions[key] == nil then
+        local saved = PersistentDB:GetStructuredData("windowPosition/" .. key)
+        windowPositions[key] = validPosition(saved) and { x = math.floor(saved.x), y = math.floor(saved.y) } or false
+    end
+
+    local position = windowPositions[key]
+    return position and { x = position.x, y = position.y } or nil
+end
+
+function settings.SetWindowPosition(key, position)
+    if key == nil then
+        return
+    end
+
+    assert(validPosition(position), "Invalid window position for: " .. key)
+    local x, y = math.floor(position.x), math.floor(position.y)
+    local previous = windowPositions[key]
+
+    if previous and previous.x == x and previous.y == y then
+        return
+    end
+
+    local saved = { x = x, y = y }
+    PersistentDB:SetStructuredData("windowPosition/" .. key, saved)
+    windowPositions[key] = saved
 end
 
 local function clearView()
@@ -133,6 +172,8 @@ local function buildSettings(event)
 end
 
 function settings.Start()
+    windowPositions = {}
+
     for _, instance in ipairs(instances) do
         instance:Load()
     end
