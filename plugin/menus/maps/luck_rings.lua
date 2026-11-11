@@ -4,9 +4,34 @@ local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local LuckRings = MapMenu.Create(ModalChoiceMenu, "luckRings")
 
+function LuckRings:Match(snapshot)
+    local match, reason = ModalChoiceMenu.Match(self, snapshot)
+
+    if match == nil then
+        return nil, reason
+    end
+
+    for _, row in ipairs(match.rows) do
+        if not row.locked then
+            if row.entryKey == "4. Hazelmere's Statue" then
+                match.title = "Hazelmere's Signet Ring"
+                return match
+            elseif row.entryKey == "3. Keldagrim" then
+                match.title = "Luck of the Dwarves"
+            else
+                -- Technically, it could also be a Ring of Luck but these two share the same teleports
+                match.title = "Ring of Fortune"
+            end
+        end
+    end
+
+    return match
+end
+
 function LuckRings:Define()
     return {
-        title = "Ring of Duelling",
+        -- Wealth and Fortune offer the same pair of destinations.
+        title = "Luck Ring",
         background = backgrounds.runescapeSurface,
         entries = {
             ["1. Miscellania"] = {
