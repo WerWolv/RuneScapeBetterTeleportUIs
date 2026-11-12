@@ -11,10 +11,12 @@ function BogolinTelepearl:Define()
         icons = teleportIcons.bogolinTelepearl,
         entries = {
             ["1. Linbog"] = {
-                point = {x = 671, y = 496}
+                point = {x = 671, y = 496},
+                hotkeyOffset = { x = 10, y = -15 },
             },
             ["2. Globin"] = {
                 point = {x = 759, y = 574},
+                hotkeyOffset = { x = 10, y = -15 },
             }
         },
     }

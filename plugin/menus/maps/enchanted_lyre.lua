@@ -10,9 +10,10 @@ function EnchantedLyre:Define()
         background = backgrounds.fremennikIsles,
         noBackgroundCrop = true,
         entries = {
-            ["^%d+%. Rellekka$"] = {
+            ["1. Rellekka"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 970, y = 418},
+                hotkeyOffset = { x = 0, y = -25 },
             },
             ["^%d+%. Waterbirth Island$"] = {
                 icons = teleportIcons.magicLyre,
@@ -42,6 +43,7 @@ function EnchantedLyre:Define()
             ["^%d+%. Rellekka Market$"] = {
                 icons = teleportIcons.magicLyre,
                 point = {x = 918, y = 456},
+                hotkeyOffset = { x = 0, y = -25 },
                 possiblyMissing = true,
             },
             ["^%d+%. Cancel%.?$"] = {

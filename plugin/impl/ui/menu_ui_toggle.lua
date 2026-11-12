@@ -8,7 +8,7 @@ local gap = 8
 local hookID = "teleportMapsUIToggle"
 
 function MenuUIToggle.HeaderInset()
-    return settings.Get("showOriginalUIToggle") and buttonSize + gap * 2 or gap
+    return settings.Get("showOriginalUIToggle") and buttonSize + gap * 5 or gap
 end
 
 function MenuUIToggle:New(menu, snapshot)

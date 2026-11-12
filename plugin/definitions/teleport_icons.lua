@@ -191,7 +191,7 @@ return {
         shadowColorHovered = 0x9A4521C
     },
     bigBookOPiracy = {
-        objectID = id.Obj.FEVER_PIRACY_BOOK,
+        objectID = id.Obj.PIRATEFINALE_TELEPORT,
         size = 40
     },
     pirateSpellSheet = {
@@ -999,6 +999,7 @@ return {
 
         ensouledMoonstone   = jewellery("ensouled", "moonstone"),
         platinumDragonstone = jewellery("platinum", "dragonstone"),
+        sixthAgeCircuit     = jewellery("platinum", "sixth_age")
     },
     lodestone = {
         wilderness = {

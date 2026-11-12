@@ -93,13 +93,15 @@ function TirannwnQuiver:UpdateVisuals()
     for _, hotkey in ipairs(session.hotkeys) do
         local button = hotkey.button
         local anchor = button
+        local exhausted = button == session.deathButton and session.deathDisabledIcon ~= nil
+            and not session.deathDisabledIcon.hidden
 
-        if button == session.deathButton and session.deathDisabledIcon ~= nil
-            and not session.deathDisabledIcon.hidden then
+        if exhausted then
             anchor = session.deathDisabledIcon
         end
 
-        hotkey.badge:Update(anchor, { disabled = button.enabled == false })
+        -- Native icon enabled flags do not describe teleport availability.
+        hotkey.badge:Update(anchor, { disabled = exhausted })
     end
 end
 

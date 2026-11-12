@@ -10,6 +10,7 @@ function PharaohsSceptre:Define()
         title = "Desert",
         background = backgrounds.desert,
         vignette = false,
+        noBackgroundCrop = true,
         entries = {
             ["1. Jalsavrah (Pyramid Plunder)"] = {
                 nameOverride = "Jalsavrah",
@@ -21,7 +22,7 @@ function PharaohsSceptre:Define()
                 nameOverride = "Jaleustrophos",
                 description = descriptions.Location("Agility Pyramid"),
                 icons = teleportIcons.magicCarpet.worker,
-                point = {x = 207, y = 239},
+                point = {x = 227, y = 239},
             },
             ["3. Jaldraocht (Azzanadra's Pyramid)"] = {
                 nameOverride = "Jaldraocht",
@@ -34,7 +35,7 @@ function PharaohsSceptre:Define()
                 nameOverride = "Jalkabir",
                 description = descriptions.Location("Menaphos Golden Palace"),
                 icons = teleportIcons.magicCarpet.imperial,
-                point = {x = 71, y = 274},
+                point = {x = 71, y = 270},
                 possiblyMissing = true
             },
             ["^%d%. I'm happy where I am actually%.$"] = { -- what?

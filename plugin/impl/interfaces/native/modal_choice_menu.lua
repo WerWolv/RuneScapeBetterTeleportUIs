@@ -557,8 +557,8 @@ end
 function ModalChoiceMenu:HeaderLayout()
     local session = self.session
     local title, close = session.title, session.close
-    local left = self.supportsOriginalUI and MenuUIToggle.HeaderInset() or 8
-    local right = 8
+    local left = self.supportsOriginalUI and MenuUIToggle.HeaderInset() or 16
+    local right = 16
 
     if close ~= nil and close.control.visibleGlobal then
         right = math.max(right, close.right + close.width + 8)

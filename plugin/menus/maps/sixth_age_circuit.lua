@@ -9,7 +9,7 @@ function SixthAgeCircuit:Define()
     return {
         title = "Sixth-Age Circuit",
         background = backgrounds.runescapeSurface,
-        icons = teleportIcons.sixthAgeCircuit,
+        icons = teleportIcons.jewellery.sixthAgeCircuit,
         entries = {
             ["1. Guthix's shrine"] = {
                 description =

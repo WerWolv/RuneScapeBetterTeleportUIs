@@ -79,6 +79,7 @@ function DungeoneeringCapePage1:Define()
                 nameOverride = "Next",
                 icons = teleportIcons.nextArrow,
                 point = {x = 560 - 24, y = 290},
+                hotkeyOffset = { x = -25, y = 0 },
             }
         },
     }
@@ -148,6 +149,7 @@ function DungeoneeringCapePage2:Define()
                 nameOverride = "Next",
                 icons = teleportIcons.nextArrow,
                 point = {x = 560 - 24, y = 290},
+                hotkeyOffset = { x = -25, y = 0 },
             }
         },
     }
@@ -181,6 +183,7 @@ function DungeoneeringCapePage3:Define()
                 nameOverride = "Next",
                 icons = teleportIcons.nextArrow,
                 point = {x = 560 - 24, y = 290},
+                hotkeyOffset = { x = -25, y = 0 },
             }
         },
     }
