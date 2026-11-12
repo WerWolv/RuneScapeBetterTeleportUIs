@@ -12,6 +12,7 @@ exclude_files = {
 files["plugin/**/*.lua"] = {
     read_globals = {
         "Event",
+        "ExecuteConsoleCommand",
         "GameKey",
         "Keyboard",
         "Mouse",
