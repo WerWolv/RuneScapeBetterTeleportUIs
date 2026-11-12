@@ -1,4 +1,5 @@
 return {
+    debugMode = false, -- Click Interfaces item slots to spawn items on dev servers
     debugMatching = false, -- Log why the currently open teleport menu wasn't matched.
     maxWidth = 450,
     defaultShadowColor = 0x00000066,

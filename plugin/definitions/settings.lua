@@ -92,6 +92,7 @@ for _, interface in ipairs(require("definitions/teleport_interfaces")) do
         key = interface.module,
         type = "boolean",
         label = interface.name,
+        item = interface.item,
         default = true,
         details = interfaceSettings[interface.module],
     }

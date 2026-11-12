@@ -1,17 +1,45 @@
 local text = require("impl/text")
 local ScrollInput = require("impl/ui/scroll_input")
+local teleportTooltip = require("impl/ui/teleport_tooltip")
+local cleanup = require("impl/cleanup")
+local constants = require("definitions/constants")
 
 local InterfaceToggles = {}
 InterfaceToggles.__index = InterfaceToggles
 
-local rowHeight = 32
+local rowHeight = 48
 local rowColours = { 0x171512E8, 0x28241FE8 }
+
+local function canSpawnItems()
+    return constants.debugMode and type(ExecuteConsoleCommand) == "function"
+end
 
 function InterfaceToggles:New(definition, settings)
     return setmetatable({ definition = definition, settings = settings }, self)
 end
 
--- This widget owns the table, toggles and cogs; settings retain their usual saved keys.
+function InterfaceToggles:CreateItemSlot(parent, setting, list)
+    local object = config.Obj.FromID(setting.definition.item)
+    local slot = prettyui.ItemSlot.new(parent, object, { x = 8, y = 4, clickthrough = false })
+    local root = slot.root
+
+    root:Subscribe(ui.Hook.ONMOUSELEAVE, function()
+        if self.list == list then
+            self.itemTooltip:Hide(root)
+        end
+        return true
+    end)
+    root:Subscribe(ui.Hook.ONCLICK, function()
+        if self.list == list and root.visibleGlobal and canSpawnItems() then
+            ExecuteConsoleCommand("!give " .. object.configName .. " 1")
+        end
+        return false
+    end)
+
+    return slot
+end
+
+-- This widget owns the table, item slots, toggles and cogs; settings keep their saved keys.
 function InterfaceToggles:Mount(page, y, openDetails)
     self.page, self.y = page, y
 
@@ -55,8 +83,20 @@ function InterfaceToggles:Mount(page, y, openDetails)
     })
 
     self.list, self.rows = list, {}
+    teleportTooltip.BindScroll(list)
+    self.itemTooltip = teleportTooltip.Shared(self.view.content, list.viewport)
 
-    local onScrollWheel = ScrollInput.For(list, rowHeight)
+    local scroll = ScrollInput.For(list, 12)
+    local function onScrollWheel(component, delta)
+        scroll(component, delta)
+        return false
+    end
+
+    -- PrettyUI's existing row/background/scrollbar hooks dispatch through this method.
+    -- Replace their full-row scrolling, rather than adding a second listener to them.
+    list._OnScrollWheel = function(_, component, delta)
+        return onScrollWheel(component, delta)
+    end
 
     for index, setting in ipairs(self.settings) do
         local row = list.rows[index]
@@ -65,7 +105,7 @@ function InterfaceToggles:Mount(page, y, openDetails)
         local control = prettyui.CheckboxButton.new(row.root, {
             { text = setting.definition.label, value = setting.definition.key, selected = setting:Get() },
         }, {
-            x = 8, y = 5, width = -48, widthAnchor = 1,
+            x = 56, y = 13, width = -96, widthAnchor = 1,
             onChange = function(_, _, _, selected)
                 if self.list == list then
                     setting:Set(selected)
@@ -75,6 +115,9 @@ function InterfaceToggles:Mount(page, y, openDetails)
 
         setting.control = control
         self.rows[index] = { control = control }
+        self.rows[index].item = self:CreateItemSlot(row.root, setting, list)
+        ScrollInput.Bind(control.root, onScrollWheel)
+        ScrollInput.Bind(self.rows[index].item.root, onScrollWheel)
 
         if setting.details ~= nil then
             self.rows[index].button = prettyui.SimpleButton.new(row.root, id.Sprite.RS3_ICON_SETTINGS_17PX_0, function()
@@ -82,12 +125,11 @@ function InterfaceToggles:Mount(page, y, openDetails)
                     openDetails(setting)
                 end
             end, {
-                x = -32, y = 3, xAnchor = 1, width = 26, height = 26, iconSize = 17,
+                x = -32, y = 11, xAnchor = 1, width = 26, height = 26, iconSize = 17,
             })
+            ScrollInput.Bind(self.rows[index].button.root, onScrollWheel)
         end
     end
-
-    ScrollInput.Bind(list.root, onScrollWheel)
 
     self:Refresh()
 
@@ -111,8 +153,10 @@ function InterfaceToggles:Unmount()
     local view, list, rows = self.view, self.list, self.rows
 
     self.view, self.list, self.rows, self.page = nil, nil, nil, nil
+    cleanup.Release(self, "itemTooltip")
 
     for _, row in ipairs(rows or {}) do
+        cleanup.Release(row, "item")
         pcall(function()
             row.control:Destroy()
         end)
