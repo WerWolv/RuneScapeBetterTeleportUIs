@@ -6,6 +6,8 @@ local properties = {
     { "background", "rgb", "backgroundRGB" },
     { "label", "alpha", "labelAlpha" },
     { "label", "rgba", "labelRGBA" },
+    { "placeholder", "alpha", "modelAlpha" },
+    { "placeholder", "rgba", "labelRGBA" },
 }
 
 -- Styles are stable definition tables. Apply changed properties directly because

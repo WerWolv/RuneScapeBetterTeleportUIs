@@ -7,6 +7,11 @@ return {
         item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_FUNCTIONAL_WAR_RESTORATION_CRYSTAL
     },
     {
+        name = "Max Guild Portals",
+        module = "slots/max_guild_portal",
+        item = id.Obj.SKILLCAPE_MAX,
+    },
+    {
         name = "Jewellery Boxes",
         module = "maps/jewellery_box/jewellery_box",
         item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_JEWELLERY_BOX_T3,
