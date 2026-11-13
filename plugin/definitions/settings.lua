@@ -3,6 +3,20 @@
 -- A group's widget can replace the standard group renderer with a custom module.
 -- Interface rows can declare details = { groups... } to open a cog-wheel subpage.
 local interfaceSettings = {
+    ["maps/tirannwn_quiver"] = {
+        {
+            label = "Interface",
+            settings = {
+                {
+                    key = "showTirannwnQuiverChargesOnGem",
+                    type = "boolean",
+                    label = "Show remaining death altar teleports on gem",
+                    description = "Remove the bottom text box and moves the remaining number of teleports to the gem",
+                    default = true,
+                },
+            },
+        },
+    },
     ["maps/fairy_rings/fairy_rings"] = {
         {
             label = "Interface",
