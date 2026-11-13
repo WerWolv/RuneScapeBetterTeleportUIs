@@ -4,6 +4,7 @@ local componentUtils = require("impl/ui/components")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local NativeLayout = require("impl/interfaces/native/native_layout")
 local cleanup = require("impl/cleanup")
+local settings = require("impl/settings")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
 
 -- Native shortcut order differs from the component order in the interface.
@@ -22,7 +23,6 @@ function TirannwnQuiver:Define()
     return {
         entries = {
             ELFCITY_TELE_ELUNED = {},
-            INFO_HOLDER_CHARGES = { hidden = true }
         },
     }
 end
@@ -80,7 +80,7 @@ function TirannwnQuiver:BeginVisuals()
         return
     end
 
-    session.deathLayout = NativeLayout.FromControls({ session.deathButton })
+    session.deathLayout = NativeLayout.FromControls({ session.deathButton, session.chargesHolder })
 
     local parent = parentOf(session.deathButton)
     local icon = prettyui.NewComponent(ui.Sprite, parent, { categoryID = "auto" })
@@ -92,6 +92,7 @@ function TirannwnQuiver:BeginVisuals()
     local text = componentUtils.CenteredLabel(parent, id.Font.MUSEO_SANS_13PT_BOLD)
     text:SetSize(51, 18)
     text.rgba = 0xFFFFFFC0
+    text.hidden = true
 
     session.chargesText = text
 end
@@ -125,27 +126,35 @@ function TirannwnQuiver:UpdateCharges()
 
     session.deathLayout:Restore()
 
+    local icon = session.deathDisabledIcon
+    if not settings.Get("showTirannwnQuiverChargesOnGem") then
+        text.hidden = true
+        icon.hidden = true
+        return
+    end
+
     local button = session.deathButton
     local source = (session.chargesSource.content or ""):gsub("<br%s*/?>", " ")
     source = textUtils.StripFormatting(source):lower()
     local count = source:match("death%s+altar%s+(%d+)%s+more%s+times?%s+today")
     local exhausted = tonumber(count) == 0
     local visible = button.visibleGlobal and count ~= nil
-    local icon = session.deathDisabledIcon
 
     text.content = not exhausted and count or ""
     text.hidden = not visible or exhausted
     icon.hidden = not visible or not exhausted
     -- Replace recognized charge information with a count or the exhausted icon.
-    session.chargesHolder.hidden = visible
+    session.deathLayout:Apply(function()
+        if visible then
+            session.chargesHolder.hidden = true
+        end
 
-    if exhausted then
-        session.deathLayout:Apply(function()
+        if exhausted then
             button.enabled = false
             -- Native actions can ignore enabled; remove the original hit target as well.
             button.hidden = true
-        end)
-    end
+        end
+    end)
 
     if not visible then
         return
