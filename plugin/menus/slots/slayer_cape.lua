@@ -28,6 +28,7 @@ end
 function SlayerCapePage1:Define()
     return {
         title = "Slayer Masters",
+        showTitle = false,
         entries = {
             ["1. Mandrith"] = {
                 npcID = id.NPC.BOUNTY_MANDRITH,
@@ -121,6 +122,7 @@ end
 function SlayerCapePage2:Define()
     return {
         title = "Slayer Masters",
+        showTitle = false,
         entries = {
             ["1. Vannaka"] = {
                 npcID = id.NPC.SLAYER_MASTER_3,

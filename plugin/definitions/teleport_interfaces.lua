@@ -2,6 +2,11 @@
 -- World-object interfaces use their furniture or portable item equivalent.
 return {
     {
+        name = "PvM Portals",
+        module = "slots/pvm_portal",
+        item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_FUNCTIONAL_WAR_RESTORATION_CRYSTAL
+    },
+    {
         name = "Jewellery Boxes",
         module = "maps/jewellery_box/jewellery_box",
         item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_JEWELLERY_BOX_T3,

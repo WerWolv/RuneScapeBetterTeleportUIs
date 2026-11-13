@@ -234,6 +234,10 @@ function ModalChoiceMenu:UpdateTitle()
     if session.title ~= nil then
         NativeLayout.Set(session.title.control, "content", session.menu.title)
 
+        if self.definition.showTitle == false then
+            NativeLayout.Set(session.title.control, "alpha", 0)
+        end
+
         if native.titleFont ~= nil then
             NativeLayout.Set(session.title.control, "font", native.titleFont)
         end
@@ -538,7 +542,7 @@ function ModalChoiceMenu:AttachTooltip(entry, target)
 
     session.tooltips[entry.name] = teleportTooltip.Attach(
         target, parent,
-        self:GetDisplayName(entry), entry.destination.description
+        self:GetDisplayName(entry), self:GetDescription(entry)
     )
 end
 
@@ -801,6 +805,21 @@ function ModalChoiceMenu:LayoutRows(rectangles, width, height)
     end
 end
 
+-- Wheel input over original action owners must reach a presentation's scroll
+-- view. Named hooks coexist with client hooks and are removed on restoration.
+function ModalChoiceMenu:BindScrollInput(handler)
+    local session = self.session
+    session.scrollControls = { session.content }
+
+    for _, row in ipairs(session.rows) do
+        session.scrollControls[#session.scrollControls + 1] = row.click
+    end
+
+    for _, control in ipairs(session.scrollControls) do
+        control:Subscribe(ui.Hook.ONSCROLLWHEEL, "teleportMenuScroll", handler)
+    end
+end
+
 -- Maps and slot menus share native tooltip attachments and hover selection.
 function ModalChoiceMenu:UpdateTooltips(hovered)
     for name, tooltip in pairs(self.session.tooltips) do
@@ -846,6 +865,14 @@ function ModalChoiceMenu:ReleaseInterface()
 
     self:ReleaseTooltips()
     cleanup.Release(self.session, "windowDrag")
+
+    for _, control in ipairs(self.session.scrollControls or {}) do
+        cleanup.Try("unsubscribe teleport menu scrolling", function()
+            control:Unsubscribe(ui.Hook.ONSCROLLWHEEL, "teleportMenuScroll")
+        end)
+    end
+
+    self.session.scrollControls = nil
     cleanup.Release(self.session, "dragOutline", "Restore")
     cleanup.Release(self.session, "nativeLayout", "Restore")
 

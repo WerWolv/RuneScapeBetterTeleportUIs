@@ -5,6 +5,7 @@ local KethsiRing = ModelSlotMenu.Create(ModalChoiceMenu, "kethsiRing")
 function KethsiRing:Define()
     return {
         title = "Kethsi Dragons",
+        showTitle = false,
         columns = 2,
         rows = 1,
         entries = {

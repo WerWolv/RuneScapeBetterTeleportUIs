@@ -20,6 +20,7 @@ end
 function FerociousRing:Define()
     return {
         title = "Slayer Masters",
+        showTitle = false,
         columns = 2,
         rows = 1,
         entries = {
