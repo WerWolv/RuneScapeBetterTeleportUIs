@@ -1031,49 +1031,49 @@ return {
     },
     arcIslands = {
         tuaiLeit = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_1_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_1_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_1_OVR },
             size = 128,
             imageWidth = 128,
             imageHeight = 128
         },
         whalesMaw = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_2_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_2_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_2_OVR },
             size = 64,
             imageWidth = 64,
             imageHeight = 64
         },
         waiko = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_3_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_3_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_3_OVR },
             size = 128,
             imageWidth = 128,
             imageHeight = 128
         },
         goshima = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_4_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_4_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_4_OVR },
             size = 128,
             imageWidth = 128,
             imageHeight = 128
         },
         turtleIslands = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_5_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_5_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_5_OVR },
             size = 176,
             imageWidth = 176,
             imageHeight = 96
         },
         aminishi = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_6_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_6_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_6_OVR },
             size = 128,
             imageWidth = 128,
             imageHeight = 128
         },
         cyclosis = {
-            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_7_NML },   
+            normal = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_7_NML },
             hovered = { sprite = id.Sprite.ELR_ARC_MAP_ISLAND_7_OVR },
             size = 64,
             imageWidth = 64,

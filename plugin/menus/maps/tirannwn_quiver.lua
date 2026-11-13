@@ -41,6 +41,16 @@ end
 function TirannwnQuiver:BeginVisuals()
     local components = ui.Interfaces
     local session = self.session
+    local parents = {}
+
+    -- Native parent getters can return fresh handles for the same component.
+    -- Reuse one handle per parent so all decorations share PrettyUI's allocator state.
+    local function parentOf(control)
+        local parent = control.parent
+        local key = componentUtils.Key(parent)
+        parents[key] = parents[key] or parent
+        return parents[key]
+    end
 
     session.hotkeys = {}
 
@@ -49,7 +59,7 @@ function TirannwnQuiver:BeginVisuals()
         if button ~= nil then
             session.hotkeys[#session.hotkeys + 1] = {
                 button = button,
-                badge = HotkeyBadge.New(button.parent, hotkey),
+                badge = HotkeyBadge.New(parentOf(button), hotkey),
             }
         end
     end
@@ -72,13 +82,14 @@ function TirannwnQuiver:BeginVisuals()
 
     session.deathLayout = NativeLayout.FromControls({ session.deathButton })
 
-    local icon = ui.Sprite.new(session.deathButton.parent)
+    local parent = parentOf(session.deathButton)
+    local icon = prettyui.NewComponent(ui.Sprite, parent, { categoryID = "auto" })
     session.deathDisabledIcon = icon
     icon.spriteID = id.Sprite.ELFCITY_ICON_TELEPORT_4_2
     icon.clickthrough = false
     icon.hidden = true
 
-    local text = componentUtils.CenteredLabel(session.deathButton.parent, id.Font.MUSEO_SANS_13PT_BOLD)
+    local text = componentUtils.CenteredLabel(parent, id.Font.MUSEO_SANS_13PT_BOLD)
     text:SetSize(51, 18)
     text.rgba = 0xFFFFFFC0
 
