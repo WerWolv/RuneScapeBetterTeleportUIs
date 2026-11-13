@@ -27,11 +27,11 @@ function MenuUIToggle:Matches(menu, snapshot)
 end
 
 function MenuUIToggle:Attach()
-    self.root = ui.Layer.new(self.window)
+    self.root = prettyui.NewComponent(ui.Layer, self.window, { categoryID = "auto" })
     self.root:SetSize(0, 0, 1.0, 1.0)
     self.root.clickthrough = true
 
-    self.button = ui.Sprite.new(self.root)
+    self.button = prettyui.NewComponent(ui.Sprite, self.root)
     self.button:SetSize(buttonSize, buttonSize)
     self.button.spriteID = self.original and id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_4 or id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_2
     self.button.clickthrough = false

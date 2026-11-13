@@ -1,33 +1,44 @@
+local ContentLayer = require("impl/ui/content_layer")
+local cleanup = require("impl/cleanup")
+
 local Page = {}
 Page.__index = Page
 
 -- Each page keeps its controls alive while navigation only changes visibility.
 function Page.New(parent, groups, navigationParent, previous)
-    local root = ui.Layer.new(parent)
-    root:SetSize(0, 0, 1, 1)
-    root.clickthrough = true
-    root.hidden = previous ~= nil
-
     local self = setmetatable({
-        root = root,
+        mountParent = parent,
         groups = groups,
+        mountedGroups = {},
         previous = previous,
         details = {},
         navigationParent = navigationParent,
     }, Page)
 
-    self.view = prettyui.SimpleView.new(root, {
-        width = 0, height = 0, widthAnchor = 1, heightAnchor = 1,
-        layout = { padding = 0, startY = 0 },
-    })
+    local ok, message = pcall(function()
+        self.mount = ContentLayer.New(parent)
+        local root = self.mount.root
+        self.root = root
+        root.hidden = previous ~= nil
 
-    if previous ~= nil then
-        self.back = prettyui.SpriteButton.new(navigationParent, "BACK", function()
-            self:Back()
-        end, {
-            x = -34, y = 8, xAnchor = 1, width = 26, height = 26,
+        self.view = prettyui.SimpleView.new(root, {
+            width = 0, height = 0, widthAnchor = 1, heightAnchor = 1,
+            layout = { padding = 0, startY = 0 },
         })
-        self.back.root.hidden = true
+
+        if previous ~= nil then
+            self.back = prettyui.SpriteButton.new(navigationParent, "BACK", function()
+                self:Back()
+            end, {
+                x = -34, y = 8, xAnchor = 1, width = 26, height = 26,
+            })
+            self.back.root.hidden = true
+        end
+    end)
+
+    if not ok then
+        self:Destroy()
+        error(message, 0)
     end
 
     return self
@@ -37,16 +48,19 @@ function Page:Mount()
     local y = 8
 
     for _, group in ipairs(self.groups) do
-        y = group:Mount(self.view, y, function(setting)
+        -- Register before Mount so partially constructed groups are also released.
+        self.mountedGroups[#self.mountedGroups + 1] = group
+        y = group:Mount(self.view, y, function(key)
             if not self.closed then
-                self.details[setting]:Show()
+                self.details[key]:Show()
             end
         end)
 
         for _, setting in ipairs(group.settings) do
             if setting.details ~= nil then
-                    local page = Page.New(self.root.parent, setting.details, self.navigationParent, self)
-                self.details[setting] = page
+                -- Reuse the managed handle so PrettyUI retains its allocation context.
+                local page = Page.New(self.mountParent, setting.details, self.navigationParent, self)
+                self.details[setting.definition.key] = page
                 page:Mount()
             end
         end
@@ -124,25 +138,20 @@ function Page:Destroy()
         end)
     end
 
-    for _, group in ipairs(self.groups) do
-        group:Unmount()
-    end
-
-    if self.back ~= nil then
-        pcall(function()
-            self.back:Destroy()
+    for _, group in ipairs(self.mountedGroups) do
+        cleanup.Try("unmount settings group", function()
+            group:Unmount()
         end)
     end
 
-    pcall(function()
-        self.view:Destroy()
-    end)
+    cleanup.Release(self, "back")
+    cleanup.Release(self, "view")
+    cleanup.Release(self, "mount")
 
-    pcall(function()
-        self.root:Destroy()
-    end)
-
+    self.root = nil
+    self.mountParent = nil
     self.details = {}
+    self.mountedGroups = {}
 end
 
 return Page

@@ -65,7 +65,7 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 
     if marker.shadowLayer == nil then
-        marker.shadowLayer = ui.Layer.new(marker.artwork)
+        marker.shadowLayer = prettyui.NewComponent(ui.Layer, marker.artwork)
         marker.shadowLayer:SetSize(marker.artwork.width, marker.artwork.height)
         marker.shadowLayer.clickthrough = true
         marker.shadowLayer:MoveToBack()
@@ -102,7 +102,7 @@ end
 -- Overlay a small lock on missing destinations or explicitly marked disabled ones.
 local function updateLock(marker, width, height, locked)
     if locked and marker.lock == nil then
-        local lock = ui.Sprite.new(marker.layer)
+        local lock = prettyui.NewComponent(ui.Sprite, marker.layer)
         local lockSize = math.max(1, math.min(50, width, height))
         lock:SetSize(lockSize, lockSize)
         lock:SetPos(width - lockSize / 1.3, height - lockSize / 1.3)
@@ -199,11 +199,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     if marker == nil then
         -- Shadows extend right and down; grow clipping containers rather than shrinking artwork.
         local padding = shadowPadding(icons, kind)
-        local layer = ui.Layer.new(self.parent)
+        local layer = prettyui.NewComponent(ui.Layer, self.parent, { categoryID = "auto" })
         layer:SetSize(width + padding, height + padding)
         layer.clickthrough = true
 
-        local artwork = ui.Layer.new(layer)
+        local artwork = prettyui.NewComponent(ui.Layer, layer)
         artwork:SetSize(width + padding, height + padding)
         artwork.clickthrough = true
 

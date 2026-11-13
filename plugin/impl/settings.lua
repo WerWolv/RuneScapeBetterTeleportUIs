@@ -118,8 +118,7 @@ local function clearView()
     end
 end
 
-local function buildSettings(event)
-    clearView()
+local function mountSettings(event)
     parent = event.component
 
     local tabs, tabIndexes, tabGroups = {}, {}, {}
@@ -138,6 +137,7 @@ local function buildSettings(event)
     end
 
     view = prettyui.Tabs.new(parent, tabs, {
+        categoryID = "auto",
         width = 0,
         height = 0,
         widthAnchor = 1,
@@ -169,6 +169,16 @@ local function buildSettings(event)
             end
         end
     end)
+end
+
+local function buildSettings(event)
+    clearView()
+    local ok, message = pcall(mountSettings, event)
+
+    if not ok then
+        clearView()
+        error(message, 0)
+    end
 end
 
 function settings.Start()

@@ -4,7 +4,7 @@ local WindowDragOutline = {}
 WindowDragOutline.__index = WindowDragOutline
 
 local function createFrame(parent, prefix, thickness)
-    local layer = ui.Layer.new(parent)
+    local layer = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     layer.clickthrough = true
     local frame = { layer = layer, thickness = thickness, parts = {} }
 
@@ -19,7 +19,7 @@ local function createFrame(parent, prefix, thickness)
         { "bottom", 5, true },
         { "bottomRight", 4, false, true },
     }) do
-        local sprite = ui.Sprite.new(layer)
+        local sprite = prettyui.NewComponent(ui.Sprite, layer)
         sprite.spriteID = id.Sprite[prefix .. part[2]]
         sprite.clickthrough = true
         sprite.isTiling = part[3] == true
@@ -60,7 +60,7 @@ local function layoutFrame(frame, x, y, width, height)
 end
 
 function WindowDragOutline.New(parent)
-    local layer = ui.Layer.new(parent)
+    local layer = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     layer:SetSize(0, 0, 1.0, 1.0)
     layer.clickthrough = true
     layer:MoveToFront()

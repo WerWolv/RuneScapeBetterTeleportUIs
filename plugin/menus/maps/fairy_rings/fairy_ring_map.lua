@@ -9,6 +9,7 @@ local ScrollInput = require("impl/ui/scroll_input")
 local settings = require("impl/settings")
 local text = require("impl/text")
 local cleanup = require("impl/cleanup")
+local ContentLayer = require("impl/ui/content_layer")
 
 local View = {}
 View.__index = View
@@ -26,11 +27,12 @@ local markerHotkeyOffset = {
 local listRowHeight, compactListRowHeight, listRowGap = 44, 26, 2
 
 function View.New(parent, tooltipLayer)
-    local root = ui.Layer.new(parent)
-    root.clickthrough = true
+    local mount = ContentLayer.New(parent)
+    local root = mount.root
 
     return setmetatable({
         root = root,
+        mount = mount,
         tooltipLayer = tooltipLayer,
         items = {},
         contexts = {},
@@ -45,7 +47,7 @@ function View:Build()
         maxLength = 80,
         contentMargin = ui.Margin.new(32, 3, 8, 0),
     })
-    self.searchIcon = ui.Sprite.new(self.root)
+    self.searchIcon = prettyui.NewComponent(ui.Sprite, self.root)
     self.searchIcon.spriteID = id.Sprite.AIF_SEARCH_ICON_0
     self.searchIcon:SetSize(24, 24)
     self.searchIcon.clickthrough = true
@@ -54,7 +56,7 @@ function View:Build()
     self.separators = {}
 
     for _, colour in ipairs({ 0x24180FFF, 0x3D2B1BFF }) do
-        local line = ui.Rectangle.new(self.root)
+        local line = prettyui.NewComponent(ui.Rectangle, self.root)
         line.fill = true
         line.rgba = colour
         line.clickthrough = true
@@ -82,6 +84,7 @@ function View:UpdateSearchAutoFocus(listener)
         cleanup.Release(self, "searchInput")
     elseif self.searchInput == nil and listener ~= nil then
         self.searchInput = TextFieldAutofocus:New(self.search, listener, {
+            parent = self.root,
             hookID = "teleportMapsSearchInput",
             font = config.Font.MUSEO_SANS_15PT_REGULAR,
             forwardKey = function(_, character)
@@ -135,7 +138,7 @@ end
 
 function View:CreateItem(row)
     local parent = row.point and self.root or self.list.content
-    local target = ui.Layer.new(parent)
+    local target = prettyui.NewComponent(ui.Layer, parent)
     target.clickthrough = true
     local item = {
         target = target,
@@ -148,7 +151,7 @@ function View:CreateItem(row)
         item.shadow.rgb = 0x000000
         item.icon = components.ItemSprite(target, id.Obj.INVENT_FAIRY_RING)
     else
-        item.selection = ui.Rectangle.new(target)
+        item.selection = prettyui.NewComponent(ui.Rectangle, target)
         item.selection.fill = true
         item.selection.clickthrough = true
         item.name = components.CenteredLabel(target, id.Font.MUSEO_SANS_13PT_REGULAR)
@@ -179,6 +182,16 @@ function View:CreateItem(row)
     target.clickthrough = true
 
     if not item.mapped then
+        -- Build passive highlights with the row; Shift only changes visibility.
+        local border = prettyui.NewComponent(ui.Rectangle, target)
+        border:SetSize(0, 0, 1.0, 1.0)
+        border.fill = false
+        border.outlineThickness = 1
+        border.rgba = favouriteColour
+        border.clickthrough = true
+        border.hidden = true
+        item.favouriteBorder = border
+
         ScrollInput.Bind(target, self.onScrollWheel)
     end
 
@@ -273,15 +286,6 @@ function View:UpdateItem(item, selectedName, showFavourites)
             item.icon.shadowRGBA = outlineColour
             item.outlineColour = outlineColour
         end
-    elseif favourite and item.favouriteBorder == nil then
-        -- List rows have no object sprite; outline their existing passive target.
-        local border = ui.Rectangle.new(item.target)
-        border:SetSize(0, 0, 1.0, 1.0)
-        border.fill = false
-        border.outlineThickness = 1
-        border.rgba = favouriteColour
-        border.clickthrough = true
-        item.favouriteBorder = border
     end
 
     if item.favouriteBorder ~= nil and item.favouriteHighlighted ~= favourite then
@@ -433,7 +437,8 @@ function View:Destroy()
     cleanup.Release(self, "search")
     cleanup.Release(self, "list")
     cleanup.Release(self, "background")
-    cleanup.Release(self, "root")
+    cleanup.Release(self, "mount")
+    self.root = nil
 end
 
 return View

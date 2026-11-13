@@ -45,7 +45,7 @@ end
 
 -- Inventory artwork is passive and never displays the native quantity overlay.
 function components.ItemSprite(parent, objectID, objectCount)
-    local sprite = ui.Sprite.new(parent)
+    local sprite = prettyui.NewComponent(ui.Sprite, parent, { categoryID = "auto" })
     sprite.associatedObjectID = objectID
     sprite.associatedObjectQuantity = objectCount or 1
     sprite.associatedObjectQuantityMode = ui.ObjectQuantityDisplayMode.NEVER
@@ -56,7 +56,7 @@ end
 
 -- Passive, single-line labels used by cards, shortcut badges and charge counters.
 function components.CenteredLabel(parent, font)
-    local label = ui.Text.new(parent)
+    local label = prettyui.NewComponent(ui.Text, parent, { categoryID = "auto" })
     label.font = font
     label:AlignTo(ui.AlignMode.CENTRE)
     label.isShadowed = true

@@ -6,7 +6,7 @@ backgroundView.__index = backgroundView
 
 -- Create a viewport whose artwork has a uniform lifetime across all background types.
 function backgroundView.New(parent)
-    local layer = ui.Layer.new(parent)
+    local layer = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     layer.hidden = true
     layer.clickthrough = true
 
@@ -35,7 +35,7 @@ function backgroundView:ShowVignette(option, width, height)
     end
 
     if self.vignette == nil then
-        self.vignette = ui.Layer.new(self.layer)
+        self.vignette = prettyui.NewComponent(ui.Layer, self.layer)
         self.vignette.clickthrough = true
         self.vignetteStrips = {}
     end
@@ -51,7 +51,7 @@ function backgroundView:ShowVignette(option, width, height)
         local rectangle = self.vignetteStrips[index]
 
         if rectangle == nil then
-            rectangle = ui.Rectangle.new(self.vignette)
+            rectangle = prettyui.NewComponent(ui.Rectangle, self.vignette)
             self.vignetteStrips[index] = rectangle
             rectangle.fill = true
             rectangle.clickthrough = true
@@ -138,7 +138,7 @@ function backgroundView:Show(background, width, height, vignette)
     self.layer:SetSize(width, height)
 
     if self.artwork == nil then
-        self.artwork = ui.Layer.new(self.layer)
+        self.artwork = prettyui.NewComponent(ui.Layer, self.layer)
         self.artwork.clickthrough = true
 
         if background.sprites ~= nil then
@@ -158,7 +158,7 @@ function backgroundView:Show(background, width, height, vignette)
             self.tiles = {}
             for rowIndex, row in ipairs(grid) do
                 for columnIndex, spriteID in ipairs(row) do
-                    local tile = ui.Sprite.new(self.artwork)
+                    local tile = prettyui.NewComponent(ui.Sprite, self.artwork)
                     tile.spriteID = spriteID
                     tile.clickthrough = true
                     self.tiles[#self.tiles + 1] = {

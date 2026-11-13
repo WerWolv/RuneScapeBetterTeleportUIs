@@ -122,7 +122,7 @@ function InterfaceToggles:Mount(page, y, openDetails)
         if setting.details ~= nil then
             self.rows[index].button = prettyui.SimpleButton.new(row.root, id.Sprite.RS3_ICON_SETTINGS_17PX_0, function()
                 if self.list == list then
-                    openDetails(setting)
+                    openDetails(setting.definition.key)
                 end
             end, {
                 x = -32, y = 11, xAnchor = 1, width = 26, height = 26, iconSize = 17,

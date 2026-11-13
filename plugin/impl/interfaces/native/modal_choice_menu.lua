@@ -7,6 +7,7 @@ local cleanup = require("impl/cleanup")
 local teleportTooltip = require("impl/ui/teleport_tooltip")
 local MenuUIToggle = require("impl/ui/menu_ui_toggle")
 local components = require("impl/ui/components")
+local ContentLayer = require("impl/ui/content_layer")
 local text = require("impl/text")
 local utils = require("impl/utils")
 local settings = require("impl/settings")
@@ -488,13 +489,12 @@ function ModalChoiceMenu:BeginInterface(placement)
         }
     end
 
-    local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or window.parent
+    local overlay = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__PLUGIN_BUILD_LAYER_TOP) or session.parent
 
     -- Own the entire tooltip subtree before calling PrettyUI: a failed constructor may
     -- have created components without returning an attachment we can individually destroy.
-    session.tooltipLayer = ui.Layer.new(overlay)
-    session.tooltipLayer:SetSize(0, 0, 1.0, 1.0)
-    session.tooltipLayer.clickthrough = true
+    session.tooltipMount = ContentLayer.New(overlay)
+    session.tooltipLayer = session.tooltipMount.root
 
     session.nativeLayout:Apply(function()
         for index, entry in ipairs(session.rows) do
@@ -515,7 +515,7 @@ function ModalChoiceMenu:BeginInterface(placement)
 
     -- Independent dragging keeps placement in the plugin instead of native window settings.
     if native.independentDrag then
-        WindowDrag.New(session)
+        WindowDrag.New(session, overlay)
     end
 end
 
@@ -831,7 +831,8 @@ function ModalChoiceMenu:ReleaseTooltips()
     end
 
     self.session.tooltips, self.session.tooltipContexts = {}, {}
-    cleanup.Release(self.session, "tooltipLayer")
+    cleanup.Release(self.session, "tooltipMount")
+    self.session.tooltipLayer = nil
 end
 
 function ModalChoiceMenu:ReleaseInterface()

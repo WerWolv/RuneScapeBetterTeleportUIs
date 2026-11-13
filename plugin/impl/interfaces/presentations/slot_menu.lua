@@ -3,13 +3,13 @@ local SlotMenu = {}
 
 -- Own all passive card artwork independently of the native input controls.
 function SlotMenu:BeginVisuals()
-    self.slotLayer = ui.Layer.new(self.session.content)
+    self.slotLayer = prettyui.NewComponent(ui.Layer, self.session.content, { categoryID = "auto" })
     self.slotLayer.clickthrough = true
     self.slots = {}
 end
 
 function SlotMenu:CreateSlot(row, withBackground)
-    local layer = ui.Layer.new(self.slotLayer)
+    local layer = prettyui.NewComponent(ui.Layer, self.slotLayer)
     layer.clickthrough = true
 
     local slot = {
@@ -20,7 +20,7 @@ function SlotMenu:CreateSlot(row, withBackground)
     self.slots[#self.slots + 1] = slot
 
     if withBackground then
-        local background = ui.Sprite.new(layer)
+        local background = prettyui.NewComponent(ui.Sprite, layer)
         background.spriteID = id.Sprite.RS3_INV_ICON_SLOT
         background.clickthrough = true
         slot.background = background

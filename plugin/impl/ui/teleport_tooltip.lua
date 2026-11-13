@@ -179,6 +179,7 @@ end
 
 -- PrettyUI otherwise falls back to target-adjacent placement before ONMOUSEOVER.
 local function attachAtCursor(target, parent, options)
+    options.categoryID = "auto"
     local tooltip = prettyui.Tooltip.attach(target, parent, options, { followCursor = true })
     local show = tooltip.Show
 
@@ -283,14 +284,14 @@ function teleportTooltip.Attach(target, parent, title, description)
     tooltip.label:SetPos(paddingX, paddingY)
     tooltip.label:SetSize(contentWidth, titleHeight)
 
-    local separator = ui.Rectangle.new(tooltip.root)
+    local separator = prettyui.NewComponent(ui.Rectangle, tooltip.root)
     separator:SetPos(paddingX, separatorY)
     separator:SetSize(contentWidth, 1)
     separator.fill = true
     separator.rgba = 0xAFA27F80
     separator.clickthrough = true
 
-    local body = ui.Text.new(tooltip.root)
+    local body = prettyui.NewComponent(ui.Text, tooltip.root)
     body:SetPos(paddingX, descriptionY)
     body:SetSize(contentWidth, descriptionHeight)
     body.font = id.Font.MUSEO_SANS_15PT_REGULAR
@@ -305,7 +306,7 @@ end
 -- Keep one tooltip for a collection of hover targets. The hidden
 -- anchor owns PrettyUI's attachment hooks; individual slots forward hover events.
 function teleportTooltip.Shared(parent, viewport)
-    local anchor = ui.Layer.new(parent)
+    local anchor = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     anchor.hidden = true
 
     local shared = {

@@ -4,11 +4,11 @@ local Model3D = {}
 Model3D.__index = Model3D
 
 local function create(parent, modelType, modelIDs, animID, options)
-    local layer = ui.Layer.new(parent)
+    local layer = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     layer.clickthrough = true
     local self = setmetatable({ layer = layer, models = {}, options = options }, Model3D)
 
-    local group = ui.ModelGroup.new(layer)
+    local group = prettyui.NewComponent(ui.ModelGroup, layer)
     group:SetSize(0, 0, 1, 1)
     group.clickthrough = true
     self.group = group
@@ -38,7 +38,7 @@ local function create(parent, modelType, modelIDs, animID, options)
     group:SwitchCamera(cameraID, ui.ModelCameraTransition.NONE, -1, 0)
 
     for _, modelID in ipairs(modelIDs) do
-        local model = ui.Model.new(group)
+        local model = prettyui.NewComponent(ui.Model, group)
         model:SetSize(0, 0, 1, 1)
         model.clickthrough = true
         model:SetModel(modelType, modelID)

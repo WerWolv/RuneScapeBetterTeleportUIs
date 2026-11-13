@@ -11,7 +11,7 @@ local size, gap, padding = 40, 6, 4
 
 -- Reusable inventory-style picker for either native spell sprites or item artwork.
 function IconGrid.New(parent)
-    local view = prettyui.SimpleView.new(parent, { width = 1, height = 1 })
+    local view = prettyui.SimpleView.new(parent, { categoryID = "auto", width = 1, height = 1 })
     teleportTooltip.BindScroll(view)
 
     return setmetatable({
@@ -25,14 +25,14 @@ end
 
 function IconGrid:Build(entries, onClick)
     for index, entry in ipairs(entries) do
-        local root = ui.Layer.new(self.view.content)
+        local root = prettyui.NewComponent(ui.Layer, self.view.content)
         root:SetSize(size, size)
         root.clickthrough = false
 
         local slot = { root = root, key = entry.key, name = entry.name }
         self.slots[index] = slot
 
-        local background = ui.Sprite.new(root)
+        local background = prettyui.NewComponent(ui.Sprite, root)
         background:SetSize(size, size)
         background.spriteID = id.Sprite.RS3_ICON_SLOT_40PX_1
         background.clickthrough = true
@@ -52,7 +52,7 @@ function IconGrid:Build(entries, onClick)
 
         slot.icon.clickthrough = true
 
-        slot.selection = ui.Rectangle.new(root)
+        slot.selection = prettyui.NewComponent(ui.Rectangle, root)
         slot.selection:SetSize(size, size)
         slot.selection.fill = false
         slot.selection.rgba = 0xF2C66DFF

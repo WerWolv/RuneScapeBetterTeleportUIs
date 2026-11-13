@@ -108,6 +108,7 @@ function FairyRings:BeginVisuals()
     end
 
     self.search = prettyui.TextField.new(snapshot.searchParent, {
+        categoryID = "auto",
         placeholder = "Type to search destinations or codes...",
         height = searchHeight,
         maxLength = 80,
@@ -116,7 +117,7 @@ function FairyRings:BeginVisuals()
 
     self:UpdateSearchAutoFocus()
 
-    self.searchIcon = ui.Sprite.new(snapshot.searchParent)
+    self.searchIcon = prettyui.NewComponent(ui.Sprite, snapshot.searchParent, { categoryID = "auto" })
     self.searchIcon.spriteID = id.Sprite.AIF_SEARCH_ICON_0
     self.searchIcon:SetSize(searchIconSize, searchIconSize)
     self.searchIcon.clickthrough = true
@@ -137,6 +138,7 @@ function FairyRings:UpdateSearchAutoFocus()
 
     if self.searchInput == nil and self.search ~= nil and snapshot.keyboardListener ~= nil then
         self.searchInput = TextFieldAutofocus:New(self.search, snapshot.keyboardListener, {
+            parent = snapshot.searchParent,
             hookID = "teleportMapsSearchInput",
             font = config.Font.MUSEO_SANS_15PT_REGULAR,
             -- Leave 1–9 to the native favourite shortcuts.
