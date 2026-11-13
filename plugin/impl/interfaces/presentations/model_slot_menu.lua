@@ -48,20 +48,26 @@ function ModelSlotMenu:ValidateDestination(definition)
     local sources = (definition.npcID ~= nil and 1 or 0)
         + (definition.objectID ~= nil and 1 or 0)
         + (definition.modelID ~= nil and 1 or 0)
+        + (definition.placeholderText ~= nil and 1 or 0)
 
     if sources > 1 then
-        return false, "needs only one of npcID, objectID or modelID"
+        return false, "needs only one of npcID, objectID, modelID or placeholderText"
     end
 
     if definition.modelType ~= nil and definition.modelID == nil then
         return false, "needs modelID when modelType is specified"
     end
 
+    if definition.placeholderText ~= nil
+        and (type(definition.placeholderText) ~= "string" or definition.placeholderText == "") then
+        return false, "needs nonempty placeholderText"
+    end
+
     if sources == 1 or definition.icons ~= nil or self.definition.icons ~= nil then
         return true
     end
 
-    return false, "needs npcID, objectID, modelID or navigation artwork"
+    return false, "needs npcID, objectID, modelID, placeholderText or navigation artwork"
 end
 
 -- Available cards retain native actions; adapters can block unavailable cards.
@@ -83,7 +89,8 @@ function ModelSlotMenu:BeginVisuals()
         local destination = row.destination
 
         if not destination.hidden then
-            local slot = self:CreateSlot(row, hasModel(destination))
+            local card = hasModel(destination) or destination.placeholderText ~= nil
+            local slot = self:CreateSlot(row, card)
             slot.targetRectangle = targets[row]
             slot.hotkeyOptions = { preserveOrder = true }
 
@@ -99,49 +106,54 @@ function ModelSlotMenu:BeginVisuals()
                 row.native and row.native.shortcut or text.Hotkey(row.name)
             )
 
-            if hasModel(destination) then
-                -- Clip model drawing to the slot interior; captions are drawn above it.
+            if card then
+                -- Clip card artwork to the slot interior; captions are drawn above it.
                 local viewport = prettyui.NewComponent(ui.Layer, layer)
                 viewport.clickthrough = true
                 slot.viewport = viewport
 
-                local model = prettyui.NewComponent(ui.Model, viewport)
-                model.clickthrough = true
-
-                if destination.npcID ~= nil then
-                    model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
-                elseif destination.objectID ~= nil then
-                    model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
+                if destination.placeholderText ~= nil then
+                    slot.placeholder = components.CenteredLabel(viewport, destination.placeholderFont or labelStyle.font)
+                    slot.placeholder.content = destination.placeholderText
                 else
-                    model:SetModel(
-                        destination.modelType or ui.ModelType.MODEL,
-                        destination.modelID,
-                        destination.secondaryModelID
-                    )
-                end
+                    local model = prettyui.NewComponent(ui.Model, viewport)
+                    model.clickthrough = true
 
-                model.modelWidth = slotSize
-                model.modelHeight = slotSize
-                model.viewDistance = destination.viewDistance or 600
-
-                if destination.animID ~= nil then
-                    model.animID = destination.animID
-                end
-
-                for _, property in ipairs({ "rotation", "worldOffset" }) do
-                    if destination[property] ~= nil then
-                        local value = model[property]
-                        local configured = destination[property]
-                        value.x, value.y, value.z = configured.x or 0, configured.y or 0, configured.z or 0
-                        model[property] = value
+                    if destination.npcID ~= nil then
+                        model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
+                    elseif destination.objectID ~= nil then
+                        model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
+                    else
+                        model:SetModel(
+                            destination.modelType or ui.ModelType.MODEL,
+                            destination.modelID,
+                            destination.secondaryModelID
+                        )
                     end
-                end
 
-                if destination.orthographic ~= nil then
-                    model.orthographic = destination.orthographic
-                end
+                    model.modelWidth = slotSize
+                    model.modelHeight = slotSize
+                    model.viewDistance = destination.viewDistance or 600
 
-                slot.model = model
+                    if destination.animID ~= nil then
+                        model.animID = destination.animID
+                    end
+
+                    for _, property in ipairs({ "rotation", "worldOffset" }) do
+                        if destination[property] ~= nil then
+                            local value = model[property]
+                            local configured = destination[property]
+                            value.x, value.y, value.z = configured.x or 0, configured.y or 0, configured.z or 0
+                            model[property] = value
+                        end
+                    end
+
+                    if destination.orthographic ~= nil then
+                        model.orthographic = destination.orthographic
+                    end
+
+                    slot.model = model
+                end
 
                 if self.definition.overlayLabels then
                     slot.labelBackground = prettyui.NewComponent(ui.Rectangle, layer)
@@ -429,7 +441,7 @@ function ModelSlotMenu:ApplyLayout(layout)
 
         local iconWidth, iconHeight
 
-        if slot.model == nil then
+        if slot.label == nil then
             iconWidth, iconHeight = ButtonIcon.Dimensions(destination.icons)
 
             if destination.anchor == "bottomRight" then
@@ -442,19 +454,21 @@ function ModelSlotMenu:ApplyLayout(layout)
         -- Model animation advances in the client. Only resize/reposition its
         -- component when the card layout changes, rather than invalidating it every Draw.
         if resized then
-            if slot.model ~= nil then
+            if slot.label ~= nil then
                 slot.background:SetSize(scaled(slotSize), scaled(slotSize))
                 slot.viewport:SetPos(scaled(modelInset), scaled(modelInset))
                 slot.viewport:SetSize(scaled(slotSize - modelInset * 2), scaled(slotSize - modelInset * 2))
-                slot.model:SetPos(0, 0)
-                slot.model:SetSize(slot.viewport.width, slot.viewport.height)
+                if slot.model ~= nil then
+                    slot.model:SetPos(0, 0)
+                    slot.model:SetSize(slot.viewport.width, slot.viewport.height)
 
-                local offset = destination.modelOffset
-                local screenOffset = slot.model.screenOffset
-                screenOffset.x = scaled(offset and offset.x or 0)
-                screenOffset.y = scaled(offset and offset.y or 0)
-                screenOffset.z = 0
-                slot.model.screenOffset = screenOffset
+                    local offset = destination.modelOffset
+                    local screenOffset = slot.model.screenOffset
+                    screenOffset.x = scaled(offset and offset.x or 0)
+                    screenOffset.y = scaled(offset and offset.y or 0)
+                    screenOffset.z = 0
+                    slot.model.screenOffset = screenOffset
+                end
 
                 if slot.labelBackground ~= nil then
                     local left = math.ceil(labelStyle.inset * layout.scale)
@@ -472,6 +486,14 @@ function ModelSlotMenu:ApplyLayout(layout)
                 else
                     slot.label:SetPos(0, scaled(slotSize))
                     slot.label:SetSize(scaled(width), scaled(labelHeight))
+                end
+                if slot.placeholder ~= nil then
+                    local placeholderHeight = slot.viewport.height
+                    if slot.labelBackground ~= nil and not slot.labelBackground.hidden then
+                        placeholderHeight = math.max(1, slot.labelBackground.y - slot.viewport.y)
+                    end
+                    slot.placeholder:SetPos(0, 0)
+                    slot.placeholder:SetSize(slot.viewport.width, placeholderHeight)
                 end
             else
                 slot.icon:SetSize(scaled(iconWidth), scaled(iconHeight))

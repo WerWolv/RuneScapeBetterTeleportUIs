@@ -1,7 +1,7 @@
 local SplitLayerMenu = require("impl/interfaces/native/split_layer_menu")
 
 local PvmPortalMenu = SplitLayerMenu:Extend()
-local portalDestinationIDs
+local portalDestinations
 PvmPortalMenu.interface = PvmPortalMenu
 PvmPortalMenu.cacheNativeSnapshot = true
 PvmPortalMenu.blockDisabledClicks = true
@@ -25,9 +25,10 @@ PvmPortalMenu.nativeInterface = {
 
 -- The assignment bytes store destination IDs, not DBRow IDs or sorted UI indices.
 -- PVM_PORTAL_DESTINATION column 1 is that ID; column 3 is its native label.
+-- Column 7 lists picker membership: 1 = Max Guild, 2 = War's Retreat.
 function PvmPortalMenu:ConfigureDestinations(entries)
-    if portalDestinationIDs == nil then
-        portalDestinationIDs = {}
+    if portalDestinations == nil then
+        portalDestinations = {}
         for name, rowID in pairs(id.DBRow) do
             if type(name) == "number" and type(rowID) == "string" then
                 name, rowID = rowID, name
@@ -39,33 +40,63 @@ function PvmPortalMenu:ConfigureDestinations(entries)
                     local destinationID = row:GetColumnValues(1)[1]
                     local label = row:GetColumnValues(3)[1]
                     if type(destinationID) == "number" and destinationID > 0 and type(label) == "string" then
-                        portalDestinationIDs[label] = destinationID
+                        local maxGuild, warsRetreat = false, false
+                        for _, picker in ipairs(row:GetColumnValues(7)) do
+                            maxGuild = maxGuild or picker == 1
+                            warsRetreat = warsRetreat or picker == 2
+                        end
+                        portalDestinations[label] = {
+                            id = destinationID,
+                            maxGuildOnly = maxGuild and not warsRetreat,
+                        }
                     end
                 end
             end
         end
     end
 
-    for name, destinationID in pairs(portalDestinationIDs) do
+    for name, destination in pairs(portalDestinations) do
         if entries[name] ~= nil then
             -- Aliases share the same definition, so encounter/location names agree.
-            entries[name].portalDestinationID = destinationID
+            entries[name].portalDestinationID = destination.id
+            entries[name].maxGuildOnly = destination.maxGuildOnly
         end
     end
 end
 
 function PvmPortalMenu:RefreshAvailability(snapshot)
     SplitLayerMenu.RefreshAvailability(self, snapshot)
-    local state = var.VarPlayer.PVM_HUB_1.value
-    local first, second = state & 0xFF, (state >> 8) & 0xFF
+    snapshot = snapshot or self.session.menu.snapshot
+    -- The native picker includes its full roster even when destinations are locked.
+    -- Max Guild's exclusive rows identify the context without relying on location
+    -- or translated headings. Re-evaluate whenever native discovery changes.
+    if snapshot.maxGuildPortal == nil then
+        snapshot.maxGuildPortal = false
+        for _, row in ipairs(self.session.menu.rows) do
+            if row.destination.maxGuildOnly then
+                snapshot.maxGuildPortal = true
+                break
+            end
+        end
+    end
+
+    local first, second, maxGuild
+    if snapshot.maxGuildPortal then
+        maxGuild = var.VarPlayer.ELFCITY_MAX_GUILD_PVM_PORTAL.value
+    else
+        local state = var.VarPlayer.PVM_HUB_1.value
+        first, second = state & 0xFF, (state >> 8) & 0xFF
+    end
 
     for _, row in ipairs(self.session.menu.rows) do
         row.assignedPortal = nil
         if row.disabled and not row.locked then
             local destinationID = row.destination.portalDestinationID
-            if destinationID == first then
+            if destinationID ~= nil and destinationID == maxGuild then
+                row.assignedPortal = 3
+            elseif destinationID ~= nil and destinationID == first then
                 row.assignedPortal = 1
-            elseif destinationID == second then
+            elseif destinationID ~= nil and destinationID == second then
                 row.assignedPortal = 2
             end
         end

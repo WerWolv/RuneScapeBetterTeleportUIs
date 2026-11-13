@@ -5,6 +5,7 @@ local modelSlotStyles = require("definitions/model_slot_styles")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 
 local PvmPortal = ModelSlotMenu.Create(PvmPortalMenu, "pvmPortal")
+local portalLabels = { "L", "R", "M" }
 
 function PvmPortal:RefreshAvailability(snapshot)
     PvmPortalMenu.RefreshAvailability(self, snapshot)
@@ -45,11 +46,11 @@ function PvmPortal:UpdateVisuals(layout, hovered)
         local assignment = slot.row.assignedPortal
         if assignment ~= nil then
             if slot.portalBadge == nil then
-                slot.portalBadge = HotkeyBadge.New(slot.layer, assignment)
+                slot.portalBadge = HotkeyBadge.New(slot.layer, portalLabels[assignment])
                 slot.portalBadgeOptions = { forceVisible = true, disabled = false, preserveOrder = true }
             end
             if slot.portalAssignment ~= assignment then
-                slot.portalBadge.label.content = assignment == 1 and "L" or "R"
+                slot.portalBadge.label.content = portalLabels[assignment]
                 slot.portalAssignment = assignment
             end
             local options = slot.portalBadgeOptions
@@ -63,6 +64,26 @@ function PvmPortal:UpdateVisuals(layout, hovered)
 end
 
 function PvmPortal:Match(snapshot)
+    local entries = self.definition.entries
+    local added = false
+    for _, row in ipairs(snapshot.nativeRows) do
+        for name in pairs(row.labels) do
+            if entries[name] == nil then
+                entries[name] = {
+                    placeholderText = "?",
+                    placeholderFont = id.Font.NOTOSANS_BOLD_50,
+                    nameOverride = name,
+                    description = "",
+                    lockedDescription = "",
+                }
+                added = true
+            end
+        end
+    end
+    if added then
+        self:ConfigureDestinations(entries)
+    end
+
     local match, reason = PvmPortalMenu.Match(self, snapshot)
 
     if match == nil then
@@ -92,10 +113,12 @@ end
 
 function PvmPortal:Define()
     local entries = {
+        ["Airut peninsula"]            = npc(id.NPC.HOTM_SLAYER_CREATURE_MELEE, id.Seq.HOTM_TUSKA_HARBINGER_KNUCKLES_IDLE, 800, 70),
         ["Amascut"]                     = npc(id.NPC.AMASCUT_BOSS, id.Seq.AMASCUT_BOSS_IDLE, 1000, 250),
         ["Arch-Glacor"]                 = npc(id.NPC.EGWD_WEN_BOSS, id.Seq.EGWD_WEN_BOSS_GLACOR_IDLE, 7000, 100),
         ["Araxxi"]                      = npc(id.NPC.SB_BOSS2, id.Seq.SB_SPIDER_BOSS_02_READY, 2400, 70),
         ["Barrows Brothers"]            = npc(id.NPC.BARROWS_DHAROK, id.Seq.BARROW_DHAROK_READY, 650, 120),
+        ["Bork"]                        = npc(id.NPC.DSD_BORK, id.Seq.QUEST_DSD_ORK_BOSS_READY, 1300, 120),
         ["Commander Zilyana"]           = npc(id.NPC.GODWARS_SARADOMIN_AVATAR, id.Seq.GODWARS_SARADOMIN_READY, 700, 150),
         ["Corporeal Beast"]             = npc(id.NPC.SUM2_SPIRIT_BEAST_CORPOREAL, id.Seq.SUM1_SPIRIT_BEAST_READY, 2500, 80),
         ["Croesus"]                     = npc(id.NPC.EGWD_BIK_BOSS, id.Seq.EGWD_BIK_BOSS_CROESUS_IDLE, 6000, 80),
@@ -106,6 +129,7 @@ function PvmPortal:Define()
         ["General Graardor"]            = npc(id.NPC.GODWARS_BANDOS_AVATAR, id.Seq.GODWARS_GENERAL_GRAARDOR_2012_READY, 1500),
         ["Ghrazi Blood Knights"]        = npc(id.NPC.BLOOD_KNIGHT_BOSS_LORD_GHRAZI, id.Seq.GHRAZI_LORD_IDLE, 1100, 170),
         ["Giant Mole"]                  = npc(id.NPC.MOLE2_GIANT, id.Seq.MOLE2_GIANT_MOLE_IDLE, 1200, 50),
+        ["Glacor cavern"]               = npc(id.NPC.MAH5_GLACOR, id.Seq.MAH5_GLACOR_READY, 1200, 80),
         ["Gregorovic"]                  = npc(id.NPC.GWD2_SLISKE_BOSS, id.Seq.GWD2_SLISKE_GENERAL_IDLE, 600, 170),
         ["Har-Aken"]                    = npc(id.NPC.BPETS_HARAKEN, id.Seq.BOSSPETS_HARAKEN_IDLE, 400, 70),
         ["Helwyr"]                      = npc(id.NPC.GWD2_SEREN_BOSS, id.Seq.GWD2_SEREN_GENERAL_IDLE, 1600, 80),
@@ -135,6 +159,7 @@ function PvmPortal:Define()
         ["Twin Furies"]                 = npc(id.NPC.GWD2_ZAM_BOSS_MELEE, id.Seq.GWD2_ZAMORAK_GENERAL_BLACK_IDLE, 1000, 140),
         ["TzKal-Zuk"]                   = npc(id.NPC.EGWD_FUL_BOSS_SHOWDOWN, id.Seq.EGWD_FUL_BOSS_IDLE, 2000, 200),
         ["TzTok-Jad"]                   = npc(id.NPC.TZHAAR_FIGHTCAVE_SWARM_BOSS, id.Seq.TZHAAR_UPDATE_TZTOK_JAD_BAK_READY, 2400),
+        ["Tormented demons"]            = npc(id.NPC.LUC2_UNDEAD_DEMON_01_MELEE_PRAY_MELEE, id.Seq.LUC2_UNDEAD_DEMON_READY, 1500, 100),
         ["Vindicta & Gorvek"]           = npc(id.NPC.GWD2_ZAROS_BOSS_MOUNTED, id.Seq.GWD2_ZAROS_GENERAL_DRAGON_IDLE, 1200, 160),
         ["Vorago"]                      = npc(id.NPC.LRC2_BOSS, id.Seq.BOSS2_BOSS_IDLE, 3000, 150),
     }
@@ -142,10 +167,12 @@ function PvmPortal:Define()
     -- Edit both tooltip descriptions here; <br> adds a line break.
     -- Empty strings leave title-only tooltips. Assigned portals use "unlocked".
     local descriptions = {
+        ["Airut peninsula"] = { unlocked = "", locked = "" },
         ["Amascut"] = { unlocked = "", locked = "" },
         ["Arch-Glacor"] = { unlocked = "", locked = "" },
         ["Araxxi"] = { unlocked = "", locked = "" },
         ["Barrows Brothers"] = { unlocked = "", locked = "" },
+        ["Bork"] = { unlocked = "", locked = "" },
         ["Commander Zilyana"] = { unlocked = "", locked = "" },
         ["Corporeal Beast"] = { unlocked = "", locked = "" },
         ["Croesus"] = { unlocked = "", locked = "" },
@@ -156,6 +183,7 @@ function PvmPortal:Define()
         ["General Graardor"] = { unlocked = "", locked = "" },
         ["Ghrazi Blood Knights"] = { unlocked = "", locked = "" },
         ["Giant Mole"] = { unlocked = "", locked = "" },
+        ["Glacor cavern"] = { unlocked = "", locked = "" },
         ["Gregorovic"] = { unlocked = "", locked = "" },
         ["Har-Aken"] = { unlocked = "", locked = "" },
         ["Helwyr"] = { unlocked = "", locked = "" },
@@ -185,9 +213,12 @@ function PvmPortal:Define()
         ["Twin Furies"] = { unlocked = "", locked = "" },
         ["TzKal-Zuk"] = { unlocked = "", locked = "" },
         ["TzTok-Jad"] = { unlocked = "", locked = "" },
+        ["Tormented demons"] = { unlocked = "", locked = "" },
         ["Vindicta & Gorvek"] = { unlocked = "", locked = "" },
         ["Vorago"] = { unlocked = "", locked = "" },
     }
+
+    entries["Fort Forinthry (Zemouregal & Vorkath)"].nameOverride = "Zemouregal & Vorkath"
 
     -- Keep the configured boss name on cards and tooltips when a native alias matches.
     for name, entry in pairs(entries) do
@@ -236,7 +267,7 @@ function PvmPortal:Define()
         overlayLabels = true,
         rightInset = 6,
         labelStyle = {
-            font = id.Font.MUSEO_SANS_11PT_REGULAR,
+            font = id.Font.NOTOSANS_SEMIBOLD_11,
             backgroundRGBA = 0x140F0AA0,
             inset = 6, paddingX = 4, paddingY = 2,
         },
