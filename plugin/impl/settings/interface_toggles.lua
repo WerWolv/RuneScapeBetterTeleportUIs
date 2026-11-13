@@ -115,9 +115,13 @@ function InterfaceToggles:Mount(page, y, openDetails)
 
         setting.control = control
         self.rows[index] = { control = control }
-        self.rows[index].item = self:CreateItemSlot(row.root, setting, list)
         ScrollInput.Bind(control.root, onScrollWheel)
-        ScrollInput.Bind(self.rows[index].item.root, onScrollWheel)
+
+        -- World interfaces may have no representative inventory item.
+        if setting.definition.item ~= nil then
+            self.rows[index].item = self:CreateItemSlot(row.root, setting, list)
+            ScrollInput.Bind(self.rows[index].item.root, onScrollWheel)
+        end
 
         if setting.details ~= nil then
             self.rows[index].button = prettyui.SimpleButton.new(row.root, id.Sprite.RS3_ICON_SETTINGS_17PX_0, function()

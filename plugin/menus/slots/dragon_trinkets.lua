@@ -12,6 +12,7 @@ end
 function ChromaticDragonTrinkets:Define()
     return {
         title = "Chromatic Dragons",
+        showTitle = false,
         entries = {
             ["1. Green Dragons - Chaos Tunnels"] = {
                 nameOverride = "Green Dragon",
@@ -100,6 +101,7 @@ end
 function MetallicDragonTrinkets:Define()
     return {
         title = "Metallic Dragons",
+        showTitle = false,
         entries = {
             ["1. Bronze Dragons - Brimhaven Dungeon"] = {
                 nameOverride = "Bronze Dragon",

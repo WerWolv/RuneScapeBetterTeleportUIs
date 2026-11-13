@@ -114,6 +114,10 @@ function TeleportMenu:GetDisplayName(row)
     return row.destination.nameOverride or (row.name:gsub("^%d+%.%s*", ""))
 end
 
+function TeleportMenu:GetDescription(row)
+    return row.destination.description
+end
+
 -- Refresh availability independently from cached definitions and display callbacks.
 function TeleportMenu:RefreshAvailability(snapshot)
     for index, row in ipairs(self.session.menu.rows) do
