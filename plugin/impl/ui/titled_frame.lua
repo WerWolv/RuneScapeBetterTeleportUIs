@@ -1,7 +1,7 @@
 local TitledFrame = {}
 
 local function sprite(parent, spriteID)
-    local control = ui.Sprite.new(parent)
+    local control = prettyui.NewComponent(ui.Sprite, parent)
     control.spriteID = spriteID
     control.clickthrough = true
     return control
@@ -9,7 +9,7 @@ end
 
 -- Native modal artwork follows the returned layer's size; the caller owns the layer.
 function TitledFrame.New(parent, title)
-    local root = ui.Layer.new(parent)
+    local root = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     root.clickthrough = true
 
     local background = sprite(root, id.Sprite.RS3_MODAL_WINDOW_CONTENT_TILE)
@@ -55,7 +55,7 @@ function TitledFrame.New(parent, title)
     headerRight:SetSize(28, 32)
     headerRight.isFlippedHorizontally = true
 
-    local heading = ui.Text.new(root)
+    local heading = prettyui.NewComponent(ui.Text, root)
     heading:SetPos(10, 2)
     heading:SetSize(-20, 28, 1.0, 0)
     heading.content = title

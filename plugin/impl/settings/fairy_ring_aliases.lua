@@ -19,7 +19,7 @@ function FairyRingAliases:CreateControl(host)
         end
     end
 
-    local editor = { codes = codes, buttons = {} }
+    local editor = { parent = host.content, codes = codes, buttons = {} }
     editor.field = host:AddTextField({
         placeholder = "Alias name",
         width = -206,
@@ -56,8 +56,7 @@ function FairyRingAliases:CreateControl(host)
     editor.register.root:SetPos(-44, editor.register.root.y, 1)
 
     -- Disabled buttons receive no hover events. Use an enabled sibling as the error target.
-    local buttonParent = editor.register.root.parent
-    editor.errorTarget = ui.Layer.new(buttonParent)
+    editor.errorTarget = prettyui.NewComponent(ui.Layer, host.content)
     editor.errorTarget:SetPos(-44, editor.register.root.y, 1)
     editor.errorTarget:SetSize(30, 30)
     editor.errorTarget.enabled = true
@@ -128,7 +127,7 @@ function FairyRingAliases:UpdateRegisterButton()
         if editor.errorTooltip then
             editor.errorTooltip:SetText(message)
         else
-            editor.errorTooltip = prettyui.Tooltip.attach(editor.errorTarget, editor.errorTarget.parent, {
+            editor.errorTooltip = prettyui.Tooltip.attach(editor.errorTarget, editor.parent, {
                 text = message,
             }, { followCursor = true })
         end

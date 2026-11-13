@@ -77,11 +77,11 @@ function ModelSlotMenu:BeginVisuals()
 
             if hasModel(destination) then
                 -- Clip model drawing to the slot interior, excluding its border and name label.
-                local viewport = ui.Layer.new(layer)
+                local viewport = prettyui.NewComponent(ui.Layer, layer)
                 viewport.clickthrough = true
                 slot.viewport = viewport
 
-                local model = ui.Model.new(viewport)
+                local model = prettyui.NewComponent(ui.Model, viewport)
                 model.clickthrough = true
 
                 if destination.npcID ~= nil then

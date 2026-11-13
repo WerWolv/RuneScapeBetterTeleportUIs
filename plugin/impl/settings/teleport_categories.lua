@@ -38,7 +38,7 @@ function CategorySetting:CreateControl(host)
     })
     editor.onScrollWheel = ScrollInput.For(editor.category, rowHeight, ScrollInput.For(host))
 
-    editor.creation = ui.Layer.new(host.content)
+    editor.creation = prettyui.NewComponent(ui.Layer, host.content)
     editor.creation:SetSize(-12, rowHeight, 0.36, 0)
     editor.newName = prettyui.TextField.new(editor.creation, {
         x = 0, y = 1, width = -34, widthAnchor = 1, height = rowHeight - 2,

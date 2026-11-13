@@ -12,11 +12,11 @@ end
 
 -- Keep badges beside their anchors so the offset artwork is not clipped by the button.
 function HotkeyBadge.New(parent, key)
-    local root = ui.Layer.new(parent)
+    local root = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     root.clickthrough = true
     root.hidden = true
 
-    local background = ui.Sprite.new(root)
+    local background = prettyui.NewComponent(ui.Sprite, root)
     background:SetSize(0, 0, 1.0, 1.0)
     background.spriteID = id.Sprite.AIF_RING_BTN_LEGACY_0
     background.clickthrough = true

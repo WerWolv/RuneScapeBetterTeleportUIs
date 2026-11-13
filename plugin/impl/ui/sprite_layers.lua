@@ -39,7 +39,7 @@ end
 
 -- All layers share a rectangle. Array order is back-to-front, including after state changes.
 function SpriteLayers.New(parent, images, bounds)
-    local root = ui.Layer.new(parent)
+    local root = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     root:SetPos(bounds.x or 0, bounds.y or 0)
     root:SetSize(bounds.width, bounds.height)
     root.clickthrough = true

@@ -8,6 +8,7 @@ local settings = require("impl/settings")
 local text = require("impl/text")
 local ScrollInput = require("impl/ui/scroll_input")
 local cleanup = require("impl/cleanup")
+local ContentLayer = require("impl/ui/content_layer")
 
 local CategoryMap = {}
 local Filters = {}
@@ -18,7 +19,7 @@ local searchHeight = 28
 local searchIconSize, searchIconInset = 24, 4
 
 local function sprite(parent, spriteID)
-    local control = ui.Sprite.new(parent)
+    local control = prettyui.NewComponent(ui.Sprite, parent)
     control.spriteID = spriteID
     control.clickthrough = true
 
@@ -27,7 +28,8 @@ end
 
 -- Establish ownership before constructing widgets, so partial failures can be released.
 function Filters.New(parent, categories, rows)
-    local root = ui.Layer.new(parent)
+    local mount = ContentLayer.New(parent)
+    local root = mount.root
     root.clickthrough = false
     local destinations = {}
     for _, row in ipairs(rows) do
@@ -38,6 +40,7 @@ function Filters.New(parent, categories, rows)
 
     return setmetatable({
         root = root,
+        mount = mount,
         entries = {},
         definition = categories,
         categories = TeleportCategories.New(categories, destinations),
@@ -179,7 +182,8 @@ end
 function Filters:Destroy()
     cleanup.Release(self, "categoryButtons")
     cleanup.Release(self, "view")
-    cleanup.Release(self, "root")
+    cleanup.Release(self, "mount")
+    self.root = nil
 end
 
 -- Reserve sidebar space in the movable host, bounded by the viewport on small screens.

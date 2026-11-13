@@ -10,12 +10,12 @@ local ArcJournal = MapMenu.Create(ModalChoiceMenu, "arcJournal")
 function ArcJournal:BeginVisuals()
     MapMenu.BeginVisuals(self)
 
-    self.decorationLayer = ui.Layer.new(self.backgroundView.layer)
+    self.decorationLayer = prettyui.NewComponent(ui.Layer, self.backgroundView.layer)
     self.decorationLayer.clickthrough = true
     self.decorationSprites = {}
 
     for index, decoration in ipairs(self.definition.decorations) do
-        local sprite = ui.Sprite.new(self.decorationLayer)
+        local sprite = prettyui.NewComponent(ui.Sprite, self.decorationLayer)
         sprite.spriteID = decoration.sprite
         sprite.clickthrough = true
         self.decorationSprites[index] = sprite

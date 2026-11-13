@@ -16,8 +16,8 @@ local dragHooks = {
 
 -- Own title-bar input and placement without running native window-drag scripts.
 -- Adapters opt in when their host's saved placement belongs to another interface.
-function WindowDrag.New(session)
-    local self = setmetatable({ session = session, guarded = {} }, WindowDrag)
+function WindowDrag.New(session, parent)
+    local self = setmetatable({ session = session, parent = parent, guarded = {} }, WindowDrag)
     session.windowDrag = self
 
     self:Guard(session.window)
@@ -30,7 +30,7 @@ function WindowDrag.New(session)
         self:Guard(session.title.control)
     end
 
-    self.surface = ui.Layer.new(session.tooltipLayer.parent)
+    self.surface = prettyui.NewComponent(ui.Layer, parent, { categoryID = "auto" })
     self.surface.clickthrough = false
     self.surface.hidden = true
 
@@ -73,7 +73,7 @@ function WindowDrag.New(session)
         self.bounds = nil
 
         cleanup.Release(self, "outline")
-        self.outline = WindowDragOutline.New(component.parent)
+        self.outline = WindowDragOutline.New(parent)
         self.outline:Update(session.window)
         return false
     end)
@@ -163,7 +163,7 @@ function WindowDrag:Update()
 
     local session = self.session
     local window, surface = session.window, self.surface
-    local origin, parent = window.xyGlobal, surface.parent.xyGlobal
+    local origin, parent = window.xyGlobal, self.parent.xyGlobal
     local left = MenuUIToggle.HeaderInset()
     local right = window.width
 

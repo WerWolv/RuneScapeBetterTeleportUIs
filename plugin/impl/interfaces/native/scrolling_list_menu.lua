@@ -10,14 +10,14 @@ function ScrollingListMenu:GetRowProbe(entry)
     local session = self.session
 
     if session.rowProbeLayer == nil then
-        session.rowProbeLayer = ui.Layer.new(session.content)
+        session.rowProbeLayer = prettyui.NewComponent(ui.Layer, session.content, { categoryID = "auto" })
         session.rowProbeLayer:SetSize(0, 0, 1.0, 1.0)
         session.rowProbeLayer.clickthrough = true
         session.rowProbes = {}
     end
 
     if session.rowProbes[entry] == nil then
-        local probe = ui.Layer.new(session.rowProbeLayer)
+        local probe = prettyui.NewComponent(ui.Layer, session.rowProbeLayer)
         probe.clickthrough = true
         probe.hidden = true
         session.rowProbes[entry] = probe

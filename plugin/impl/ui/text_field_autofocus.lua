@@ -22,10 +22,11 @@ local function encodeCharacter(code)
     )
 end
 
--- The caller owns the field/listener and chooses which keys retain their native behavior.
+-- The caller retains the field's original parent and chooses which keys keep native behavior.
 function TextFieldAutoFocus:New(field, listener, options)
     return setmetatable({
         field = field,
+        parent = options.parent,
         listener = listener,
         hookID = options.hookID,
         forwardKey = options.forwardKey,
@@ -36,7 +37,7 @@ function TextFieldAutoFocus:New(field, listener, options)
 end
 
 function TextFieldAutoFocus:Attach()
-    self.caret = ui.Rectangle.new(self.field.root.parent)
+    self.caret = prettyui.NewComponent(ui.Rectangle, self.parent, { categoryID = "auto" })
     self.caret.fill = true
     self.caret.clickthrough = true
 
