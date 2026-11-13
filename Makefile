@@ -2,7 +2,7 @@
 
 PACKAGE_NAME    := BetterTeleportUIs
 VERSION         := 1.0.0
-PREVIEW         := 1
+PREVIEW         ?= 1
 
 BASE_DIR    := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 SOURCE_DIR  := $(BASE_DIR)plugin
