@@ -4,6 +4,6 @@
     "contactEmailAddress": "hey@werwolv.net",
     "hasSettingsIcon": true,
     "requiredDependencies": {
-        "prettyui": "prettyui"
+        "prettyui": 6398181
     }
 }
