@@ -10,19 +10,23 @@ function AmuletOfGlory:Define()
         background = backgrounds.runescapeSurface,
         icons = teleportIcons.jewellery.goldDragonstone,
         entries = {
-            ["1. Edgeville"] = {
+            ["^1%. Edgeville%.?"] = {
+                nameOverride = "Edgeville",
                 point = {x = 302, y = 86},
             },
-            ["2. Karamja"] = {
+            ["^2%. Karamja%.?"] = {
+                nameOverride = "Karamja",
                 point = {x = 254, y = 181},
             },
-            ["3. Draynor Village"] = {
+            ["^3%. Draynor Village%.?"] = {
+                nameOverride = "Draynor Village",
                 point = {x = 308, y = 156},
             },
-            ["4. Al Kharid"] = {
+            ["^4%. Al Kharid%.?"] = {
+                nameOverride = "Al Kharid",
                 point = {x = 371, y = 196},
             },
-            ["5. Nowhere"] = {hidden = true},
+            ["^5%. Nowhere%.?"] = {hidden = true},
         },
     }
 end
