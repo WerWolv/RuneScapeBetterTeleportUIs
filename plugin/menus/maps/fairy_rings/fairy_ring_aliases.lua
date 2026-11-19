@@ -130,7 +130,8 @@ aliases.searchAliases = {
         "mta",
         "mage training arena",
         "het's oasis",
-        "slayer"
+        "slayer",
+        "divination"
     },
     BJS = {
         "solak",
@@ -144,7 +145,8 @@ aliases.searchAliases = {
     },
     BKP = {
         "jiggig",
-        "incandescent wisps"
+        "incandescent wisps",
+        "divination"
     },
     BKR = {
         "nature spirit",
