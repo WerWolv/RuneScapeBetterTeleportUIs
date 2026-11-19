@@ -46,7 +46,15 @@ local function expandAncestors(control, window)
 end
 
 local function raiseBranch(control, window)
-    while control ~= nil and control ~= window do
+    local ancestor = control
+    while ancestor ~= nil and ancestor ~= window do
+        ancestor = ancestor.parent
+    end
+    if ancestor == nil then
+        return
+    end
+
+    while control ~= window do
         control:MoveToFront()
         control = control.parent
     end
@@ -334,19 +342,17 @@ end
 function FairyRingMapLayout:Destroy()
     self:RestoreRows()
 
-    local border = component("MAINMODAL_WINDOW_BORDER")
-
-    if border ~= nil then
-        border:MoveToFront()
+    local window = self.session.window
+    -- Opening another interface may detach this window or replace its static IDs
+    -- before cleanup runs. Only restore stacking inside the original live window.
+    if window.parent == nil or component("MAINMODAL_WINDOW") ~= window then
+        return
     end
+    raiseBranch(component("MAINMODAL_WINDOW_BORDER"), window)
 
     -- The native close button can be a sibling of the border. Restoring the
     -- frame above the content must not leave that button covered by the frame.
-    local close = component("MAINMODAL_WINDOW_CLOSE_BUTTON")
-
-    if close ~= nil then
-        raiseBranch(close, self.session.window)
-    end
+    raiseBranch(component("MAINMODAL_WINDOW_CLOSE_BUTTON"), window)
 end
 
 return FairyRingMapLayout
