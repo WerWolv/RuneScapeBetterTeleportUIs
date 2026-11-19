@@ -117,7 +117,7 @@ return {
                 key = "cropBackgroundMaps",
                 type = "boolean",
                 label = "Zoom Maps to content",
-                description = "When enabled, zooms in on the destination buttons on each of the teleport maps",
+                description = "When enabled, tries to crop off empty space of maps to focus the view on the buttons",
                 default = false,
             },
             {
