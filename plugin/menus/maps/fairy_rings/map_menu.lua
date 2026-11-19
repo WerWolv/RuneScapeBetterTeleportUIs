@@ -29,7 +29,7 @@ local component = FairyRingMenu.Component
 
 function FairyRings:Define()
     local definition = FairyRingMenu.Define(self)
-    definition.background = backgrounds.runescapeSurface
+    definition.background = backgrounds.runescapeSurfaceFull
     definition.noBackgroundCrop = true
     definition.sizeMultiplier = 1.75
 
@@ -109,19 +109,21 @@ end
 function FairyRings:UpdateLayoutHost(session, sizeMultiplier)
     ModalChoiceMenu.UpdateLayoutHost(self, session, sizeMultiplier)
 
-    -- Extra sidebar padding should widen the host, not shrink the map and its height.
+    -- Reserve the additional map area and sidebar padding at the existing scale.
     local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
-    session.layoutWidth = math.min(session.layoutWidth + self.mapLayout.sidebarExpansion,
+    local mapExpansion = (self.definition.background.width - backgrounds.runescapeSurface.width) * sizeMultiplier
+    session.layoutWidth = math.min(session.layoutWidth + mapExpansion + self.mapLayout.sidebarExpansion,
         viewport.width - session.hostPadding.width)
 end
 
 function FairyRings:CalculateLayout()
     local session, mapLayout = self.session, self.mapLayout
+    local background = self.definition.background
     local availableWidth = session.layoutWidth - session.left - session.right - 16
     local availableHeight = session.layoutHeight - session.top - session.bottom - 16
-    local width = math.max(1, math.min(980, availableWidth - mapLayout.sidebarWidth,
-        availableHeight * 560 / 320))
-    local mapHeight = math.max(1, math.floor(width * 320 / 560))
+    local width = math.max(1, math.min(background.width * self:GetSizeMultiplier(),
+        availableWidth - mapLayout.sidebarWidth, availableHeight * background.width / background.height))
+    local mapHeight = math.max(1, math.floor(width * background.height / background.width))
 
     return {
         width = math.floor(width),

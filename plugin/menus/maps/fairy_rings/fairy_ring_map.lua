@@ -95,7 +95,7 @@ end
 function View:Layout(x, y, layout, sidebarTop)
     self.root:SetPos(x, y)
     self.root:SetSize(layout.width + layout.sidebarWidth, layout.height)
-    self.background:Show(backgrounds.runescapeSurface, layout.width, layout.mapHeight)
+    self.background:Show(backgrounds.runescapeSurfaceFull, layout.width, layout.mapHeight)
     self.background.layer:MoveToBack()
     self.search.root:SetPos(layout.width + 12, sidebarTop)
     self.search.root:SetSize(layout.sidebarWidth - 24, 28)
@@ -201,7 +201,7 @@ end
 
 function View:LayoutMarker(item, showCodes)
     local row = item.row
-    local x, y = geometry.Project(backgrounds.runescapeSurface, row.point, self.layout.width, self.layout.mapHeight)
+    local x, y = geometry.Project(backgrounds.runescapeSurfaceFull, row.point, self.layout.width, self.layout.mapHeight)
 
     if item.markerX == x and item.markerY == y and item.showCodes == showCodes then
         return

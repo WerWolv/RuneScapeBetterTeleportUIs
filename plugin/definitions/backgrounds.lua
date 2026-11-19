@@ -69,6 +69,11 @@ return {
         width = 560,
         height = 320,
     },
+    runescapeSurfaceFull = {
+        image = Plugin.resources.backgrounds.gielinor_full,
+        width = 630,
+        height = 320,
+    },
     tirannwn = {
         sprites = {{ id.Sprite.ELFCITY_TELEPORT_MAP}},
         width = 496,
