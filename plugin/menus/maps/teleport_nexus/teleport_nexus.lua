@@ -59,11 +59,11 @@ function TeleportNexus:Define()
         ["Taverley"]                    = destination(257, 97),
         ["Western Kharazi Jungle"]      = destination(234, 248, "lunar"),
         ["Mountain Camp"]               = destination(229, 29, "lunar"),
-        ["North-western Anachronia"]    = destination(482, 32),
-        ["Eastern Anachronia"]          = destination(519, 50),
+        ["North-western Anachronia"]    = destination(472, 12),
+        ["Eastern Anachronia"]          = destination(540, 10),
         ["Northern Lost Grove"]         = destination(15, 180),
-        ["Wendlewick"]                  = destination(533, 133),
-        ["Marigold Farm"]               = destination(545, 165),
+        ["Wendlewick"]                  = destination(550, 125),
+        ["Marigold Farm"]               = destination(568, 148),
         ["Mazcab"]                      = destination(310, 265),
     }
 
@@ -103,9 +103,8 @@ function TeleportNexus:Define()
 
     return {
         title = "Portal Nexus",
-        background = backgrounds.runescapeSurface,
-        noBackgroundCrop = true,
-        sizeMultiplier = 1.75,
+        background = backgrounds.runescapeSurfaceFull,
+        sizeMultiplier = 2.25,
 
         icons = {
             size = 32,
