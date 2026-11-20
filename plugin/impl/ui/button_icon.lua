@@ -439,12 +439,20 @@ function buttonIcon:Update(menu, hovered)
                 marker.visible = true
                 marker.generation = generation
 
+                -- Badge geometry follows the resting icon bounds, not its hover/press artwork.
+                local normalWidth, normalHeight = buttonIcon.Dimensions(icons)
+                local anchor = marker.hotkeyAnchor or { parent = self.parent }
+                marker.hotkeyAnchor = anchor
+                anchor.x, anchor.y = x - padding / 2 - normalWidth / 2, y - padding / 2 - normalHeight / 2
+                anchor.width, anchor.height = normalWidth, normalHeight
+                anchor.visibleGlobal = marker.layer.visibleGlobal
+
                 local options = marker.hotkeyOptions or { preserveOrder = true }
                 marker.hotkeyOptions = options
-                options.width, options.height = marker.width, marker.height
+                options.width, options.height = normalWidth, normalHeight
                 options.offset, options.disabled = destination.hotkeyOffset, row.disabled
                 options.hidden = row.locked or (icons.hotkeyOnHover and row.name ~= hovered)
-                marker.hotkey:Update(marker.layer, options)
+                marker.hotkey:Update(anchor, options)
             end
         end
     end
