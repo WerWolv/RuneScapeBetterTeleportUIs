@@ -139,7 +139,7 @@ function FairyRings:ApplyLayout(layout)
 
     for _, row in ipairs(rows) do
         if row.code == nil then
-            row.code = table.concat(row.codes, "-"):upper()
+            row.code = table.concat(row.codes, " - "):upper()
             row.key = row.code .. ":" .. row.location
             row.point = #row.codes == 1 and destinations[row.code] or nil
         end
