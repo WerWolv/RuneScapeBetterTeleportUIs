@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := all
 
 PACKAGE_NAME    := BetterTeleportUIs
-VERSION         := 1.0.0
+VERSION         := 1.0.1
 PREVIEW         := 1
 
 BASE_DIR    := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
