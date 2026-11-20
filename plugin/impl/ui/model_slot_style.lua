@@ -42,6 +42,11 @@ function ModelSlotStyle.Apply(slot, style)
     end
 
     slot.appliedStyle = style
+    if slot.modelParts ~= nil then
+        for _, part in ipairs(slot.modelParts) do
+            ModelSlotStyle.Apply(part, style)
+        end
+    end
 end
 
 return ModelSlotStyle

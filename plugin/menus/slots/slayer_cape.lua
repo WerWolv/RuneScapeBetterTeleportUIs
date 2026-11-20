@@ -118,7 +118,6 @@ function SlayerCapePage1:Define()
     }
 end
 
--- The second native page retains the early-level masters and the previous-page action.
 function SlayerCapePage2:Define()
     return {
         title = "Slayer Masters",

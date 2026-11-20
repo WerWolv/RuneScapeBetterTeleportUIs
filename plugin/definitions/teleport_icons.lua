@@ -1087,12 +1087,21 @@ return {
             shadowColorHovered = 0x00000099
         }
     },
+    skills = {
+        woodcutting = {
+            normal = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_WOODCUTTING },
+            size = 32,
+            imageWidth = 128,
+            imageHeight = 128,
+            shadowColorHovered = 0x00000099
+        }
+    },
 
     nextArrow = {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
         hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_1 },
         locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_4 },
-        size = 40,
+        size = 32,
         shadowColor = 0x202020FF,
         shadowColorHovered = 0x202020FF
     },
@@ -1100,7 +1109,7 @@ return {
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_0 },
         hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_1 },
         locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_4 },
-        size = 40,
+        size = 32,
         shadowColor = 0x202020FF,
         shadowColorHovered = 0x202020FF
     },

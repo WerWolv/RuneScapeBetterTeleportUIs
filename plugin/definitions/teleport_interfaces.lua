@@ -137,6 +137,11 @@ return {
         item = id.Obj.ALCH_ONYX_TELEPORT,
     },
     {
+        name = "Elite Woodcutting Outfit",
+        module = "slots/elite_woodcutting_outfit",
+        item = id.Obj.TRH113_ELITE_WOODCUTTING_V4_HEAD,
+    },
+    {
         name = "Slayer Cape",
         module = "slots/slayer_cape",
         item = id.Obj.SKILLCAPE_SLAYER,

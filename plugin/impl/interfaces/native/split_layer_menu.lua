@@ -90,6 +90,10 @@ function SplitLayerMenu:ReadInterface()
     end)
 
     if rows == nil then
+        if reason == "empty" then
+            return nil
+        end
+
         local lines = { "Not matched: " .. reason .. " input/artwork pairs in " .. definition.controls .. "." }
 
         for index = 1, math.min(5, #failures) do

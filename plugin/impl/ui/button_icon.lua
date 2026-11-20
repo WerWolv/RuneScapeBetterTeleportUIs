@@ -8,20 +8,60 @@ local cleanup = require("impl/cleanup")
 
 local buttonIcon = {}
 buttonIcon.__index = buttonIcon
+local anchors = {
+    topLeft = { x = 0, y = 0 },
+    topRight = { x = 1, y = 0 },
+    bottomLeft = { x = 0, y = 1 },
+    bottomRight = { x = 1, y = 1 },
+}
+local anchorPadding = 12
+local hoverScale = 1.1
+local pressHookID = "teleportMapsIconPress"
+local pressHooks = { "ONCLICK", "ONHOLD", "ONRELEASE", "ONMOUSELEAVE" }
 
 -- Explicit dimensions take precedence; size specifies width when source proportions are known.
 function buttonIcon.Dimensions(icons, highlighted)
     local source = icons.normal or icons
-    local width = math.max(1, math.floor((highlighted and icons.hoveredSize) or icons.width or icons.size or 48))
+    local normalWidth = math.max(1, math.floor(icons.width or icons.size or 48))
+    local width = normalWidth
+    if highlighted then
+        width = math.max(1, math.floor((icons.hoveredSize or normalWidth * hoverScale) + 0.5))
+    end
     local height = icons.height
     local sourceWidth = source.imageWidth or icons.imageWidth
     local sourceHeight = source.imageHeight or icons.imageHeight
 
-    if height == nil and sourceWidth and sourceHeight then
+    if height ~= nil then
+        height = height * width / normalWidth
+    elseif sourceWidth and sourceHeight then
         height = width * sourceHeight / sourceWidth
     end
 
     return width, math.max(1, math.floor((height or width) + 0.5))
+end
+
+function buttonIcon.IsAnchor(anchor)
+    return anchors[anchor] ~= nil
+end
+
+-- Anchor centres are viewport-relative and fixed across hover states. A point on an
+-- anchored entry is ignored; it is never a map location or part of the map crop.
+function buttonIcon.Position(background, destination, width, height)
+    if destination.anchor ~= nil then
+        local anchor = anchors[destination.anchor]
+        if anchor == nil then return nil end
+
+        local iconWidth, iconHeight = buttonIcon.Dimensions(destination.icons)
+        local hoverWidth, hoverHeight = buttonIcon.Dimensions(destination.icons, true)
+        local insetX = math.min(width / 2, anchorPadding + math.max(iconWidth, hoverWidth) / 2)
+        local insetY = math.min(height / 2, anchorPadding + math.max(iconHeight, hoverHeight) / 2)
+        return anchor.x == 0 and insetX or width - insetX,
+            anchor.y == 0 and insetY or height - insetY
+    end
+
+    if destination.point ~= nil then
+        return geometry.Project(background, destination.point, width, height)
+    end
 end
 
 -- Convert Vector4 shadow colors to packed RGBA, leaving existing hex values unchanged.
@@ -134,11 +174,48 @@ function buttonIcon.New(parent)
     return setmetatable({
         parent = parent,
         markers = {},
+        inputControls = {},
     }, buttonIcon)
+end
+
+-- Observe native presses without consuming or replacing their actions.
+function buttonIcon:BindInput(rows)
+    for _, row in ipairs(rows) do
+        local control = row.click
+        if control ~= nil then
+            local function press()
+                if not row.disabled and not row.locked then
+                    self.pressedName = row.name
+                end
+                return true
+            end
+            local function release()
+                if self.pressedName == row.name then
+                    self.pressedName = nil
+                end
+                return true
+            end
+            self.inputControls[#self.inputControls + 1] = control
+            control:Subscribe(ui.Hook.ONCLICK, pressHookID, press)
+            control:Subscribe(ui.Hook.ONHOLD, pressHookID, press)
+            control:Subscribe(ui.Hook.ONRELEASE, pressHookID, release)
+            control:Subscribe(ui.Hook.ONMOUSELEAVE, pressHookID, release)
+        end
+    end
 end
 
 -- Destroy every marker and discard cached rendering state.
 function buttonIcon:Destroy()
+    local controls = self.inputControls
+    self.inputControls, self.pressedName = {}, nil
+    for _, control in ipairs(controls) do
+        for _, hook in ipairs(pressHooks) do
+            cleanup.Try("detach map icon press hook", function()
+                control:Unsubscribe(ui.Hook[hook], pressHookID)
+            end)
+        end
+    end
+
     for _, marker in pairs(self.markers) do
         destroyMarker(marker)
     end
@@ -166,12 +243,12 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
-function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey)
+function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey, pressed)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
 
     local marker = self.markers[name]
-    local width, height = buttonIcon.Dimensions(icons, highlighted)
+    local width, height = buttonIcon.Dimensions(icons, highlighted and not pressed)
     local source, dimmed = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
@@ -314,22 +391,30 @@ function buttonIcon:Update(menu, hovered)
     local generation = self.generation
     local width, height = self.parent.width, self.parent.height
     local reorder = self.hovered ~= hovered
+    if self.pressedName ~= hovered then
+        self.pressedName = nil
+    end
 
     for _, row in ipairs(menu.rows) do
         local destination = row.destination
-        local icons, point = destination.icons, destination.point
+        local icons = destination.icons
+        local x, y
+        if not destination.hidden and icons ~= nil then
+            x, y = buttonIcon.Position(menu.background, destination, width, height)
+        end
 
-        if not destination.hidden and icons ~= nil and point ~= nil and geometry.Contains(menu.background, point) then
+        if x ~= nil then
             local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked,
-                destination.showLockWhenDisabled, destination.hotkey)
+                destination.showLockWhenDisabled, destination.hotkey, self.pressedName == row.name)
 
             if marker ~= nil then
-                local x, y = geometry.Project(menu.background, point, width, height)
-                x, y = x - marker.width / 2, y - marker.height / 2
-
-                if marker.x ~= x or marker.y ~= y then
-                    marker.layer:SetPos(x, y)
-                    marker.x, marker.y = x, y
+                -- Let native layout keep the centre fixed during size changes.
+                -- Compensate for the extra clipping space on the shadow's right/bottom.
+                local padding = shadowPadding(icons, marker.kind)
+                x, y = x + padding / 2, y + padding / 2
+                if marker.centerX ~= x or marker.centerY ~= y then
+                    marker.layer:SetPos(x, y, 0, 0, 0.5, 0.5)
+                    marker.centerX, marker.centerY = x, y
                 end
 
                 if marker.visible ~= true then

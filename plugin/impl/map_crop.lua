@@ -36,7 +36,7 @@ local function teleportBounds(source, rows, minWidth, scale)
         local destination = row.destination
         local point = destination.point
 
-        if not destination.hidden and point ~= nil
+        if not destination.hidden and destination.anchor == nil and point ~= nil
             and geometry.Contains(source, point, bounds) then
             local width, height = 0, 0
 

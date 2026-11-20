@@ -41,21 +41,34 @@ end
 
 -- NPC/item shortcuts retain existing definitions; modelID accepts any ModelType.
 local function hasModel(definition)
-    return definition.npcID ~= nil or definition.objectID ~= nil or definition.modelID ~= nil
+    return definition.npcID ~= nil or definition.objectID ~= nil
+        or definition.modelID ~= nil or definition.modelIDs ~= nil
 end
 
 function ModelSlotMenu:ValidateDestination(definition)
     local sources = (definition.npcID ~= nil and 1 or 0)
         + (definition.objectID ~= nil and 1 or 0)
         + (definition.modelID ~= nil and 1 or 0)
+        + (definition.modelIDs ~= nil and 1 or 0)
         + (definition.placeholderText ~= nil and 1 or 0)
 
     if sources > 1 then
-        return false, "needs only one of npcID, objectID, modelID or placeholderText"
+        return false, "needs only one of npcID, objectID, modelID, modelIDs or placeholderText"
     end
 
-    if definition.modelType ~= nil and definition.modelID == nil then
-        return false, "needs modelID when modelType is specified"
+    if definition.modelType ~= nil and definition.modelID == nil and definition.modelIDs == nil then
+        return false, "needs modelID or modelIDs when modelType is specified"
+    end
+
+    if definition.modelIDs ~= nil then
+        if type(definition.modelIDs) ~= "table" or #definition.modelIDs == 0 then
+            return false, "needs a nonempty modelIDs array"
+        end
+        for index = 1, #definition.modelIDs do
+            if type(definition.modelIDs[index]) ~= "number" then
+                return false, "needs numeric modelIDs"
+            end
+        end
     end
 
     if definition.placeholderText ~= nil
@@ -67,7 +80,41 @@ function ModelSlotMenu:ValidateDestination(definition)
         return true
     end
 
-    return false, "needs npcID, objectID, modelID, placeholderText or navigation artwork"
+    return false, "needs npcID, objectID, modelID, modelIDs, placeholderText or navigation artwork"
+end
+
+local function createModel(viewport, destination, modelID)
+    local model = prettyui.NewComponent(ui.Model, viewport)
+    model.clickthrough = true
+
+    if destination.npcID ~= nil then
+        model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
+    elseif destination.objectID ~= nil then
+        model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
+    else
+        model:SetModel(destination.modelType or ui.ModelType.MODEL, modelID, destination.secondaryModelID)
+    end
+
+    model.modelWidth = slotSize
+    model.modelHeight = slotSize
+    model.viewDistance = destination.viewDistance or 600
+    if destination.animID ~= nil then
+        model.animID = destination.animID
+    end
+
+    for _, property in ipairs({ "rotation", "worldOffset" }) do
+        if destination[property] ~= nil then
+            local value = model[property]
+            local configured = destination[property]
+            value.x, value.y, value.z = configured.x or 0, configured.y or 0, configured.z or 0
+            model[property] = value
+        end
+    end
+    if destination.orthographic ~= nil then
+        model.orthographic = destination.orthographic
+    end
+
+    return model
 end
 
 -- Available cards retain native actions; adapters can block unavailable cards.
@@ -116,43 +163,16 @@ function ModelSlotMenu:BeginVisuals()
                     slot.placeholder = components.CenteredLabel(viewport, destination.placeholderFont or labelStyle.font)
                     slot.placeholder.content = destination.placeholderText
                 else
-                    local model = prettyui.NewComponent(ui.Model, viewport)
-                    model.clickthrough = true
-
-                    if destination.npcID ~= nil then
-                        model:SetModel(ui.ModelType.NPC_MODEL, destination.npcID)
-                    elseif destination.objectID ~= nil then
-                        model:SetAssociatedObject(destination.objectID, destination.quantity or 1)
-                    else
-                        model:SetModel(
-                            destination.modelType or ui.ModelType.MODEL,
-                            destination.modelID,
-                            destination.secondaryModelID
-                        )
-                    end
-
-                    model.modelWidth = slotSize
-                    model.modelHeight = slotSize
-                    model.viewDistance = destination.viewDistance or 600
-
-                    if destination.animID ~= nil then
-                        model.animID = destination.animID
-                    end
-
-                    for _, property in ipairs({ "rotation", "worldOffset" }) do
-                        if destination[property] ~= nil then
-                            local value = model[property]
-                            local configured = destination[property]
-                            value.x, value.y, value.z = configured.x or 0, configured.y or 0, configured.z or 0
-                            model[property] = value
+                    slot.model = createModel(viewport, destination,
+                        destination.modelIDs and destination.modelIDs[1] or destination.modelID)
+                    if destination.modelIDs ~= nil and #destination.modelIDs > 1 then
+                        slot.modelParts = {}
+                        for index = 2, #destination.modelIDs do
+                            slot.modelParts[#slot.modelParts + 1] = {
+                                model = createModel(viewport, destination, destination.modelIDs[index]),
+                            }
                         end
                     end
-
-                    if destination.orthographic ~= nil then
-                        model.orthographic = destination.orthographic
-                    end
-
-                    slot.model = model
                 end
 
                 if self.definition.overlayLabels then
@@ -459,15 +479,20 @@ function ModelSlotMenu:ApplyLayout(layout)
                 slot.viewport:SetPos(scaled(modelInset), scaled(modelInset))
                 slot.viewport:SetSize(scaled(slotSize - modelInset * 2), scaled(slotSize - modelInset * 2))
                 if slot.model ~= nil then
-                    slot.model:SetPos(0, 0)
-                    slot.model:SetSize(slot.viewport.width, slot.viewport.height)
-
-                    local offset = destination.modelOffset
-                    local screenOffset = slot.model.screenOffset
-                    screenOffset.x = scaled(offset and offset.x or 0)
-                    screenOffset.y = scaled(offset and offset.y or 0)
-                    screenOffset.z = 0
-                    slot.model.screenOffset = screenOffset
+                    local function layoutModel(model)
+                        model:SetPos(0, 0)
+                        model:SetSize(slot.viewport.width, slot.viewport.height)
+                        local offset = destination.modelOffset
+                        local screenOffset = model.screenOffset
+                        screenOffset.x = scaled(offset and offset.x or 0)
+                        screenOffset.y = scaled(offset and offset.y or 0)
+                        screenOffset.z = 0
+                        model.screenOffset = screenOffset
+                    end
+                    layoutModel(slot.model)
+                    for _, part in ipairs(slot.modelParts or {}) do
+                        layoutModel(part.model)
+                    end
                 end
 
                 if slot.labelBackground ~= nil then

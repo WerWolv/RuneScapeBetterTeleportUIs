@@ -12,8 +12,12 @@ function MapMenu:ValidateDestination(definition, background)
     local entryBackground = definition.background or self.definition.background
     local icons = definition.icons or self.definition.icons
 
-    if definition.point == nil or icons == nil or entryBackground == nil then
-        return false, "needs point, icons and background (including group defaults)"
+    if definition.anchor ~= nil and not ButtonIcon.IsAnchor(definition.anchor) then
+        return false, "needs a topLeft, topRight, bottomLeft or bottomRight anchor"
+    end
+
+    if (definition.point == nil and definition.anchor == nil) or icons == nil or entryBackground == nil then
+        return false, "needs point or anchor, icons and background (including group defaults)"
     end
 
     if background ~= nil and entryBackground ~= background then
@@ -27,6 +31,7 @@ function MapMenu:BeginVisuals()
     mapCrop.Attach(self.session.menu)
     self.backgroundView = BackgroundView.New(self.session.content)
     self.iconView = ButtonIcon.New(self.backgroundView.layer)
+    self.iconView:BindInput(self.session.menu.rows)
 end
 
 -- Supply the header's minimum width to the crop, then scale uniformly within the host.
@@ -94,7 +99,7 @@ function MapMenu:ApplyLayout(layout)
 
             hitWidth = math.max(1, math.floor(iconWidth * hitboxScale))
             hitHeight = math.max(1, math.floor(iconHeight * hitboxScale))
-            x, y = geometry.Project(destination.background, destination.point, width, height)
+            x, y = ButtonIcon.Position(session.menu.background, destination, width, height)
         end
 
         if x == nil then
@@ -119,7 +124,8 @@ function MapMenu:GetHovered()
         local destination = entry.destination
 
         if not entry.locked and not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
-            and geometry.Contains(menu.background, destination.point) then
+            and (ButtonIcon.IsAnchor(destination.anchor)
+                or (destination.point ~= nil and geometry.Contains(menu.background, destination.point))) then
             return entry.name
         end
     end
