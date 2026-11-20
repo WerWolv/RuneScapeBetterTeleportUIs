@@ -38,7 +38,7 @@ function SlayerCapePage1:Define()
                     x = 0,
                     y = 250
                 },
-                description = description(95, 120, "Level 55 <sprite=1184> Wilderness")
+                description = description(95, 120, "Level 55 " .. descriptions.Sprite(id.Sprite.HEADICONS_PK_INTERFACE_7) .. " Wilderness")
             },
             ["2. Laniakea"] = {
                 npcID = id.NPC.SLAYER_MASTER_8_DINO_ISLAND,

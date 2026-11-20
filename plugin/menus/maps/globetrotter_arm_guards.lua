@@ -7,7 +7,7 @@ local descriptions = require("definitions/descriptions")
 
 local function chargesRemaining(count)
     local noun = tonumber(count) == 1 and "scroll" or "scrolls"
-    return descriptions.Text(string.format("%s <sprite=4513> %s remaining", count, noun))
+    return descriptions.Text(string.format("%s %s %s remaining", count, descriptions.Sprite(id.Sprite.BP3_MISSION_ICON_CLUE_SCROLL), noun))
 end
 
 function GlobetrotterArmGuards:Define()

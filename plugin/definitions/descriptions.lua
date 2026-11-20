@@ -56,25 +56,28 @@ local skillInfo = {
     [description.SKILL.THIEVING]        = { name = "Thieving",      color = 0xC995DF},
 }
 
+function description.Sprite(sprite)
+    return string.format("<sprite=%d>", sprite)
+end
+
 -- Adds a skill requirement description
 function description.LevelRequirement(level, skill)
     local info = assert(skillInfo[skill], "Unknown skill sprite: " .. tostring(skill))
-    return string.format("- Level <col=ffffff>%d</col> <sprite=%d><col=%06x>%s</col><br>",
+    return string.format("- Level <col=ffffff>%d</col> " .. description.Sprite(skill) .. "<col=%06x>%s</col><br>",
         level, skill, info.color, info.name)
 end
 
 function description.CombatLevel(level)
-    return string.format("- Level <col=ffffff>%d</col>  <sprite=9286> <col=85B5E8>Combat</col><br>", level)
+    return string.format("- Level <col=ffffff>%d</col>  " .. description.Sprite(id.Sprite.AIF_COMBAT_ICON).. " <col=85B5E8>Combat</col><br>", level)
 end
 
 function description.QuestRequirement(name)
-    return string.format("- Completion of <sprite=4376><col=ffffff>%s</col><br>", name)
+    return string.format("- Completion of " .. description.Sprite(id.Sprite.RS3_ICON_MENU_TAB_QUEST_LIST_0) .. "<col=ffffff>%s</col><br>", name)
 end
 
 -- Adds a world location description
 function description.Location(name)
-    return string.format("- <sprite=%d> <col=ffffff>%s</col><br>",
-        id.Sprite.TOPLEVEL_WORLDMAP_BUTTON_0,
+    return string.format("- " .. description.Sprite(id.Sprite.TOPLEVEL_WORLDMAP_BUTTON_0) .. " <col=ffffff>%s</col><br>",
         name
     )
 end

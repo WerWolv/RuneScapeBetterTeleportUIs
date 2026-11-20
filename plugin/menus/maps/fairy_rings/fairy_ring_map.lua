@@ -10,6 +10,7 @@ local settings = require("impl/settings")
 local text = require("impl/text")
 local cleanup = require("impl/cleanup")
 local ContentLayer = require("impl/ui/content_layer")
+local descriptions = require("definitions/descriptions")
 
 local View = {}
 View.__index = View
@@ -178,7 +179,7 @@ function View:CreateItem(row)
     end
 
     item.tooltip = teleportTooltip.Attach(target, parent, row.name,
-        row.code ~= "" and ("<sprite=133>  Code: " .. row.code) or nil)
+        row.code ~= "" and (descriptions.Sprite(id.Sprite.MAPFUNCTION_FAIRY_RINGS) .. "  Code: " .. row.code) or nil)
     target.clickthrough = true
 
     if not item.mapped then

@@ -6,6 +6,7 @@ local teleportIcons = require("definitions/teleport_icons")
 local backgrounds = require("definitions/backgrounds")
 local TeleportCounter = require("impl/ui/teleport_counter")
 local cleanup = require("impl/cleanup")
+local descriptions = require("definitions/descriptions")
 
 local EliteWoodcuttingOutfitMainPage1 = ModelSlotMenu.Create(ModalChoiceMenu, "eliteWoodcuttingOutfitMainPage1")
 local EliteWoodcuttingOutfitMainPage2 = ModelSlotMenu.Create(ModalChoiceMenu, "eliteWoodcuttingOutfitMainPage2")
@@ -48,7 +49,7 @@ local function tree(locIDs, name, submenu, distance, x, y)
         end
     end
     return {
-        nameOverride = name .. (submenu and "  <sprite=36157>" or ""),
+        nameOverride = name .. (submenu and "  " .. descriptions.Sprite(id.Sprite.RS3_ICON_POH_TRUNK_MISC) or ""),
         modelIDs = models,
         animID = animation,
         viewDistance = distance,
