@@ -24,7 +24,8 @@ description.SKILL = {
     RANGED          = id.Sprite.HITMARK_ICON_SKILL_RANGED,
     RUNECRAFTING    = id.Sprite.HITMARK_ICON_SKILL_RUNECRAFTING,
     SLAYER          = id.Sprite.HITMARK_ICON_SKILL_SLAYER,
-    SMITHING        = id.Sprite.HITMARK_ICON_SKILL_SMITHING
+    SMITHING        = id.Sprite.HITMARK_ICON_SKILL_SMITHING,
+    THIEVING        = id.Sprite.HITMARK_ICON_SKILL_THIEVING,
 }
 
 local skillInfo = {
@@ -52,6 +53,7 @@ local skillInfo = {
     [description.SKILL.RUNECRAFTING]    = { name = "Runecrafting",  color = 0xDDD4A3},
     [description.SKILL.SLAYER]          = { name = "Slayer",        color = 0xCE9696},
     [description.SKILL.SMITHING]        = { name = "Smithing",      color = 0xB5BFD0},
+    [description.SKILL.THIEVING]        = { name = "Thieving",      color = 0xC995DF},
 }
 
 -- Adds a skill requirement description

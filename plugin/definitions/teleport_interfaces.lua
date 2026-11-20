@@ -157,6 +157,11 @@ return {
         item = id.Obj.TRH75_ELDER_HEAD,
     },
     {
+        name = "Master Camouflage Outfit",
+        module = "maps/master_camouflage_outfit",
+        item = id.Obj.TRH90_MASTER_HEAD,
+    },
+    {
         name = "Slayer Cape",
         module = "slots/slayer_cape",
         item = id.Obj.SKILLCAPE_SLAYER,

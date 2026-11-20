@@ -1095,6 +1095,13 @@ return {
         }
     },
     skills = {
+        thieving = {
+            normal = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_THIEVING },
+            size = 40,
+            imageWidth = 128,
+            imageHeight = 128,
+            shadowColorHovered = 0x00000099
+        },
         woodcutting = {
             normal = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_WOODCUTTING },
             size = 32,
