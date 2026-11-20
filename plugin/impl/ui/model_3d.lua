@@ -1,4 +1,5 @@
 local HotkeyBadge = require("impl/ui/hotkey_badge")
+local cleanup = require("impl/cleanup")
 
 local Model3D = {}
 Model3D.__index = Model3D
@@ -43,7 +44,9 @@ local function create(parent, modelType, modelIDs, animID, options)
         model.clickthrough = true
         model:SetModel(modelType, modelID)
         model:SetTransform(Vector3.new(0, 0, 0), Vector3.new(0, 0, 0), Vector3.new(1, 1, 1), 0)
-        model.animID = animID
+        if animID ~= nil then
+            model.animID = animID
+        end
         self.models[#self.models + 1] = model
     end
 
@@ -52,6 +55,10 @@ local function create(parent, modelType, modelIDs, animID, options)
     end
 
     return self
+end
+
+function Model3D.FromModel(parent, modelID, options)
+    return create(parent, ui.ModelType.MODEL, { modelID }, options.animID, options)
 end
 
 function Model3D.FromLoc(parent, loc, options)
@@ -96,6 +103,18 @@ function Model3D:Update(disabled, hovered)
     if self.hotkey ~= nil then
         self.hotkey:Update(self.layer, { disabled = disabled, inset = 4 })
     end
+end
+
+function Model3D:SetAlpha(alpha)
+    for _, model in ipairs(self.models) do
+        model.alpha = alpha
+    end
+end
+
+function Model3D:Destroy()
+    cleanup.Release(self, "hotkey")
+    cleanup.Release(self, "layer")
+    self.models = {}
 end
 
 return Model3D

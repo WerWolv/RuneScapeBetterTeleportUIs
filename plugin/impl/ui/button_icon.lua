@@ -1,6 +1,7 @@
 local constants = require("definitions/constants")
 local geometry = require("impl/map_geometry")
 local SpriteLayers = require("impl/ui/sprite_layers")
+local Model3D = require("impl/ui/model_3d")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local components = require("impl/ui/components")
 local text = require("impl/text")
@@ -163,6 +164,7 @@ end
 
 -- Release explicit sprite wrappers and the native marker subtree.
 local function destroyMarker(marker)
+    cleanup.Release(marker, "model")
     cleanup.Release(marker, "shadow")
     cleanup.Release(marker, "sprite")
     cleanup.Release(marker, "hotkey")
@@ -252,10 +254,10 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     local source, dimmed = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
-    local kind = objectID ~= nil and "item" or "sprite"
+    local kind = source.modelID ~= nil and "model" or objectID ~= nil and "item" or "sprite"
     local image
 
-    if objectID == nil then
+    if kind == "sprite" then
         image = source.sprite
 
         if image == nil then
@@ -267,8 +269,8 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         end
     end
 
-    if marker ~= nil and marker.kind ~= kind then
-        -- Only a different native component type needs a fresh subtree.
+    if marker ~= nil and (marker.kind ~= kind or kind == "model" and marker.modelSource ~= source) then
+        -- A new component type or model configuration needs a fresh subtree.
         destroyMarker(marker)
         self.markers[name], marker = nil, nil
     end
@@ -292,7 +294,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
             height = height,
         }
 
-        if objectID ~= nil then
+        if kind == "model" then
+            marker.model = Model3D.FromModel(artwork, source.modelID, source)
+            marker.model:SetSize(width, height)
+            marker.modelSource = source
+        elseif objectID ~= nil then
             local sprite = components.ItemSprite(artwork, objectID, objectCount)
             sprite:SetSize(width, height)
             marker.itemSprite, marker.objectID, marker.objectCount = sprite, objectID, objectCount
@@ -318,7 +324,9 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         marker.layer:SetSize(width + padding, height + padding)
         marker.artwork:SetSize(width + padding, height + padding)
 
-        if marker.itemSprite ~= nil then
+        if marker.model ~= nil then
+            marker.model:SetSize(width, height)
+        elseif marker.itemSprite ~= nil then
             marker.itemSprite:SetSize(width, height)
         else
             marker.sprite.root:SetSize(width, height)
@@ -367,7 +375,9 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     end
 
     if marker.dimmed ~= dimmed then
-        if marker.itemSprite ~= nil then
+        if marker.model ~= nil then
+            marker.model:SetAlpha(dimmed and 0.4 or 1)
+        elseif marker.itemSprite ~= nil then
             marker.itemSprite.colour = dimmed
                 and Vector4.new(0.45, 0.45, 0.45, 1.0) or Vector4.new(1.0, 1.0, 1.0, 1.0)
         else

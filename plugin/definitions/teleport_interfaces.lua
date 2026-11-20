@@ -27,6 +27,11 @@ return {
         item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_SPIRIT_TREE,
     },
     {
+        name = "Gnome Gliders",
+        module = "maps/gnome_gliders",
+        item = id.Obj.ARCH_TOY_GLIDER,
+    },
+    {
         name = "Wilderness Obelisks",
         module = "maps/wilderness_obelisks",
         item = id.Obj.WILDY_EVENTS_REWARDS_PORTABLE_OBELISK,
