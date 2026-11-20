@@ -9,6 +9,7 @@ local function jewellery(outer, inner)
             Plugin.resources.icons.jewellery["inner_" .. inner],
         }},
         size = 32,
+        hoveredSize = 32,
         shadowColor = 0x00000099,
         shadowColorHovered = 0x00000099
     }
