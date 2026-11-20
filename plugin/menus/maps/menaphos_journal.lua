@@ -7,7 +7,7 @@ local MenaphosJournal = MapMenu.Create(ModalChoiceMenu, "menaphosJournal")
 
 local function chargesRemaining(count)
     local noun = tonumber(count) == 1 and "tablet" or "tablets"
-    return descriptions.Text(string.format("%s <sprite=31137> teleport %s remaining", count, noun))
+    return descriptions.Text(string.format("%s %s teleport %s remaining", count, descriptions.Sprite(id.Sprite.RS3_ICON_PARENT_REPUTATION_MENAPHOS), noun))
 end
 
 function MenaphosJournal:Define()

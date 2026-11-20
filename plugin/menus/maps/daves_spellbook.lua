@@ -8,7 +8,7 @@ local DavesSpellbook = MapMenu.Create(ModalChoiceMenu, "davesSpellbook")
 -- Format the captured chipped tablet count using the appropriate plural form.
 local function tabletsRemaining(count)
     local noun = tonumber(count) == 1 and "tablet" or "tablets"
-    return descriptions.Text(string.format("%s <sprite=1824> teleport %s left", count, noun))
+    return descriptions.Text(string.format("%s %s teleport %s left", count, descriptions.Sprite(id.Sprite.STONEMENUSIDEICONS_7), noun))
 end
 
 function DavesSpellbook:Define()

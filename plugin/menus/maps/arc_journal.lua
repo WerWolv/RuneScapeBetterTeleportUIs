@@ -55,7 +55,7 @@ end
 
 local function teleportsRemaining(count)
     local noun = tonumber(count) == 1 and "teleport" or "teleports"
-    return descriptions.Text(string.format("%s <sprite=27621> %s left", count, noun))
+    return descriptions.Text(string.format("%s %s %s left", count, descriptions.Sprite(id.Sprite.ELR_BTN_UNCHARTED_ISLAND_4_1), noun))
 end
 
 function ArcJournal:Define()
