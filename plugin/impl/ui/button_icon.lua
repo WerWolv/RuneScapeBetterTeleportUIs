@@ -140,6 +140,35 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 end
 
+-- Optional icons.backdrop = { sprite = id } or { image = resource } follows the icon's bounds.
+local function updateBackdrop(marker, icons, dimmed)
+    local definition = icons.backdrop
+    local image = definition and (definition.sprite or definition.image)
+    if image == nil or not SpriteLayers.LoadImages(image) then
+        if marker.backdrop ~= nil then
+            marker.backdrop.root.hidden = true
+        end
+        return
+    end
+
+    if marker.backdrop == nil then
+        marker.backdrop = SpriteLayers.New(marker.layer, image, {
+            x = 0, y = 0, width = marker.width, height = marker.height,
+        })
+        marker.backdrop.root:MoveToBack()
+    elseif marker.backdropImage ~= image then
+        marker.backdrop:SetSprite(image)
+    end
+    marker.backdropImage = image
+    marker.backdrop.root.hidden = false
+
+    if marker.backdropWidth ~= marker.width or marker.backdropHeight ~= marker.height then
+        marker.backdrop.root:SetSize(marker.width, marker.height)
+        marker.backdropWidth, marker.backdropHeight = marker.width, marker.height
+    end
+    marker.backdrop:SetAlpha(dimmed and 0.4 or 1)
+end
+
 -- Overlay a small lock on missing destinations or explicitly marked disabled ones.
 local function updateLock(marker, width, height, locked)
     if locked and marker.lock == nil then
@@ -165,6 +194,7 @@ end
 -- Release explicit sprite wrappers and the native marker subtree.
 local function destroyMarker(marker)
     cleanup.Release(marker, "model")
+    cleanup.Release(marker, "backdrop")
     cleanup.Release(marker, "shadow")
     cleanup.Release(marker, "sprite")
     cleanup.Release(marker, "hotkey")
@@ -377,6 +407,8 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     if marker.sprite ~= nil then
         updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
+
+    updateBackdrop(marker, icons, dimmed)
 
     if marker.dimmed ~= dimmed then
         if marker.model ~= nil then

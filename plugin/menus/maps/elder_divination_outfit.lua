@@ -46,7 +46,8 @@ local function wisp(npcID)
             yaw = 0, pitch = 10, distance = 700, fov = 40,
             nearPlane = 1, farPlane = 2000,
         },
-        size = 35
+        size = 35,
+        backdrop = { image = Plugin.resources.icons.backdrop },
     }
 end
 
@@ -73,7 +74,7 @@ function ElderDivinationOutfitPage1:Define()
                 description = descriptions.Text("The highest-level colony you can access."),
                 anchor = "topLeft",
                 icons = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_DIVINATION, size = 36 },
-                hotkeyOffset = { x = 15, y = -15 }
+                hotkeyOffset = { x = 15, y = -15 },
             },
             ["2. Incandescent wisps, south of the Poison Waste (lvl 95+)"] = colony(
                 "Incandescent", 95, "South of the Poison Waste", id.NPC.DIV_WISP12, 80, 200
