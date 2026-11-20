@@ -3,9 +3,39 @@ local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
 local descriptions = require("definitions/descriptions")
+local TeleportCounter = require("impl/ui/teleport_counter")
+local cleanup = require("impl/cleanup")
 
 local ElderDivinationOutfitPage1 = MapMenu.Create(ModalChoiceMenu, "elderDivinationOutfitPage1")
 local ElderDivinationOutfitPage2 = MapMenu.Create(ModalChoiceMenu, "elderDivinationOutfitPage2")
+
+local function beginVisuals(self)
+    MapMenu.BeginVisuals(self)
+    self.teleportsCounter = TeleportCounter.New(self.backgroundView.layer, false)
+end
+
+local function applyLayout(self, layout)
+    MapMenu.ApplyLayout(self, layout)
+    self.teleportsCounter:Layout(layout.width, layout.height)
+end
+
+local function updateVisuals(self, layout, hovered)
+    -- Keep the counter above the map artwork while the shared presentation raises its vignette last.
+    self.teleportsCounter:Update(var.VarPlayer.TRH75_DAILY_TELEPORTS.value)
+    MapMenu.UpdateVisuals(self, layout, hovered)
+end
+
+local function releaseVisuals(self)
+    cleanup.Release(self, "teleportsCounter")
+    MapMenu.ReleaseVisuals(self)
+end
+
+for _, page in ipairs({ ElderDivinationOutfitPage1, ElderDivinationOutfitPage2 }) do
+    page.BeginVisuals = beginVisuals
+    page.ApplyLayout = applyLayout
+    page.UpdateVisuals = updateVisuals
+    page.ReleaseVisuals = releaseVisuals
+end
 
 local function wisp(npcID)
     return {
