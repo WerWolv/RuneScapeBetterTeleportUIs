@@ -2,6 +2,7 @@ local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local descriptions = require("definitions/descriptions")
 local LuckRings = MapMenu.Create(ModalChoiceMenu, "luckRings")
 
 function LuckRings:Match(snapshot)
@@ -53,6 +54,8 @@ function LuckRings:Define()
                 possiblyMissing = true
             },
             ["^%d%. Dwarven Outpost$"] = {
+                nameOverride = "Dwarven Outpost",
+                disabledDescription = descriptions.Text(descriptions.Sprite(id.Sprite.RS3_ICON_TAB_UNLOCK) .. " Unlocked by <col=ffffff>Dark Facet of Luck</col>"),
                 icons = teleportIcons.jewellery.goldOnyx,
                 point = {x = 154, y = 96},
                 possiblyMissing = true
