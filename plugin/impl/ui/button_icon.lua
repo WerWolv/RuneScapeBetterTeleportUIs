@@ -254,7 +254,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     local source, dimmed = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
-    local kind = source.modelID ~= nil and "model" or objectID ~= nil and "item" or "sprite"
+    local kind = (source.modelID ~= nil or source.npcID ~= nil) and "model" or objectID ~= nil and "item" or "sprite"
     local image
 
     if kind == "sprite" then
@@ -295,7 +295,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         }
 
         if kind == "model" then
-            marker.model = Model3D.FromModel(artwork, source.modelID, source)
+            if source.npcID ~= nil then
+                marker.model = Model3D.FromNPC(artwork, source.npcID, source.animID, source)
+            else
+                marker.model = Model3D.FromModel(artwork, source.modelID, source)
+            end
             marker.model:SetSize(width, height)
             marker.modelSource = source
         elseif objectID ~= nil then

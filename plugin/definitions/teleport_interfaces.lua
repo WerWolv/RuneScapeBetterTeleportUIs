@@ -152,6 +152,11 @@ return {
         item = id.Obj.TRH113_ELITE_WOODCUTTING_V4_HEAD,
     },
     {
+        name = "Elder Divination Outfit",
+        module = "maps/elder_divination_outfit",
+        item = id.Obj.TRH75_ELDER_HEAD,
+    },
+    {
         name = "Slayer Cape",
         module = "slots/slayer_cape",
         item = id.Obj.SKILLCAPE_SLAYER,
