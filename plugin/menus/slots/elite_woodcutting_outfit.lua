@@ -158,6 +158,7 @@ function EliteWoodcuttingOutfitEternalMagicTrees:Define()
             },
             ["2. Dalia's Tree Nursery"] = {
                 point = {x = 537, y = 170},
+                hotkeyOffset = { x = 10, y = -20 }
             },
             ["3. [Previous options]"] = {
                 anchor = "bottomLeft",
@@ -565,39 +566,30 @@ local pages = {
     EliteWoodcuttingOutfitOakNormal
 }
 
-for index, page in ipairs(pages) do
-    local presentation = index <= 2 and ModelSlotMenu or MapMenu
-
+for _, page in ipairs({ EliteWoodcuttingOutfitMainPage1, EliteWoodcuttingOutfitMainPage2 }) do
     function page:BeginVisuals()
-        presentation.BeginVisuals(self)
-        local parent = index <= 2 and self.slotLayer or self.backgroundView.layer
-        self.teleportsCounter = TeleportCounter.New(parent, true, true)
-        if index <= 2 then
-            self.teleportsCounter.height = 44
-            self.teleportsCounter.label.maxLines = 2
-        end
+        ModelSlotMenu.BeginVisuals(self)
+        self.teleportsCounter = TeleportCounter.New(self.slotLayer, true, true)
+        self.teleportsCounter.height = 44
+        self.teleportsCounter.label.maxLines = 2
     end
 
     function page:ApplyLayout(layout)
-        presentation.ApplyLayout(self, layout)
+        ModelSlotMenu.ApplyLayout(self, layout)
         local counter = self.teleportsCounter
-        if index <= 2 then
-            local arrow = self.slots[#self.slots].layer
-            counter:Layout(self.slots[1].layer.width, layout.height)
-            counter.root:SetPos(arrow.x + arrow.width - counter.root.width, arrow.y - counter.height - 6)
-        else
-            counter:Layout(layout.width, layout.height - 64)
-        end
+        local arrow = self.slots[#self.slots].layer
+        counter:Layout(self.slots[1].layer.width, layout.height)
+        counter.root:SetPos(arrow.x + arrow.width - counter.root.width, arrow.y - counter.height - 6)
     end
 
     function page:UpdateVisuals(layout, hovered)
-        self.teleportsCounter:Update(var.VarPlayer.TRH113_ELITE_WOODCUTTING_DAILY_TELEPORTS.value)
-        presentation.UpdateVisuals(self, layout, hovered)
+        self.teleportsCounter:Update(20 - var.VarPlayer.TRH113_ELITE_WOODCUTTING_DAILY_TELEPORTS.value)
+        ModelSlotMenu.UpdateVisuals(self, layout, hovered)
     end
 
     function page:ReleaseVisuals()
         cleanup.Release(self, "teleportsCounter")
-        presentation.ReleaseVisuals(self)
+        ModelSlotMenu.ReleaseVisuals(self)
     end
 end
 
