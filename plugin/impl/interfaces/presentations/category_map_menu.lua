@@ -263,6 +263,7 @@ function CategoryMap:ApplyLayout(layout)
     end
 
     self:LayoutRows(rectangles, width, height)
+    self:LayoutTooltipProbes(layout)
     self.filters:Layout(width, layout.panelWidth, height)
 end
 

@@ -145,7 +145,7 @@ local function expandCaptures(text, match)
 
         assert(
             result == nil or type(result) == "string",
-            "Teleport nameOverride and description functions must return a string or nil"
+            "Teleport nameOverride, description and disabledDescription functions must return a string or nil"
         )
 
         return result
@@ -183,9 +183,8 @@ function matcher.Resolve(menu)
         row.destination.background = definition.background or menu.group.background
         row.destination.icons = definition.icons or menu.group.icons
 
+        local match
         if not row.locked then
-            local match
-
             if row.entryKey ~= row.name and row.entryKey:sub(1, 1) == "^" then
                 match = table.pack(string.find(row.name, row.entryKey))
             end
@@ -193,6 +192,7 @@ function matcher.Resolve(menu)
             row.destination.nameOverride = expandCaptures(row.destination.nameOverride, match)
             row.destination.description = expandCaptures(row.destination.description, match)
         end
+        row.destination.disabledDescription = expandCaptures(row.destination.disabledDescription, match)
     end
 
     return menu

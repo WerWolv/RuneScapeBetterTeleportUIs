@@ -4,6 +4,7 @@ local BackgroundView = require("impl/ui/background_view")
 local ButtonIcon = require("impl/ui/button_icon")
 local constants = require("definitions/constants")
 local cleanup = require("impl/cleanup")
+local NativeLayout = require("impl/interfaces/native/native_layout")
 
 local MapMenu = {}
 local hitboxScale = 0.75
@@ -32,6 +33,14 @@ function MapMenu:BeginVisuals()
     self.backgroundView = BackgroundView.New(self.session.content)
     self.iconView = ButtonIcon.New(self.backgroundView.layer)
     self.iconView:BindInput(self.session.menu.rows)
+    self.tooltipProbes = {}
+    for index, row in ipairs(self.session.menu.rows) do
+        self.tooltipProbes[row.name] = {
+            target = self.session.tooltips[row.name] and self:GetTooltipTarget(row, index) or nil,
+            description = self:GetDescription(row),
+            title = self:GetDisplayName(row),
+        }
+    end
 end
 
 -- Supply the header's minimum width to the crop, then scale uniformly within the host.
@@ -115,6 +124,69 @@ function MapMenu:ApplyLayout(layout)
     end
 
     self:LayoutRows(rectangles, width, height)
+    self:LayoutTooltipProbes(layout)
+end
+
+-- Unavailable destinations use passive hover targets, including entries with no native row.
+function MapMenu:LayoutTooltipProbes(layout)
+    for index, row in ipairs(self.session.menu.rows) do
+        local destination = row.destination
+        local probe = self.tooltipProbes[row.name]
+        local unavailable = row.disabled or row.locked
+        local x, y
+        if not destination.hidden then
+            x, y = ButtonIcon.Position(self.session.menu.background, destination, layout.width, layout.height)
+        end
+        local visible = x ~= nil
+
+        if unavailable and visible then
+            if probe.control == nil then
+                probe.control = prettyui.NewComponent(ui.Layer, self.backgroundView.layer)
+                probe.control.enabled = true
+            end
+            local width, height = ButtonIcon.Dimensions(destination.icons)
+            width, height = math.max(1, math.floor(width * hitboxScale)), math.max(1, math.floor(height * hitboxScale))
+            x, y = math.floor(x - width / 2), math.floor(y - height / 2)
+            if probe.x ~= x or probe.y ~= y then
+                probe.control:SetPos(x, y)
+                probe.x, probe.y = x, y
+            end
+            if probe.width ~= width or probe.height ~= height then
+                probe.control:SetSize(width, height)
+                probe.width, probe.height = width, height
+            end
+        end
+
+        local target
+        if visible then
+            if unavailable then
+                target = probe.control
+            else
+                target = self:GetTooltipTarget(row, index)
+            end
+        end
+        local description, title = self:GetDescription(row), self:GetDisplayName(row)
+        if probe.target ~= target or probe.description ~= description or probe.title ~= title then
+            local tooltip = self.session.tooltips[row.name]
+            if tooltip ~= nil then
+                tooltip:Destroy()
+                self.session.tooltips[row.name] = nil
+            end
+            if target ~= nil then
+                self:AttachTooltip(row, target)
+            end
+            probe.target, probe.description, probe.title = target, description, title
+        end
+
+        if probe.control ~= nil then
+            probe.control.hidden = not unavailable or not visible
+            probe.control.clickthrough = not unavailable
+        end
+        -- Tooltip teardown can restore clickthrough; apply it after switching targets.
+        if row.click ~= nil and (unavailable or probe.control ~= nil) then
+            NativeLayout.Set(row.click, "clickthrough", unavailable == true)
+        end
+    end
 end
 
 function MapMenu:GetHovered()
@@ -122,8 +194,10 @@ function MapMenu:GetHovered()
 
     for _, entry in ipairs(menu.rows) do
         local destination = entry.destination
+        local probe = self.tooltipProbes[entry.name]
+        local target = (entry.disabled or entry.locked) and probe and probe.control or entry.click
 
-        if not entry.locked and not destination.hidden and entry.click.visibleGlobal and entry.click.isMouseOver
+        if target ~= nil and not target.hidden and not destination.hidden and target.visibleGlobal and target.isMouseOver
             and (ButtonIcon.IsAnchor(destination.anchor)
                 or (destination.point ~= nil and geometry.Contains(menu.background, destination.point))) then
             return entry.name
@@ -147,6 +221,7 @@ function MapMenu:ReleaseVisuals()
     self:ReleaseTooltips()
     cleanup.Release(self, "iconView")
     cleanup.Release(self, "backgroundView")
+    self.tooltipProbes = nil
 end
 
 -- The adapter owns discovery, availability, native geometry and restoration.

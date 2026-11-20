@@ -115,6 +115,9 @@ function TeleportMenu:GetDisplayName(row)
 end
 
 function TeleportMenu:GetDescription(row)
+    if (row.disabled or row.locked) and row.destination.disabledDescription ~= nil then
+        return row.destination.disabledDescription
+    end
     return row.destination.description
 end
 
