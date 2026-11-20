@@ -65,6 +65,10 @@ function description.CombatLevel(level)
     return string.format("- Level <col=ffffff>%d</col>  <sprite=9286> <col=85B5E8>Combat</col><br>", level)
 end
 
+function description.QuestRequirement(name)
+    return string.format("- Completion of <sprite=4376><col=ffffff>%s</col><br>", name)
+end
+
 -- Adds a world location description
 function description.Location(name)
     return string.format("- <sprite=%d> <col=ffffff>%s</col><br>",

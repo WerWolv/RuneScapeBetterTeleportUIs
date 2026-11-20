@@ -22,6 +22,11 @@ return {
         item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_PORTAL_NEXUS_T4,
     },
     {
+        name = "Spirit Trees",
+        module = "maps/spirit_trees",
+        item = id.Obj.CONSTRUCTION_HOUSE_FURNITURE_SPIRIT_TREE,
+    },
+    {
         name = "Wilderness Obelisks",
         module = "maps/wilderness_obelisks",
         item = id.Obj.WILDY_EVENTS_REWARDS_PORTABLE_OBELISK,
