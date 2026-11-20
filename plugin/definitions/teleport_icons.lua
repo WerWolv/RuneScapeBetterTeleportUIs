@@ -115,36 +115,43 @@ return {
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_0_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_0_1},
             size = 34,
+            hoveredSize = 34,
         },
         [1] = { -- Turquoise
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_1_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_1_1},
             size = 34,
+            hoveredSize = 34,
         },
         [2] = { -- Blue-Green
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_2_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_2_1},
             size = 34,
+            hoveredSize = 34,
         },
         [3] = { -- Light Purple
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_3_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_3_1},
             size = 34,
+            hoveredSize = 34,
         },
         [4] = { -- Yellow
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_4_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_4_1},
             size = 34,
+            hoveredSize = 34,
         },
         [5] = { -- Green
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_5_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_5_1},
             size = 34,
+            hoveredSize = 34,
         },
         [6] = { -- Magenta
             normal = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_6_0},
             hovered = {sprite = id.Sprite.ELFCITY_ICON_TELEPORT_6_1},
             size = 34,
+            hoveredSize = 34,
         },
     },
     obelisk = {
