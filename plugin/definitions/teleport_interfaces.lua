@@ -32,6 +32,11 @@ return {
         item = id.Obj.ARCH_TOY_GLIDER,
     },
     {
+        name = "Havenhythe Canoe Stations",
+        module = "maps/havenhythe_canoes",
+        item = id.Obj.CANOEING_PADDLE,
+    },
+    {
         name = "Wilderness Obelisks",
         module = "maps/wilderness_obelisks",
         item = id.Obj.WILDY_EVENTS_REWARDS_PORTABLE_OBELISK,

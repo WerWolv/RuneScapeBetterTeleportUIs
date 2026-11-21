@@ -19,6 +19,16 @@ end
 -- Layers share the icon's dimensions, e.g. normal = { image = { baseImage, overlayImage } }.
 -- The same form works in hovered, disabled and locked states, including sprite = { baseID, overlayID }.
 return {
+    canoe = {
+        modelID = id.Model.HUMAN_ROWBOAT_GENERIC_BOAT_2X4_V1,
+        camera = {
+            target = { x = 0, y = 100, z = 0 },
+            yaw = 35, pitch = 50, distance = 3400, fov = 40,
+            nearPlane = 1, farPlane = 10000,
+        },
+        size = 40,
+        hoveredSize = 48,
+    },
     menaphosFactions = {
         imperial = {
             normal = {sprite = id.Sprite.MENAPHOS_ICON_FACTION_IMPERIAL_0},
