@@ -827,9 +827,19 @@ end
 function ModalChoiceMenu:BindScrollInput(handler)
     local session = self.session
     session.scrollControls = { session.content }
+    local bound = { [components.Key(session.content)] = true }
 
     for _, row in ipairs(session.rows) do
-        session.scrollControls[#session.scrollControls + 1] = row.click
+        local control = row.click
+        -- Blank space can hit a native list container rather than a destination.
+        -- Include the input ancestry so it cannot retain a separate scroll path.
+        while control ~= nil and control ~= session.window do
+            local key = components.Key(control)
+            if bound[key] then break end
+            bound[key] = true
+            session.scrollControls[#session.scrollControls + 1] = control
+            control = control.parent
+        end
     end
 
     for _, control in ipairs(session.scrollControls) do

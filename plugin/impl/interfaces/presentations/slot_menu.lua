@@ -19,6 +19,7 @@ function SlotMenu:BeginVisuals()
         self.scrollView = prettyui.SimpleView.new(self.slotLayer, {
             width = 1,
             height = 1,
+            scrollStep = 32,
             layout = {
                 padding = 0,
                 startY = 0,

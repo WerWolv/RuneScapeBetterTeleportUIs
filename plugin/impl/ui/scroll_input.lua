@@ -20,6 +20,17 @@ local function prepareScrollbar(view)
     end)
 end
 
+-- Use the same controller callback as PrettyUI's background and scrollbar.
+-- A separate SetScrollPosition handler would give custom targets a different
+-- delta policy from the listeners already installed by the view.
+function ScrollInput.FromView(view)
+    local handler = view._onScrollWheel
+    scopes[components.Key(view.root)] = handler
+    prepareScrollbar(view)
+
+    return handler
+end
+
 -- Custom controls use the public scroll position API. Keep nested panes as
 -- separate input scopes, forwarding wheel input only when they reach an edge.
 function ScrollInput.For(view, step, parent)

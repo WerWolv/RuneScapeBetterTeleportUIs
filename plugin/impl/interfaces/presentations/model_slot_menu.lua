@@ -208,6 +208,22 @@ function ModelSlotMenu:BeginVisuals()
         local view = self.scrollView
         local menu = self
         local setScrollPosition = view.SetScrollPosition
+        local scrollBy = view.ScrollBy
+
+        self.scrollHookID = "teleportModelScroll_" .. self.key
+        Event.Logic.Subscribe(self.scrollHookID, function()
+            self.scrollHandled = false
+        end)
+
+        function view.ScrollBy(scrollView, delta)
+            -- Overlapping native/plugin controls receive the same tick's wheel input.
+            -- Guard the controller itself: PrettyUI's existing listeners also call
+            -- ScrollBy, bypassing a guard on just our forwarding callback.
+            if not menu.scrollHandled then
+                menu.scrollHandled = true
+                return scrollBy(scrollView, delta)
+            end
+        end
 
         function view.SetScrollPosition(scrollView, position)
             local previous = scrollView.scrollY
@@ -221,8 +237,9 @@ function ModelSlotMenu:BeginVisuals()
             return result
         end
 
-        self.onScrollWheel = ScrollInput.For(view)
+        self.onScrollWheel = ScrollInput.FromView(view)
         ScrollInput.Bind(self.slotLayer, self.onScrollWheel)
+        ScrollInput.Bind(view.thumbDrag, self.onScrollWheel)
         self:BindScrollInput(self.onScrollWheel)
 
         -- Calibrate screen pixels from unscrolled native targets. This also
@@ -634,6 +651,10 @@ function ModelSlotMenu:UpdateVisuals(layout, hovered)
 end
 
 function ModelSlotMenu:ReleaseVisuals()
+    if self.scrollHookID ~= nil then
+        Event.Logic.Unsubscribe(self.scrollHookID)
+        self.scrollHookID, self.scrollHandled = nil, nil
+    end
     for _, control in ipairs(self.hoverControls or {}) do
         cleanup.Try("unsubscribe model hover", function()
             control:Unsubscribe(ui.Hook.ONMOUSEOVER, hoverHookID)
