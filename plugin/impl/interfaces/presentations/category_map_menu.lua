@@ -198,14 +198,10 @@ end
 function CategoryMap:CalculateLayout()
     self.filters:Update()
 
-    local layout = MapMenu.CalculateLayout(self)
     local session = self.session
     local availableWidth = (session.layoutWidth or session.layoutParent.width) - session.left - session.right - 16
     local panelWidth = math.min(sidebarWidth, math.floor(availableWidth * 0.4))
-    local width = math.max(1, math.min(layout.width, availableWidth - panelWidth))
-
-    layout.height = math.max(1, math.floor(layout.height * width / layout.width))
-    layout.width = width
+    local layout = MapMenu.CalculateLayout(self, panelWidth)
     layout.panelWidth = panelWidth
 
     return layout

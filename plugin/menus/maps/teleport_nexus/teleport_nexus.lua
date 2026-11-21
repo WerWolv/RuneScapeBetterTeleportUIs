@@ -103,7 +103,9 @@ function TeleportNexus:Define()
 
     return {
         title = "Portal Nexus",
+        showTeleportNames = false,
         background = backgrounds.runescapeSurfaceFull,
+        noBackgroundCrop = true,
         sizeMultiplier = 2.25,
 
         icons = {

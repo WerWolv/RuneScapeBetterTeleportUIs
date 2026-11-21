@@ -19,6 +19,7 @@ function ArcJournal:BeginVisuals()
         sprite.spriteID = decoration.sprite
         sprite.clickthrough = true
         self.decorationSprites[index] = sprite
+        self.nameLabels:AddObstacle(sprite)
     end
 end
 

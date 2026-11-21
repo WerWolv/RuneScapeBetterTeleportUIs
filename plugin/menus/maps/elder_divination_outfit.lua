@@ -12,6 +12,7 @@ local ElderDivinationOutfitPage2 = MapMenu.Create(ModalChoiceMenu, "elderDivinat
 local function beginVisuals(self)
     MapMenu.BeginVisuals(self)
     self.teleportsCounter = TeleportCounter.New(self.backgroundView.layer, false)
+    self.nameLabels:AddObstacle(self.teleportsCounter.root)
 end
 
 local function applyLayout(self, layout)

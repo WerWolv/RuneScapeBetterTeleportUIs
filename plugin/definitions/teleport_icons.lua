@@ -1113,6 +1113,7 @@ return {
     },
 
     nextArrow = {
+        showName = false,
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_0 },
         hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_1 },
         locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_RIGHT_32PX_4 },
@@ -1121,6 +1122,7 @@ return {
         shadowColorHovered = 0x202020FF
     },
     prevArrow = {
+        showName = false,
         normal = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_0 },
         hovered = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_1 },
         locked = { sprite = id.Sprite.RS3_ICON_DIRECTION_LEFT_32PX_4 },

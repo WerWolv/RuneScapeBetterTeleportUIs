@@ -463,6 +463,7 @@ function EliteWoodcuttingOutfitMaple:Define()
                 point = {x = 204, y = 89},
             },
             ["3. Daemonheim Peninsula Resource Dungeon"] = {
+                nameOverride = "Daemonheim Resource Island",
                 point = {x = 424, y = 50},
             },
             ["4. [Previous options]"] = {

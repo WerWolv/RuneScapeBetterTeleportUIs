@@ -3,6 +3,7 @@ local ButtonIcon = require("impl/ui/button_icon")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
 local settings = require("impl/settings")
 local text = require("impl/text")
+local labelSettings = require("impl/map_label_settings")
 
 local mapCrop = {}
 local padding = 30
@@ -86,6 +87,7 @@ end
 -- Icons use interface pixels. The full source's fitted scale is a conservative
 -- lower bound: zooming into a smaller crop can only make its map scale larger.
 function mapCrop.SetViewport(menu, width, height)
+    menu.labelCrop = nil
     if menu.cropSource == nil then
         return
     end
@@ -95,6 +97,29 @@ function mapCrop.SetViewport(menu, width, height)
     menu.cropCache = nil
     local bounds = geometry.Bounds(menu.cropSource)
     menu.cropScale = math.min(math.max(1, width) / bounds.width, math.max(1, height) / bounds.height)
+end
+
+-- Grow the source rectangle without changing its display scale. Requested
+-- margins are pixels; full-image edges and the screen budget are hard limits.
+function mapCrop.Grow(source, crop, width, height, margins, maxWidth, maxHeight)
+    local function axis(origin, length, full, pixels, before, after, maximum)
+        local scale = pixels / length
+        before = math.min(math.max(0, before), origin * scale)
+        after = math.min(math.max(0, after), (full - origin - length) * scale)
+        local budget = math.max(0, maximum - pixels)
+        if before + after > budget then
+            local factor = budget / (before + after)
+            before, after = before * factor, after * factor
+        end
+        before, after = math.floor(before / scale), math.floor(after / scale)
+        local display = before + after == 0 and pixels or math.floor((length + before + after) * scale + 0.000001)
+        return origin - before, length + before + after, display
+    end
+    local x, w, displayWidth = axis(crop.x, crop.width, source.width, width,
+        margins.left or 0, margins.right or 0, maxWidth)
+    local y, h, displayHeight = axis(crop.y, crop.height, source.height, height,
+        margins.top or 0, margins.bottom or 0, maxHeight)
+    return { x = x, y = y, width = w, height = h }, displayWidth, displayHeight
 end
 
 -- Each open map owns its crop; shared backgrounds and their intrinsic regions stay reusable.
@@ -123,6 +148,10 @@ function mapCrop.Attach(menu)
 
         return cache.bounds
     end)
+    local baseCrop = background.crop
+    background.crop = function()
+        return labelSettings.Enabled(menu.group) and menu.labelCrop or baseCrop()
+    end
 
     menu.background = background
 

@@ -103,6 +103,7 @@ function JewelleryBox:Define()
 
     return {
         title = "Jewellery Box",
+        showTeleportNames = false,
         background = backgrounds.runescapeSurface,
         noBackgroundCrop = true,
         sizeMultiplier = 1.75,

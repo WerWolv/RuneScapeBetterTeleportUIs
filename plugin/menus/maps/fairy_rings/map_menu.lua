@@ -31,6 +31,7 @@ function FairyRings:Define()
     local definition = FairyRingMenu.Define(self)
     definition.background = backgrounds.runescapeSurfaceFull
     definition.noBackgroundCrop = true
+    definition.showTeleportNames = false
     definition.sizeMultiplier = 1.75
 
     return definition

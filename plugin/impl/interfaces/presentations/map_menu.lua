@@ -5,6 +5,11 @@ local ButtonIcon = require("impl/ui/button_icon")
 local constants = require("definitions/constants")
 local cleanup = require("impl/cleanup")
 local NativeLayout = require("impl/interfaces/native/native_layout")
+local MapLabels = require("impl/ui/map_labels")
+local settings = require("impl/settings")
+local HotkeyBadge = require("impl/ui/hotkey_badge")
+local text = require("impl/text")
+local labelSettings = require("impl/map_label_settings")
 
 local MapMenu = {}
 local hitboxScale = 0.75
@@ -32,6 +37,7 @@ function MapMenu:BeginVisuals()
     mapCrop.Attach(self.session.menu)
     self.backgroundView = BackgroundView.New(self.session.content)
     self.iconView = ButtonIcon.New(self.backgroundView.layer)
+    self.nameLabels = MapLabels.New(self.backgroundView.layer)
     self.iconView:BindInput(self.session.menu.rows)
     self.tooltipProbes = {}
     for index, row in ipairs(self.session.menu.rows) do
@@ -44,7 +50,7 @@ function MapMenu:BeginVisuals()
 end
 
 -- Supply the header's minimum width to the crop, then scale uniformly within the host.
-function MapMenu:CalculateLayout()
+function MapMenu:CalculateLayout(reservedWidth)
     local session = self.session
 
     self:UpdateTitle()
@@ -54,7 +60,7 @@ function MapMenu:CalculateLayout()
 
     session.menu.cropMinWidth = nil
 
-    local availableWidth = session.layoutWidth or session.layoutParent.width
+    local availableWidth = (session.layoutWidth or session.layoutParent.width) - (reservedWidth or 0)
     local availableHeight = session.layoutHeight or session.layoutParent.height
     local maxWidth = math.min(
         math.max(constants.maxWidth * self:GetSizeMultiplier(), minWidth),
@@ -74,13 +80,97 @@ function MapMenu:CalculateLayout()
 
     local width = math.max(1, math.floor(crop.width * scale))
 
-    return {
+    local result = {
         width = width,
         height = math.max(1, math.floor(crop.height * scale)),
 
         -- Reserve header space without stretching narrow map artwork.
         contentWidth = math.max(width, math.min(math.ceil(minWidth), math.floor(maxWidth))),
     }
+    return self:ExpandNameLabelCrop(result, reservedWidth or 0)
+end
+
+-- Test unused source-image space at the current zoom before hiding edge labels.
+-- Start from the normal crop every frame so filters/settings cannot accumulate growth.
+function MapMenu:TryExpandNameLabelCrop(layout, reservedWidth, allowWrap, uniformOnly)
+    local menu, session = self.session.menu, self.session
+    local source = menu.cropSource
+    if source == nil then return layout, true end
+    local crop = geometry.Bounds(menu.background)
+    local items, obstacles = self:NameLabelItems(layout, menu.background)
+    local positions, measured = self.nameLabels:Plan(items, obstacles, layout.width, layout.height, nil, allowWrap, uniformOnly)
+    local function count(placed, entries)
+        if not placed then return 0 end
+        local total = 0
+        for index = 1, #entries do
+            if placed[index] then total = total + 1 end
+        end
+        return total
+    end
+    local visible = count(positions, measured)
+    if visible == #measured then return layout, true end
+
+    local viewport = ui.Interfaces:GetComponent(id.Component.TOPLEVEL_V2__VIEWPORT)
+    local padding = session.hostPadding or {}
+    local maxWidth = viewport and viewport.width - (padding.width or 0) - session.left - session.right
+        - reservedWidth - 16 or layout.width
+    local maxHeight = viewport and viewport.height - (padding.height or 0) - session.top - session.bottom - 16
+        or layout.height
+    local sx, sy = layout.width / crop.width, layout.height / crop.height
+    local extraWidth, extraHeight = math.max(0, maxWidth - layout.width), math.max(0, maxHeight - layout.height)
+    local margins = {
+        left = math.min(crop.x * sx, extraWidth),
+        right = math.min((source.width - crop.x - crop.width) * sx, extraWidth),
+        top = math.min(crop.y * sy, extraHeight),
+        bottom = math.min((source.height - crop.y - crop.height) * sy, extraHeight),
+    }
+    if margins.left + margins.right + margins.top + margins.bottom == 0 then return layout end
+    local edgePadding = MapLabels.expansionPadding
+    for side, amount in pairs(margins) do
+        margins[side] = amount - edgePadding
+    end
+    positions = self.nameLabels:Plan(items, obstacles, layout.width, layout.height, margins, allowWrap, uniformOnly)
+    if count(positions, measured) <= visible then return layout end
+
+    local growth = { left = 0, right = 0, top = 0, bottom = 0 }
+    for index = 1, #measured do
+        local rect = positions[index]
+        if rect then
+            growth.left = math.max(growth.left, edgePadding - rect.x)
+            growth.top = math.max(growth.top, edgePadding - rect.y)
+            growth.right = math.max(growth.right, rect.x + rect.width + edgePadding - layout.width)
+            growth.bottom = math.max(growth.bottom, rect.y + rect.height + edgePadding - layout.height)
+        end
+    end
+    -- Allow for conversion to whole source pixels and reprojected icon rounding.
+    for side, amount in pairs(growth) do
+        if amount > 0 then growth[side] = amount + math.max(sx, sy) + 2 end
+    end
+    local expanded, width, height = mapCrop.Grow(source, crop, layout.width, layout.height, growth, maxWidth, maxHeight)
+    local background = { width = source.width, height = source.height, crop = expanded }
+    local proposed = { width = width, height = height }
+    items, obstacles = self:NameLabelItems(proposed, background)
+    local inset = { left = -edgePadding, right = -edgePadding, top = -edgePadding, bottom = -edgePadding }
+    local nextPositions, nextMeasured = self.nameLabels:Plan(items, obstacles, width, height, inset, allowWrap, uniformOnly)
+    if count(nextPositions, nextMeasured) > visible then
+        menu.labelCrop = expanded
+        layout.width, layout.height = width, height
+        layout.contentWidth = math.max(layout.contentWidth or 0, width)
+        return layout, true
+    end
+    return layout
+end
+
+function MapMenu:ExpandNameLabelCrop(layout, reservedWidth)
+    if not labelSettings.Enabled(self.definition) then return layout end
+    -- Expand while labels still share one direction. Only then allow individual
+    -- moves, and finally word wrapping if the single-line layouts still fail.
+    for _, stage in ipairs({ { false, true }, { false, false }, { true, false } }) do
+        local done
+        layout, done = self:TryExpandNameLabelCrop(layout, reservedWidth, stage[1], stage[2])
+        if done then break end
+    end
+    return layout
 end
 
 function MapMenu:ApplyLayout(layout)
@@ -207,6 +297,7 @@ end
 
 function MapMenu:UpdateVisuals(layout, hovered)
     self.iconView:Update(self.session.menu, hovered)
+    self:UpdateNameLabels(layout)
 
     local vignette = self.backgroundView.vignette
 
@@ -217,9 +308,60 @@ function MapMenu:UpdateVisuals(layout, hovered)
     self:UpdateTooltips(hovered)
 end
 
+function MapMenu:NameLabelItems(layout, background, visibleOnly)
+    local items, obstacles = {}, {}
+    for _, row in ipairs(self.session.menu.rows) do
+        local marker = self.iconView.markers[row.name]
+        local destination = row.destination
+        local x, y
+        if not destination.hidden and (not visibleOnly or marker ~= nil and marker.visible) then
+            x, y = ButtonIcon.Position(background, destination, layout.width, layout.height)
+        end
+        if x ~= nil then
+            local width, height = ButtonIcon.Dimensions(destination.icons)
+            local normalWidth, normalHeight = width, height
+            local hoverWidth, hoverHeight = ButtonIcon.Dimensions(destination.icons, true)
+            -- Reserve maximum artwork bounds so hovering/pressing never moves names.
+            width, height = math.max(width, hoverWidth), math.max(height, hoverHeight)
+            local bounds = { x = x - width / 2, y = y - height / 2, width = width, height = height }
+            if destination.icons.showName == false then
+                obstacles[#obstacles + 1] = bounds
+            else
+                items[#items + 1] = {
+                    key = row.name, name = self:GetDisplayName(row),
+                    anchor = bounds,
+                    alpha = (marker and marker.dimmed and 0.4 or 1) * (destination.searchMatch == false and 0.2 or 1),
+                }
+            end
+            local key = destination.hotkey or text.Hotkey(row.name)
+            if settings.Get("showTeleportHotkeys") and not row.locked and key ~= nil and tostring(key) ~= "" then
+                local size = HotkeyBadge.Size(key, normalWidth)
+                local offset = destination.hotkeyOffset
+                obstacles[#obstacles + 1] = {
+                    x = x - size / 2 + (offset and (offset.x or 0) or normalWidth / 2),
+                    y = y - size / 2 + (offset and (offset.y or 0) or -normalHeight / 2),
+                    width = size, height = size,
+                }
+            end
+        end
+    end
+    return items, obstacles
+end
+
+function MapMenu:UpdateNameLabels(layout)
+    if not labelSettings.Enabled(self.definition) then
+        self.nameLabels:Hide()
+        return
+    end
+    local items, obstacles = self:NameLabelItems(layout, self.session.menu.background, true)
+    self.nameLabels:Update(items, obstacles, layout.width, layout.height,
+        self.session.menu.labelCrop and MapLabels.expansionPadding or 0)
+end
+
 function MapMenu:ReleaseVisuals()
     self:ReleaseTooltips()
     cleanup.Release(self, "iconView")
+    cleanup.Release(self, "nameLabels")
     cleanup.Release(self, "backgroundView")
     self.tooltipProbes = nil
 end

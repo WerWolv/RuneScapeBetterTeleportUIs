@@ -122,6 +122,13 @@ return {
         description = "Control how teleport destinations are displayed",
         settings = {
             {
+                key = "showTeleportNames",
+                type = "boolean",
+                label = "Show teleport name labels",
+                description = "Places the names of teleports next to their buttons (if they fit)",
+                default = false,
+            },
+            {
                 key = "showTeleportHotkeys",
                 type = "boolean",
                 label = "Show teleport hotkeys",
