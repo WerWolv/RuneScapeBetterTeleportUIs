@@ -419,7 +419,7 @@ function ModalChoiceMenu:BeginInterface(placement)
 
     session.nativeLayout = NativeLayout.FromControls(controls)
 
-    if not native.independentDrag then
+    if not native.independentDrag and not native.customWindow then
         session.dragOutline = NativeDragOutline.New(session.hostContainers[1])
     end
 

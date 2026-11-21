@@ -32,6 +32,11 @@ return {
         item = id.Obj.ARCH_TOY_GLIDER,
     },
     {
+        name = "Charter Ships",
+        module = "maps/sailing_transport",
+        item = id.Obj.GRANDTREE_WARSHIP,
+    },
+    {
         name = "Havenhythe Canoe Stations",
         module = "maps/havenhythe_canoes",
         item = id.Obj.CANOEING_PADDLE,

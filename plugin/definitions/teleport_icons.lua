@@ -19,6 +19,11 @@ end
 -- Layers share the icon's dimensions, e.g. normal = { image = { baseImage, overlayImage } }.
 -- The same form works in hovered, disabled and locked states, including sprite = { baseID, overlayID }.
 return {
+    charterShip = {
+        objectID = id.Obj.GRANDTREE_WARSHIP,
+        size = 32,
+        hoveredSize = 38,
+    },
     canoe = {
         modelID = id.Model.HUMAN_ROWBOAT_GENERIC_BOAT_2X4_V1,
         camera = {

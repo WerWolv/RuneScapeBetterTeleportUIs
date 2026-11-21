@@ -13,6 +13,7 @@ end
 
 function MenuUIToggle:New(menu, snapshot)
     return setmetatable({
+        menu = menu,
         window = snapshot.window,
         content = snapshot.content,
         scope = menu.pageGroup or menu,
@@ -61,17 +62,17 @@ function MenuUIToggle:Update(snapshot)
 
     self.root.hidden = not settings.Get("showOriginalUIToggle")
 
-    local y = gap
+    local window = self.menu.GetUIToggleWindow and self.menu:GetUIToggleWindow() or self.window
+    local position, parentPosition = window.xyGlobal, self.window.xyGlobal
+    local x, y = position.x - parentPosition.x + gap, position.y - parentPosition.y + gap
     local close = snapshot.closeButton
 
     if close ~= nil and close.visibleGlobal then
-        local position = close.xyGlobal
-        local windowPosition = self.window.xyGlobal
-
-        y = position.y - windowPosition.y + math.floor((close.height - buttonSize) / 2)
+        local closePosition = close.xyGlobal
+        y = closePosition.y - parentPosition.y + math.floor((close.height - buttonSize) / 2)
     end
 
-    self.button:SetPos(gap, math.max(0, y))
+    self.button:SetPos(x, math.max(0, y))
     self.root:MoveToFront()
 end
 
