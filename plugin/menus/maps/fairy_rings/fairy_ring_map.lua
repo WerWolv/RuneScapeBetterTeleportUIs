@@ -15,11 +15,10 @@ local descriptions = require("definitions/descriptions")
 local View = {}
 View.__index = View
 
-local markerWidth, markerHeight = 44, 48
-local iconSize, hoveredIconSize = 32, 34
-local selectedOutlineWidth = 3
+local iconSize, hoveredIconSize = 40, 42
+local markerWidth, markerHeight = 44, iconSize + 17
 local favouriteColour = 0xFFD700FF
-local markerTopPadding = selectedOutlineWidth + (hoveredIconSize - iconSize) / 2
+local markerTopPadding = 3 + (hoveredIconSize - iconSize) / 2
 -- Anchor badges to the normal icon's top-right corner within the fixed marker.
 local markerHotkeyOffset = {
     x = iconSize / 2,
@@ -137,6 +136,20 @@ function View:TargetPosition(target)
     return position.x, position.y
 end
 
+local function setRingSprite(sprite, image)
+    if not image.loaded then
+        image:Load()
+    end
+    sprite.sprite = image
+end
+
+local function ringSprite(parent)
+    local sprite = prettyui.NewComponent(ui.Sprite, parent, { categoryID = "auto" })
+    setRingSprite(sprite, Plugin.resources.icons.fairy_ring.fairy_ring_regular)
+    sprite.clickthrough = true
+    return sprite
+end
+
 function View:CreateItem(row)
     local parent = row.point and self.root or self.list.content
     local target = prettyui.NewComponent(ui.Layer, parent)
@@ -148,9 +161,9 @@ function View:CreateItem(row)
     self.items[row.key] = item
 
     if item.mapped then
-        item.shadow = components.ItemSprite(target, id.Obj.INVENT_FAIRY_RING)
+        item.shadow = ringSprite(target)
         item.shadow.rgb = 0x000000
-        item.icon = components.ItemSprite(target, id.Obj.INVENT_FAIRY_RING)
+        item.icon = ringSprite(target)
     else
         item.selection = prettyui.NewComponent(ui.Rectangle, target)
         item.selection.fill = true
@@ -223,10 +236,10 @@ function View:LayoutMarker(item, showCodes)
 
     item.markerX, item.markerY, item.showCodes = x, y, showCodes
 
-    -- Extend the clipping parent upward without moving the artwork or code.
-    item.target:SetPos(math.floor(x - markerWidth / 2), math.floor(y - 18 - markerTopPadding))
+    -- The destination is the pin tip; reserve the marker above it and the code below.
+    item.target:SetPos(math.floor(x - markerWidth / 2), math.floor(y - iconSize - markerTopPadding))
     item.target:SetSize(markerWidth, markerHeight + markerTopPadding)
-    item.label:SetPos(0, 31 + markerTopPadding)
+    item.label:SetPos(0, iconSize + markerTopPadding)
     item.label:SetSize(markerWidth, 17)
     item.label.content = row.code
     item.label.hidden = not showCodes
@@ -272,20 +285,16 @@ function View:UpdateItem(item, selectedName, showFavourites)
     local selected = text.Trim(row.location) == selectedName
     -- Native favourite shortcut labels identify favourites after each log rebuild.
     local favourite = showFavourites == true and shortcut ~= ""
-    local outlineWidth = favourite and 1 or selected and selectedOutlineWidth or 0
-    local outlineColour = favourite and favouriteColour or 0x00000000
-
-    -- Changing item-sprite outlineWidth invalidates its rendered icon. Do not
-    -- regenerate every fairy-ring sprite on every frame for an unchanged highlight.
     if item.icon ~= nil then
-        if item.outlineWidth ~= outlineWidth then
-            item.icon.outlineWidth = outlineWidth
-            item.outlineWidth = outlineWidth
-        end
-
-        if item.outlineColour ~= outlineColour then
-            item.icon.shadowRGBA = outlineColour
-            item.outlineColour = outlineColour
+        local images = Plugin.resources.icons.fairy_ring
+        local image = favourite and images.fairy_ring_favorite
+            or selected and images.fairy_ring_selected or images.fairy_ring_regular
+        if item.image ~= image then
+            setRingSprite(item.icon, image)
+            setRingSprite(item.shadow, image)
+            item.shadow.rgb = 0x000000
+            item.image = image
+            item.alpha = nil
         end
     end
 
@@ -383,16 +392,19 @@ function View:Update(rows, selectedName)
 
     for _, item in ipairs(ordered) do
         if item.mapped then
-            -- Grow artwork only; native hitboxes and labels stay stationary.
+            -- Grow upward from the pin tip; hitboxes, codes and badges stay stationary.
             local size = (item == hovered or item.selected) and hoveredIconSize or iconSize
-            local x, y = (markerWidth - size) / 2, markerTopPadding + (iconSize - size) / 2
+            -- Anchor every state to the pin itself, not the selected/favourite outline.
+            local tip = 146 / 160
+            local x, y = (markerWidth - size) / 2, markerTopPadding + iconSize - size * tip
 
-            if item.iconSize ~= size then
+            if item.iconSize ~= size or item.iconY ~= y then
                 item.shadow:SetPos(x + 1, y + 1)
                 item.shadow:SetSize(size, size)
                 item.icon:SetPos(x, y)
                 item.icon:SetSize(size, size)
                 item.iconSize = size
+                item.iconY = y
             end
         else
             item.selection.rgba = item.selected and 0x66512EFF or item == hovered and 0x484036FF or item.stripe

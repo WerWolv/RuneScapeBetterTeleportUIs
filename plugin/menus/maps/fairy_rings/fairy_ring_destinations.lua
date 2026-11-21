@@ -1,7 +1,7 @@
 -- Other planes, caves, quest sequences and locations outside this crop stay in
 -- the native-action side list rather than being assigned a misleading map point.
 return {
-    AIQ = { x = 281, y = 195 }, -- Mudskipper Point
+    AIQ = { x = 279, y = 195 }, -- Mudskipper Point
     AIR = { x = 191, y = 169 }, -- Island south of Witchaven
     AJR = { x = 222, y = 43  }, -- Fremennik Slayer Dungeon
     AJQ = { x = 335, y = 175 }, -- Dorgesh-Kaan
@@ -33,19 +33,19 @@ return {
     CKS = { x = 409, y = 90  }, -- West of Canifis
     CLP = { x = 305, y = 155 }, -- Island south of Draynor
     CLR = { x = 212, y = 300 }, -- Ape Atoll
-    CLS = { x = 190, y = 200 }, -- Hazelmere's island
+    CLS = { x = 189, y = 202 }, -- Hazelmere's island
     DIS = { x = 310, y = 185 }, -- Wizards' Tower
-    DIP = { x = 497, y = 250 }, -- Mos Le'Harmless
+    DIP = { x = 497, y = 248 }, -- Mos Le'Harmless
     DJP = { x = 170, y = 168 }, -- Tower of Life
     DJR = { x = 185, y = 57  }, -- West of Sinclair Mansion
     DJS = { x = 45,  y = 115 }, -- Amlodd district
     DKP = { x = 255, y = 200 }, -- North of Ship Yard
     DKR = { x = 324, y = 90  }, -- Edgeville / Grand Exchange
-    DKS = { x = 220, y = 15  }, -- Polar hunter area
+    DKS = { x = 220, y = 20  }, -- Polar hunter area
     DKQ = { x = 255, y = 20  }, -- Glacor Cave
     DLQ = { x = 408, y = 227 }, -- North of Nardah
     DLR = { x = 55,  y = 203 }, -- Poison Waste
-    DLP = { x = 620, y = 115 }, -- Havenhythe, Amberfell
+    DLP = { x = 616, y = 115 }, -- Havenhythe, Amberfell
     DLS = { x = 437, y = 95  }, -- Myreque Hideout,
     DIQ = { x = 615, y = 160 }, -- Fenmoor
 }

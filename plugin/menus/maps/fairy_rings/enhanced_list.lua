@@ -561,7 +561,7 @@ function FairyRings:UpdateVisuals()
         return
     end
 
-    local image = Plugin.resources.icons.fairy_ring_favorite_unselected
+    local image = Plugin.resources.icons.fairy_ring.fairy_ring_favorite_unselected
 
     if not image.loaded then
         image:Load()
