@@ -271,4 +271,9 @@ return {
         module = "slots/dragon_trinkets",
         item = id.Obj.TRH56_DRAGON_PENDANT,
     },
+    {
+        name = "Elite Dungeon Treasure Chest",
+        module = "slots/elite_dungeon_chest",
+        item = id.Obj.TRH56_DRAGON_PENDANT,
+    },
 }

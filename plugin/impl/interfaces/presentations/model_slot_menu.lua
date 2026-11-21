@@ -8,6 +8,7 @@ local text = require("impl/text")
 local cleanup = require("impl/cleanup")
 local defaultStyles = require("definitions/model_slot_styles")
 local ModelSlotStyle = require("impl/ui/model_slot_style")
+local utils = require("impl/utils")
 
 local ModelSlotMenu = {}
 
@@ -46,6 +47,11 @@ local function hasModel(definition)
 end
 
 function ModelSlotMenu:ValidateDestination(definition)
+    if definition.position ~= nil and (not utils.IsFinite(definition.position)
+        or definition.position < 1 or definition.position % 1 ~= 0) then
+        return false, "needs a positive integer position"
+    end
+
     local sources = (definition.npcID ~= nil and 1 or 0)
         + (definition.objectID ~= nil and 1 or 0)
         + (definition.modelID ~= nil and 1 or 0)
@@ -195,6 +201,8 @@ function ModelSlotMenu:BeginVisuals()
             end
         end
     end
+
+    self:SortSlots()
 
     if self.scrollView ~= nil then
         local view = self.scrollView

@@ -50,6 +50,12 @@ function matcher.Match(snapshot, group, validate)
         return nil, "missing entries table"
     end
 
+    local minimumMatches = group.minimumMatches
+    if minimumMatches ~= nil and (not utils.IsFinite(minimumMatches)
+        or minimumMatches < 1 or minimumMatches % 1 ~= 0) then
+        return nil, "minimumMatches must be a positive integer"
+    end
+
     local rows, matched = {}, {}
     local background, hasVisibleDestination
     local literals, patterns = indexEntries(group.entries)
@@ -131,6 +137,11 @@ function matcher.Match(snapshot, group, validate)
 
     if not hasVisibleDestination then
         return nil, "no non-hidden destinations matched"
+    end
+
+    -- Only native options count; possiblyMissing placeholders are added afterward.
+    if minimumMatches ~= nil and #rows < minimumMatches then
+        return nil, string.format("matched %d native options; requires at least %d", #rows, minimumMatches)
     end
 
     local unusedEntries, missingKeys = 0, {}

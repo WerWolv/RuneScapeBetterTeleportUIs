@@ -53,6 +53,23 @@ function SlotMenu:CreateSlot(row, withBackground)
     return slot
 end
 
+-- Explicit positions come first. Ties and unpositioned slots retain their original order.
+-- Sort only presentation slots: native row order still owns availability and shortcuts.
+function SlotMenu:SortSlots()
+    local originalOrder = {}
+    for index, slot in ipairs(self.slots) do
+        originalOrder[slot] = index
+    end
+    table.sort(self.slots, function(left, right)
+        local leftPosition = left.row.destination.position or math.huge
+        local rightPosition = right.row.destination.position or math.huge
+        if leftPosition ~= rightPosition then
+            return leftPosition < rightPosition
+        end
+        return originalOrder[left] < originalOrder[right]
+    end)
+end
+
 function SlotMenu:UpdateVisuals(layout, hovered)
     self.slotLayer:MoveToFront()
     self:UpdateTooltips(hovered)
