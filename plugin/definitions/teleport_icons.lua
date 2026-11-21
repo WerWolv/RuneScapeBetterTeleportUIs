@@ -409,44 +409,64 @@ return {
     },
     digsite = {
         guild = {
+            size = 32,
+            hoveredSize = 32,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_GUILD_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_GUILD_1 }
         },
         everlight = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_EVERLIGHT_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_EVERLIGHT_1 }
         },
         infernalSource = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_INFERNALSOURCE_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_INFERNALSOURCE_1 }
         },
         kharidEt = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_KHARIDET_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_KHARIDET_1 }
         },
         orthen = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_1 },
             locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_ORTHEN_2 }
         },
         stormguard = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_STORMGUARD_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_STORMGUARD_1 }
         },
         warforge = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_WARFORGE_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_WARFORGE_1 }
         },
         senntisten = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_1 },
             locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_SENNTISTEN_2 }
         },
         daemonheim = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_DAEMONHEIM_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_DAEMONHEIM_1 }
         },
         moonrise = {
+            size = 38,
+            hoveredSize = 38,
             normal = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_0 },
             hovered = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_1 },
             locked = { sprite = id.Sprite.ARCH_ICON_DIGSITE_MOONRISE_2 }

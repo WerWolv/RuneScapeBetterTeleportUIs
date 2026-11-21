@@ -247,6 +247,11 @@ return {
         item = id.Obj.ELR1_WAIKO_TOURIST_BROCHURE,
     },
     {
+        name = "Archaeology Outfit",
+        module = "maps/archaeology_outfit",
+        item = id.Obj.ARCH_ELITE_SKILLING_HAT,
+    },
+    {
         name = "Ferocious Ring",
         module = "slots/ferocious_ring",
         item = id.Obj.SLAYGUILD_RING_5,
