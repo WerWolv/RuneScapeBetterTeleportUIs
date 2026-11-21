@@ -1,12 +1,18 @@
 local utils = require("impl/utils")
 local translations = require("impl/translations")
+local constants = require("definitions/constants")
 
 local matcher = {}
+
+-- Test localized input on English worlds without changing native controls or actions.
+local function nativeLabel(label)
+    return constants.debugNativeLabels and constants.debugNativeLabels[label] or label
+end
 
 -- Keep canonical keys separate from native labels and translated patterns.
 local function indexEntries(entries)
     local literals, patterns = {}, {}
-    local dictionary = translations.Current()
+    local language = translations.Current()
 
     local function add(key, label)
         if key:sub(1, 1) == "^" then
@@ -20,7 +26,7 @@ local function indexEntries(entries)
 
     for key in pairs(entries) do
         if type(key) == "string" then
-            local translated = translations.Get(key, dictionary)
+            local translated = translations.GetMapping(key, language)
             if translated ~= key then
                 add(key, translated)
             end
@@ -36,7 +42,7 @@ function matcher.LabelSummary(labels)
     local names = {}
 
     for text in pairs(labels) do
-        names[#names + 1] = string.format("%q", text)
+        names[#names + 1] = string.format("%q", nativeLabel(text))
     end
 
     table.sort(names)
@@ -63,7 +69,8 @@ function matcher.Match(snapshot, group, validate)
     for _, native in ipairs(snapshot.nativeRows) do
         local name, entryKey, matchPattern
 
-        for text in pairs(native.labels) do
+        for label in pairs(native.labels) do
+            local text = nativeLabel(label)
             local key, pattern = literals[text], nil
 
             if key == false then

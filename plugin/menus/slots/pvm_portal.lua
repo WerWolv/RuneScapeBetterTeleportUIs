@@ -33,11 +33,11 @@ end
 
 function PvmPortal:Match(snapshot)
     local entries = self.definition.entries
-    local dictionary = translations.Current()
+    local language = translations.Current()
     local knownLabels = {}
     for name in pairs(entries) do
         knownLabels[name] = true
-        knownLabels[translations.Get(name, dictionary)] = true
+        knownLabels[translations.GetMapping(name, language)] = true
     end
     local added = false
     for _, row in ipairs(snapshot.nativeRows) do

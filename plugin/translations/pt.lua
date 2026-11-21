@@ -1,2 +1,4 @@
 return {
+    mappings = {},
+    localization = {},
 }

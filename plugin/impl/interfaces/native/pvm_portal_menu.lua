@@ -56,9 +56,9 @@ function PvmPortalMenu:ConfigureDestinations(entries)
         end
     end
 
-    local dictionary = translations.Current()
+    local language = translations.Current()
     for name, entry in pairs(entries) do
-        local destination = portalDestinations[translations.Get(name, dictionary)] or portalDestinations[name]
+        local destination = portalDestinations[translations.GetMapping(name, language)] or portalDestinations[name]
         if destination ~= nil then
             -- Aliases share the same definition, so encounter/location names agree.
             entry.portalDestinationID = destination.id
