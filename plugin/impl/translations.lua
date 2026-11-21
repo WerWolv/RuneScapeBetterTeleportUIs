@@ -1,4 +1,5 @@
 local languages = require("translations/languages")
+local constants = require("definitions/constants")
 
 local translations = {}
 local english = {}
@@ -6,6 +7,11 @@ local cachedOption, cachedSetting, cachedTable
 
 -- Option labels are documented as English, independent of the client language.
 function translations.Current()
+    if constants.debugLanguage ~= nil then
+        local module = languages[constants.debugLanguage]
+        return module and require(module) or english
+    end
+
     local option = game and game.options and game.options.Language
     if option == nil then
         return english
