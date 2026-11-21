@@ -24,7 +24,6 @@ function FerociousRing:Define()
         rows = 1,
         entries = {
             ["1. Kuradal."] = {
-                nameOverride = "Kuradal",
                 npcID = id.NPC.SLAYER_MASTER_6_KURADAL,
                 animID = id.Seq.HUMAN_READY,
                 viewDistance = 400,
@@ -35,7 +34,6 @@ function FerociousRing:Define()
                 description = description(75, 110, "Ancient Cavern")
             },
             ["2. Morvran."] = {
-                nameOverride = "Morvran",
                 npcID = id.NPC.SLAYER_MASTER_7_IORWERTH,
                 animID = id.Seq.ELF_2014_SLAYER_MASTER_IDLE,
                 viewDistance = 400,

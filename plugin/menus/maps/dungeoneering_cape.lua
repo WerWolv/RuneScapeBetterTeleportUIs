@@ -128,7 +128,6 @@ function DungeoneeringCapePage2:Define()
                 icons = teleportIcons.dungeoneeringDungeon.occult
             },
             ["7. Polypore Dungeon"] = {
-                nameOverride = "Polypore Dungeon",
                 description = description(82, "Polypore Dungeon"),
                 point = {x = 398, y = 134},
                 icons = teleportIcons.dungeoneeringDungeon.occult
@@ -140,7 +139,6 @@ function DungeoneeringCapePage2:Define()
                 icons = teleportIcons.dungeoneeringDungeon.occult
             },
             ["9. Kal'gerion demon dungeon"] = {
-                nameOverride = "Kal'gerion demon dungeon",
                 description = description(90, "Daemonheim Peninsula"),
                 point = {x = 394, y = 35},
                 icons = teleportIcons.dungeoneeringDungeon.occult
@@ -162,7 +160,6 @@ function DungeoneeringCapePage3:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Gorajo hoardstalker dungeon"] = {
-                nameOverride = "Gorajo hoardstalker dungeon",
                 description = description(95, "Prifddinas"),
                 point = {x = 71, y = 146},
                 icons = teleportIcons.dungeoneeringDungeon.warped
@@ -174,7 +171,6 @@ function DungeoneeringCapePage3:Define()
                 icons = teleportIcons.dungeoneeringDungeon.warped
             },
             ["3. Edimmu dungeon"] = {
-                nameOverride = "Edimmu dungeon",
                 description = description(115, "Prifddinas"),
                 point = {x = 61, y = 109},
                 icons = teleportIcons.dungeoneeringDungeon.warped

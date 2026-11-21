@@ -12,15 +12,12 @@ function DigsitePendant:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Varrock Dig Site."] = {
-                nameOverride = "Varrock Dig Site",
                 point = {x = 220, y = 260},
             },
             ["2. Senntisten Temple."] = {
-                nameOverride = "Senntisten Temple",
                 point = {x = 322, y = 44},
             },
             ["3. Exam Centre."] = {
-                nameOverride = "Exam Centre",
                 point = {x = 255, y = 508},
             }
         },

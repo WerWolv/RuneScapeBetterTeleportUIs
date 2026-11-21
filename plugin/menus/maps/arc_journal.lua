@@ -77,7 +77,6 @@ function ArcJournal:Define()
         },
         entries = {
             ["1. Port Sarim."] = {
-                nameOverride = "Port Sarim",
                 point = {x = 580, y = 270},
                 icons = teleportIcons.arcIslands.ship,
                 hotkeyOffset = { x = 70, y = -50 },
