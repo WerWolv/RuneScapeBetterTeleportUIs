@@ -1,4 +1,5 @@
 local SplitLayerMenu = require("impl/interfaces/native/split_layer_menu")
+local translations = require("impl/translations")
 
 local PvmPortalMenu = SplitLayerMenu:Extend()
 local portalDestinations
@@ -55,11 +56,13 @@ function PvmPortalMenu:ConfigureDestinations(entries)
         end
     end
 
-    for name, destination in pairs(portalDestinations) do
-        if entries[name] ~= nil then
+    local dictionary = translations.Current()
+    for name, entry in pairs(entries) do
+        local destination = portalDestinations[translations.Get(name, dictionary)] or portalDestinations[name]
+        if destination ~= nil then
             -- Aliases share the same definition, so encounter/location names agree.
-            entries[name].portalDestinationID = destination.id
-            entries[name].maxGuildOnly = destination.maxGuildOnly
+            entry.portalDestinationID = destination.id
+            entry.maxGuildOnly = destination.maxGuildOnly
         end
     end
 end

@@ -1,6 +1,35 @@
 local utils = require("impl/utils")
+local translations = require("impl/translations")
 
 local matcher = {}
+
+-- Keep canonical keys separate from native labels and translated patterns.
+local function indexEntries(entries)
+    local literals, patterns = {}, {}
+    local dictionary = translations.Current()
+
+    local function add(key, label)
+        if key:sub(1, 1) == "^" then
+            patterns[#patterns + 1] = { key = key, pattern = label }
+        elseif literals[label] == nil or literals[label] == key then
+            literals[label] = key
+        else
+            literals[label] = false
+        end
+    end
+
+    for key in pairs(entries) do
+        if type(key) == "string" then
+            local translated = translations.Get(key, dictionary)
+            if translated ~= key then
+                add(key, translated)
+            end
+            add(key, key)
+        end
+    end
+
+    return literals, patterns
+end
 
 -- Format detected labels in a stable order for readable matching diagnostics.
 function matcher.LabelSummary(labels)
@@ -23,21 +52,29 @@ function matcher.Match(snapshot, group, validate)
 
     local rows, matched = {}, {}
     local background, hasVisibleDestination
+    local literals, patterns = indexEntries(group.entries)
 
     for _, native in ipairs(snapshot.nativeRows) do
-        local name, entryKey
+        local name, entryKey, matchPattern
 
         for text in pairs(native.labels) do
-            local key = group.entries[text] ~= nil and text or nil
+            local key, pattern = literals[text], nil
+
+            if key == false then
+                return nil, "OPTION_" .. native.index .. " matches multiple literal entries: " .. text
+            end
 
             -- Literal entries take precedence over explicitly anchored Lua patterns.
             if key == nil then
-                for candidateKey in pairs(group.entries) do
-                    if type(candidateKey) == "string" and candidateKey:sub(1, 1) == "^" then
-                        local ok, start = pcall(string.find, text, candidateKey)
+                for _, candidate in ipairs(patterns) do
+                    local candidateKey = candidate.key
+                    if key ~= candidateKey then
+                        local ok, start = pcall(string.find, text, candidate.pattern)
 
                         if not ok then
-                            return nil, string.format("entry %q has an invalid Lua pattern: %s", candidateKey, start)
+                            return nil, string.format(
+                                "entry %q has an invalid Lua pattern %q: %s", candidateKey, candidate.pattern, start
+                            )
                         end
 
                         if start ~= nil then
@@ -45,7 +82,7 @@ function matcher.Match(snapshot, group, validate)
                                 return nil, "OPTION_" .. native.index .. " matches multiple pattern entries: " .. text
                             end
 
-                            key = candidateKey
+                            key, pattern = candidateKey, candidate.pattern
                         end
                     end
                 end
@@ -56,7 +93,7 @@ function matcher.Match(snapshot, group, validate)
                     return nil, "OPTION_" .. native.index .. " matches multiple entries: " .. matcher.LabelSummary(native.labels)
                 end
 
-                name, entryKey = text, key
+                name, entryKey, matchPattern = text, key, pattern
             end
         end
 
@@ -85,6 +122,7 @@ function matcher.Match(snapshot, group, validate)
         rows[#rows + 1] = {
             name = name,
             entryKey = entryKey,
+            matchPattern = matchPattern,
             row = native.row,
             click = native.click,
             native = native,
@@ -185,8 +223,9 @@ function matcher.Resolve(menu)
 
         local match
         if not row.locked then
-            if row.entryKey ~= row.name and row.entryKey:sub(1, 1) == "^" then
-                match = table.pack(string.find(row.name, row.entryKey))
+            local pattern = row.matchPattern or row.entryKey
+            if pattern ~= row.name and row.entryKey:sub(1, 1) == "^" then
+                match = table.pack(string.find(row.name, pattern))
             end
 
             row.destination.nameOverride = expandCaptures(row.destination.nameOverride, match)

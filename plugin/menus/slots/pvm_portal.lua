@@ -3,6 +3,7 @@ local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
 local matcher = require("impl/destination_matcher")
 local modelSlotStyles = require("definitions/model_slot_styles")
 local HotkeyBadge = require("impl/ui/hotkey_badge")
+local translations = require("impl/translations")
 
 local PvmPortal = ModelSlotMenu.Create(PvmPortalMenu, "pvmPortal")
 local portalLabels = { "L", "R", "M" }
@@ -65,10 +66,16 @@ end
 
 function PvmPortal:Match(snapshot)
     local entries = self.definition.entries
+    local dictionary = translations.Current()
+    local knownLabels = {}
+    for name in pairs(entries) do
+        knownLabels[name] = true
+        knownLabels[translations.Get(name, dictionary)] = true
+    end
     local added = false
     for _, row in ipairs(snapshot.nativeRows) do
         for name in pairs(row.labels) do
-            if entries[name] == nil then
+            if not knownLabels[name] then
                 entries[name] = {
                     placeholderText = "?",
                     placeholderFont = id.Font.NOTOSANS_BOLD_50,
@@ -76,6 +83,7 @@ function PvmPortal:Match(snapshot)
                     description = "",
                     lockedDescription = "",
                 }
+                knownLabels[name] = true
                 added = true
             end
         end
