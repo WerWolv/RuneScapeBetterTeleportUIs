@@ -109,9 +109,9 @@ function TeleportMenu:IsDisabled(row)
     return row.native.disabled == true
 end
 
--- Display labels omit native shortcuts unless a view explicitly adds them back.
+-- Display labels omit native shortcuts and trailing sentence punctuation.
 function TeleportMenu:GetDisplayName(row)
-    return row.destination.nameOverride or (row.name:gsub("^%d+%.%s*", ""))
+    return row.destination.nameOverride or (row.name:gsub("^%d+%.%s*", ""):gsub("%.$", ""))
 end
 
 function TeleportMenu:GetDescription(row)

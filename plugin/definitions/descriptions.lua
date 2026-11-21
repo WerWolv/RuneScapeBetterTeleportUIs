@@ -64,7 +64,7 @@ end
 function description.LevelRequirement(level, skill)
     local info = assert(skillInfo[skill], "Unknown skill sprite: " .. tostring(skill))
     return string.format("- Level <col=ffffff>%d</col> " .. description.Sprite(skill) .. "<col=%06x>%s</col><br>",
-        level, skill, info.color, info.name)
+        level, info.color, info.name)
 end
 
 function description.CombatLevel(level)

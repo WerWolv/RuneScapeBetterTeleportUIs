@@ -71,7 +71,6 @@ function ElderDivinationOutfitPage1:Define()
         sizeMultiplier = 1.25,
         entries = {
             ["1. Optimum colony"] = {
-                nameOverride = "Optimum colony",
                 description = descriptions.Text("The highest-level colony you can access."),
                 anchor = "topLeft",
                 icons = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_DIVINATION, size = 36 },

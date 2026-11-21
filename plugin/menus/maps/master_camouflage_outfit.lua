@@ -35,7 +35,6 @@ function MasterCamouflageOutfitPage1:Define()
 
             -- Why is this in here and not Lletya??
             ["9. Pyramid Plunder"] = {
-                nameOverride = "Pyramid Plunder",
                 description = descriptions.Location("Jalsavrah, Sophanem"),
                 point = { x = 272, y = 80 },
                 icons = { objectID = id.Obj.NTK_JEWELLED_SCEPTRE_6, size = 40 },
@@ -58,22 +57,18 @@ function MasterCamouflageOutfitPage2:Define()
         icons = teleportIcons.skills.thieving,
         entries = {
             ["1. The Consortium"] = {
-                nameOverride = "The Consortium",
                 description = descriptions.Location("Keldagrim"),
                 point = { x = 204, y = 29 },
             },
             ["2. Lletya"] = {
-                nameOverride = "Lletya",
                 description = descriptions.Location("Tirannwn"),
                 point = { x = 90, y = 187 },
             },
             ["3. Thieving Guild"] = {
-                nameOverride = "Thieving Guild",
                 description = descriptions.Location("North of Lumbridge"),
                 point = { x = 346, y = 167 },
             },
             ["4. Pollnivneach"] = {
-                nameOverride = "Pollnivneach",
                 description = descriptions.Location("Kharidian Desert"),
                 point = { x = 374, y = 234 },
             },

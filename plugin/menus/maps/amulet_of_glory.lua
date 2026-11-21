@@ -11,19 +11,15 @@ function AmuletOfGlory:Define()
         icons = teleportIcons.jewellery.goldDragonstone,
         entries = {
             ["^1%. Edgeville%.?"] = {
-                nameOverride = "Edgeville",
                 point = {x = 302, y = 86},
             },
             ["^2%. Karamja%.?"] = {
-                nameOverride = "Karamja",
                 point = {x = 254, y = 181},
             },
             ["^3%. Draynor Village%.?"] = {
-                nameOverride = "Draynor Village",
                 point = {x = 308, y = 156},
             },
             ["^4%. Al Kharid%.?"] = {
-                nameOverride = "Al Kharid",
                 point = {x = 371, y = 196},
             },
             ["^5%. Nowhere%.?"] = {hidden = true},

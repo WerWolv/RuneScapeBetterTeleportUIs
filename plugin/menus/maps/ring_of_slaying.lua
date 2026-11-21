@@ -87,15 +87,12 @@ function RingOfSlaying:Define()
                 point = {x = 374, y = 234},
             },
             ["2. Morytania Slayer Tower."] = {
-                nameOverride = "Morytania Slayer Tower",
                 point = {x = 404, y = 76},
             },
             ["3. Fremennik Slayer Dungeon."] = {
-                nameOverride = "Fremennik Slayer Dungeon",
                 point = {x = 199, y = 28},
             },
             ["4. Tarn's Lair."] = {
-                nameOverride = "Tarn's Lair",
                 point = {x = 416, y = 157},
             },
             ["5. Nowhere. Give me Slayer options."] = {
