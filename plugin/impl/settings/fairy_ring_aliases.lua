@@ -207,25 +207,11 @@ function FairyRingAliases:UpdateControl()
             text = entry.code, x = -128, xAnchor = 1, width = 80, height = 30,
         }).clickthrough = true
 
-        local button = prettyui.Sprite.new(row.root, id.Sprite.AIF_COMBAR_TRASHCAN_0, {
+        local button = prettyui.SpriteButton.new(row.root, "TRASH", function()
+            self:RemoveAlias(entry.code, entry.index)
+        end, {
             x = -30, y = 3, xAnchor = 1, width = 24, height = 24,
         })
-        button.root.clickthrough = false
-        button.root:Subscribe(ui.Hook.ONMOUSEOVER, function()
-            button.root.spriteID = id.Sprite.AIF_COMBAR_TRASHCAN_1
-
-            return true
-        end)
-        button.root:Subscribe(ui.Hook.ONMOUSELEAVE, function()
-            button.root.spriteID = id.Sprite.AIF_COMBAR_TRASHCAN_0
-
-            return true
-        end)
-        button.root:Subscribe(ui.Hook.ONCLICK, function()
-            self:RemoveAlias(entry.code, entry.index)
-
-            return false
-        end)
 
         editor.buttons[#editor.buttons + 1] = button
     end

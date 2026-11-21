@@ -1,5 +1,6 @@
 local text = require("impl/text")
 local ScrollInput = require("impl/ui/scroll_input")
+local cleanup = require("impl/cleanup")
 
 local Group = {}
 Group.__index = Group
@@ -101,21 +102,12 @@ function Group:Refresh()
 end
 
 function Group:Unmount()
-    local content, view = self.content, self.view
+    local mounted = { content = self.content, view = self.view }
     self.content, self.view, self.page = nil, nil, nil
 
     -- Destroy widgets while their setting instances still retain their control state.
-    if content ~= nil then
-        pcall(function()
-            content:Destroy()
-        end)
-    end
-
-    if view ~= nil then
-        pcall(function()
-            view:Destroy()
-        end)
-    end
+    cleanup.Release(mounted, "content")
+    cleanup.Release(mounted, "view")
 
     for _, setting in ipairs(self.settings) do
         setting:Unmount()

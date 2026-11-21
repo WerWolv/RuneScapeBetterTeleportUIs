@@ -2,6 +2,7 @@ local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local NativeLayout = require("impl/interfaces/native/native_layout")
 local native = require("impl/interfaces/native/native_helpers")
 local text = require("impl/text")
+local components = require("impl/ui/components")
 
 local SplitLayerMenu = ModalChoiceMenu:Extend()
 
@@ -9,18 +10,6 @@ local function component(menu, name)
     local componentID = name and id.Component[menu.nativeInterface.prefix .. name]
 
     return componentID and ui.Interfaces:GetComponent(componentID) or nil
-end
-
-local function isWithin(control, parent)
-    if parent == nil then
-        return false
-    end
-
-    while control ~= nil and control ~= parent do
-        control = control.parent
-    end
-
-    return control ~= nil
 end
 
 -- A native button template has one input control and a fixed-size artwork block
@@ -37,7 +26,7 @@ function SplitLayerMenu:ReadInterface()
     local controls = component(self, definition.controls)
     local build = component(self, definition.build)
 
-    if not isWithin(content, window) or not isWithin(controls, content)
+    if not components.IsWithin(content, window) or not components.IsWithin(controls, content)
         or build == nil or build.parent ~= controls.parent then
         self:ReportMatch({
             "Not matched: missing sibling input/artwork layers inside the window content.",

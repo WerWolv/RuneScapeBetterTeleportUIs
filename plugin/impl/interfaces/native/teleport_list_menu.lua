@@ -2,6 +2,7 @@ local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local ScrollingListMenu = require("impl/interfaces/native/scrolling_list_menu")
 local native = require("impl/interfaces/native/native_helpers")
 local text = require("impl/text")
+local components = require("impl/ui/components")
 
 local TeleportListMenu = ScrollingListMenu:Extend()
 TeleportListMenu.interface = TeleportListMenu
@@ -21,20 +22,6 @@ TeleportListMenu.nativeInterface = {
 
 local function component(name)
     return ui.Interfaces:GetComponent(id.Component["TELEPORT_LIST__" .. name])
-end
-
-local function isWithin(control, parent)
-    if control == nil or parent == nil then
-        return false
-    end
-
-    control = control.parent
-
-    while control ~= nil and control ~= parent do
-        control = control.parent
-    end
-
-    return control ~= nil
 end
 
 -- Dynamic IDs describe button identity, not destinations or keyboard bindings.
@@ -95,7 +82,7 @@ function TeleportListMenu:ReadInterface()
             parent = content,
         },
     }) do
-        if not isWithin(pair.control, pair.parent) then
+        if not components.IsWithin(pair.control and pair.control.parent, pair.parent) then
             self:ReportMatch({ "Not matched: missing or unexpectedly parented " .. pair.name .. "." })
 
             return nil

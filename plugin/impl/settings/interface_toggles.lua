@@ -154,35 +154,19 @@ function InterfaceToggles:Refresh()
 end
 
 function InterfaceToggles:Unmount()
-    local view, list, rows = self.view, self.list, self.rows
+    local mounted = { view = self.view, list = self.list, rows = self.rows }
 
     self.view, self.list, self.rows, self.page = nil, nil, nil, nil
     cleanup.Release(self, "itemTooltip")
 
-    for _, row in ipairs(rows or {}) do
+    for _, row in ipairs(mounted.rows or {}) do
         cleanup.Release(row, "item")
-        pcall(function()
-            row.control:Destroy()
-        end)
-
-        if row.button ~= nil then
-            pcall(function()
-                row.button:Destroy()
-            end)
-        end
+        cleanup.Release(row, "control")
+        cleanup.Release(row, "button")
     end
 
-    if list ~= nil then
-        pcall(function()
-            list:Destroy()
-        end)
-    end
-
-    if view ~= nil then
-        pcall(function()
-            view:Destroy()
-        end)
-    end
+    cleanup.Release(mounted, "list")
+    cleanup.Release(mounted, "view")
 
     for _, setting in ipairs(self.settings) do
         setting:Unmount()

@@ -32,6 +32,8 @@ ModalChoiceMenu.nativeInterface = {
 local knownTitles = setmetatable({}, { __mode = "k" })
 local frameInset = 5
 local modalHost
+local tooltipHookID = "teleportMapsNativeTooltip"
+local tooltipHooks = { ui.Hook.ONMOUSEOVER, ui.Hook.ONMOUSEREPEAT }
 
 -- Gather visible text without visiting a native component twice.
 function ModalChoiceMenu:ReadOptionLabels(root, index)
@@ -89,14 +91,6 @@ local function titleComponent(menu)
     return title
 end
 
-local function isWithin(control, parent)
-    while control ~= nil and control ~= parent do
-        control = control.parent
-    end
-
-    return control ~= nil
-end
-
 -- Read the interface once for all registered choice-menu candidates.
 function ModalChoiceMenu:ReadInterface()
     local native = self.interface.nativeInterface
@@ -109,7 +103,7 @@ function ModalChoiceMenu:ReadInterface()
         return nil
     end
 
-    if content == nil or not isWithin(content, window) then
+    if not components.IsWithin(content, window) then
         self:ReportMatch({ "Not matched: missing " .. native.content .. " inside " .. native.window .. "." })
 
         return nil
@@ -138,7 +132,7 @@ function ModalChoiceMenu:ReadInterface()
 
             local labels = self.interface:ReadOptionLabels(row, index)
 
-            if not isWithin(click, row) then
+            if not components.IsWithin(click, row) then
                 self:ReportMatch({
                     "Not matched: OPTION_CLICK_" .. index .. " is not a child of OPTION_" .. index .. ".",
                 })
@@ -146,7 +140,7 @@ function ModalChoiceMenu:ReadInterface()
                 return nil
             end
 
-            if not isWithin(row, options) then
+            if not components.IsWithin(row, options) then
                 self:ReportMatch({
                     "Not matched: OPTION_" .. index .. " is outside " .. (native.options or native.window) .. ".",
                 })
@@ -544,6 +538,29 @@ function ModalChoiceMenu:AttachTooltip(entry, target)
         target, parent,
         self:GetDisplayName(entry), self:GetDescription(entry)
     )
+
+    -- Suppress the native description on its owner, even when the plugin tooltip
+    -- uses a disabled destination's passive probe. Reattach after plugin listeners.
+    local owner = self.interface.nativeInterface.tooltipOwner
+    local control = owner and entry[owner]
+
+    if control ~= nil then
+        local controls = session.nativeTooltipControls or {}
+        session.nativeTooltipControls = controls
+        local key = components.Key(control)
+        local tracked = controls[key] ~= nil
+        controls[key] = control
+
+        for _, hook in ipairs(tooltipHooks) do
+            if tracked then
+                control:Unsubscribe(hook, tooltipHookID)
+            end
+
+            control:Subscribe(hook, tooltipHookID, function()
+                return false
+            end)
+        end
+    end
 end
 
 -- Track overrides for maps and every modal subclass, including partially failed updates.
@@ -865,6 +882,16 @@ function ModalChoiceMenu:ReleaseInterface()
 
     self:ReleaseTooltips()
     cleanup.Release(self.session, "windowDrag")
+
+    for _, control in pairs(self.session.nativeTooltipControls or {}) do
+        for _, hook in ipairs(tooltipHooks) do
+            cleanup.Try("restore native hover tooltip", function()
+                control:Unsubscribe(hook, tooltipHookID)
+            end)
+        end
+    end
+
+    self.session.nativeTooltipControls = nil
 
     for _, control in ipairs(self.session.scrollControls or {}) do
         cleanup.Try("unsubscribe teleport menu scrolling", function()

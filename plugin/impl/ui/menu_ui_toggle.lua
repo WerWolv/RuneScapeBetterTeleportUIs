@@ -5,7 +5,6 @@ MenuUIToggle.__index = MenuUIToggle
 
 local buttonSize = 24
 local gap = 8
-local hookID = "teleportMapsUIToggle"
 
 function MenuUIToggle.HeaderInset()
     return settings.Get("showOriginalUIToggle") and buttonSize + gap * 5 or gap
@@ -32,26 +31,14 @@ function MenuUIToggle:Attach()
     self.root:SetSize(0, 0, 1.0, 1.0)
     self.root.clickthrough = true
 
-    self.button = prettyui.NewComponent(ui.Sprite, self.root)
-    self.button:SetSize(buttonSize, buttonSize)
-    self.button.spriteID = self.original and id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_4 or id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_2
-    self.button.clickthrough = false
-
-    self.button:Subscribe(ui.Hook.ONMOUSEOVER, hookID, function()
-        self.button.spriteID = id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_3
-        return true
-    end)
-
-    self.button:Subscribe(ui.Hook.ONMOUSELEAVE, hookID, function()
-        self.button.spriteID = self.original and id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_4 or id.Sprite.RS3_ICON_WARDROBE_EFFECTS_24PX_2
-        return true
-    end)
-
-    self.button:Subscribe(ui.Hook.ONCLICK, hookID, function()
+    self.button = prettyui.SpriteButton.new(self.root, "EYE", function(_, enabled)
         -- Let the controller restore the menu on its next update.
-        self.original = not self.original
-        return false
-    end)
+        self.original = not enabled
+    end, {
+        size = buttonSize,
+        toggleable = true,
+        disabled = self.original,
+    })
 end
 
 function MenuUIToggle:Update(snapshot)
@@ -72,14 +59,13 @@ function MenuUIToggle:Update(snapshot)
         y = closePosition.y - parentPosition.y + math.floor((close.height - buttonSize) / 2)
     end
 
-    self.button:SetPos(x, math.max(0, y))
+    self.button.root:SetPos(x, math.max(0, y))
     self.root:MoveToFront()
 end
 
 function MenuUIToggle:Destroy()
+    cleanup.Release(self, "button")
     cleanup.Release(self, "root")
-
-    self.button = nil
 end
 
 return MenuUIToggle

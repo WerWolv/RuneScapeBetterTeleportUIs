@@ -349,40 +349,10 @@ local function restore(control, change)
         control:SetScrollPos(state.scrollX, state.scrollY)
     end
 
-    if restored.spacing then
-        control.spacing = state.spacing
-    end
-
-    if restored.rgb then
-        control.rgb = state.rgb
-    end
-
-    if restored.alpha then
-        control.alpha = state.alpha
-    end
-
-    if restored.clickthrough then
-        control.clickthrough = state.clickthrough
-    end
-
-    if restored.hidden then
-        control.hidden = state.hidden
-    end
-
-    if restored.enabled then
-        control.enabled = state.enabled
-    end
-
-    if restored.content then
-        control.content = state.content
-    end
-
-    if restored.font then
-        control.font = state.font
-    end
-
-    if restored.maxLines then
-        control.maxLines = state.maxLines
+    for _, field in ipairs({ "spacing", "rgb", "alpha", "clickthrough", "hidden", "enabled", "content", "font", "maxLines" }) do
+        if restored[field] then
+            control[field] = state[field]
+        end
     end
 
     if restored.header then

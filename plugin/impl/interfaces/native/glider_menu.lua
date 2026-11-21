@@ -1,6 +1,5 @@
 local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local NativeLayout = require("impl/interfaces/native/native_layout")
-local cleanup = require("impl/cleanup")
 local text = require("impl/text")
 
 local GliderMenu = ModalChoiceMenu:Extend()
@@ -17,10 +16,9 @@ GliderMenu.nativeInterface = {
     close = "WINDOW_CLOSE_BUTTON",
     frame = { "WINDOW_BACKGROUND", "WINDOW_BORDER" },
     lastStaticID = 107,
+    tooltipOwner = "row",
 }
 
-local tooltipHookID = "teleportMapsGliderTooltip"
-local tooltipHooks = { ui.Hook.ONMOUSEOVER, ui.Hook.ONMOUSEREPEAT }
 local destinations = {
     { "GRANDTREE", "Grand Tree" },
     { "MOUNTAIN", "White Wolf Mountain" },
@@ -148,21 +146,6 @@ function GliderMenu:IsDisabled(row)
     return row.native.disabledLayer.visibleGlobal or ModalChoiceMenu.IsDisabled(self, row)
 end
 
-function GliderMenu:AttachTooltip(entry, target)
-    ModalChoiceMenu.AttachTooltip(self, entry, target)
-
-    -- Native descriptions belong to the outer button, not its active action layer.
-    local controls = self.session.nativeTooltipControls or {}
-    self.session.nativeTooltipControls = controls
-    controls[#controls + 1] = entry.row
-
-    for _, hook in ipairs(tooltipHooks) do
-        entry.row:Subscribe(hook, tooltipHookID, function()
-            return false
-        end)
-    end
-end
-
 function GliderMenu:LayoutRowContainers(x, y, width, height)
     ModalChoiceMenu.LayoutRowContainers(self, x, y, width, height)
 
@@ -174,19 +157,6 @@ function GliderMenu:LayoutRowContainers(x, y, width, height)
         NativeLayout.Set(route, "alpha", 0)
         NativeLayout.Set(route, "clickthrough", true)
     end
-end
-
-function GliderMenu:ReleaseInterface()
-    for _, control in ipairs(self.session.nativeTooltipControls or {}) do
-        for _, hook in ipairs(tooltipHooks) do
-            cleanup.Try("restore Gnome Glider hover tooltip", function()
-                control:Unsubscribe(hook, tooltipHookID)
-            end)
-        end
-    end
-
-    self.session.nativeTooltipControls = nil
-    ModalChoiceMenu.ReleaseInterface(self)
 end
 
 return GliderMenu

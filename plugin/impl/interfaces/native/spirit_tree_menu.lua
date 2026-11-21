@@ -1,6 +1,5 @@
 local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local NativeLayout = require("impl/interfaces/native/native_layout")
-local cleanup = require("impl/cleanup")
 local text = require("impl/text")
 
 local SpiritTreeMenu = ModalChoiceMenu:Extend()
@@ -17,10 +16,8 @@ SpiritTreeMenu.nativeInterface = {
     close = "SPIRITTREE_WINDOW_CLOSE_BUTTON",
     frame = { "SPIRITTREE_WINDOW_BACKGROUND", "SPIRITTREE_WINDOW_BORDER" },
     lastStaticID = 37,
+    tooltipOwner = "click",
 }
-
-local tooltipHookID = "teleportMapsSpiritTreeTooltip"
-local tooltipHooks = { ui.Hook.ONMOUSEOVER, ui.Hook.ONMOUSEREPEAT }
 
 -- These static controls identify destinations; their sibling text supplies the
 -- current shortcut. The native HUBS_LAYER retains all keyboard/action scripts.
@@ -155,40 +152,6 @@ function SpiritTreeMenu:RefreshAvailability(snapshot)
     end
 end
 
-function SpiritTreeMenu:AttachTooltip(entry, target)
-    ModalChoiceMenu.AttachTooltip(self, entry, target)
-
-    -- Suppress native hover scripts on the action owner, even when the plugin
-    -- tooltip is attached to a disabled destination's passive probe.
-    local controls = self.session.nativeTooltipControls or {}
-    self.session.nativeTooltipControls = controls
-
-    local nativeTarget = entry.click
-    local tracked = false
-
-    for _, control in ipairs(controls) do
-        if control == nativeTarget then
-            tracked = true
-            break
-        end
-    end
-
-    if not tracked then
-        controls[#controls + 1] = nativeTarget
-    end
-
-    for _, hook in ipairs(tooltipHooks) do
-        -- Keep suppression after any freshly reattached plugin hover listeners.
-        if tracked then
-            nativeTarget:Unsubscribe(hook, tooltipHookID)
-        end
-
-        nativeTarget:Subscribe(hook, tooltipHookID, function()
-            return false
-        end)
-    end
-end
-
 function SpiritTreeMenu:LayoutRowContainers(x, y, width, height)
     ModalChoiceMenu.LayoutRowContainers(self, x, y, width, height)
 
@@ -199,19 +162,6 @@ function SpiritTreeMenu:LayoutRowContainers(x, y, width, height)
         NativeLayout.Set(row.label, "alpha", 0)
         NativeLayout.Set(row.label, "clickthrough", true)
     end
-end
-
-function SpiritTreeMenu:ReleaseInterface()
-    for _, control in ipairs(self.session.nativeTooltipControls or {}) do
-        for _, hook in ipairs(tooltipHooks) do
-            cleanup.Try("restore Spirit Tree hover tooltip", function()
-                control:Unsubscribe(hook, tooltipHookID)
-            end)
-        end
-    end
-
-    self.session.nativeTooltipControls = nil
-    ModalChoiceMenu.ReleaseInterface(self)
 end
 
 return SpiritTreeMenu

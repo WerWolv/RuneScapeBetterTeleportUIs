@@ -2,6 +2,7 @@ local definitions = require("definitions/settings")
 local Group = require("impl/settings/group")
 local Page = require("impl/settings/page")
 local utils = require("impl/utils")
+local cleanup = require("impl/cleanup")
 
 local settings = {}
 local eventID = "teleportMapsSettings"
@@ -100,19 +101,17 @@ local function clearView()
     parent, view, pages = nil, nil, {}
 
     if previousParent ~= nil then
-        pcall(function()
+        cleanup.Try("unsubscribe settings resize", function()
             previousParent:Unsubscribe(ui.Hook.ONRESIZE, eventID)
         end)
     end
 
-    for _, page in ipairs(previousPages) do
-        pcall(function()
-            page:Destroy()
-        end)
+    for index = 1, #previousPages do
+        cleanup.Release(previousPages, index)
     end
 
     if previousView ~= nil then
-        pcall(function()
+        cleanup.Try("destroy settings tabs", function()
             previousView:Destroy()
         end)
     end

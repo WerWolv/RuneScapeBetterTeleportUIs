@@ -132,10 +132,8 @@ function Page:Destroy()
 
     self.closed = true
 
-    for _, page in pairs(self.details) do
-        pcall(function()
-            page:Destroy()
-        end)
+    for key in pairs(self.details) do
+        cleanup.Release(self.details, key)
     end
 
     for _, group in ipairs(self.mountedGroups) do

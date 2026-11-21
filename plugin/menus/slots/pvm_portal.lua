@@ -1,12 +1,10 @@
 local PvmPortalMenu = require("impl/interfaces/native/pvm_portal_menu")
-local ModelSlotMenu = require("impl/interfaces/presentations/model_slot_menu")
+local PortalSlotMenu = require("impl/interfaces/presentations/portal_slot_menu")
 local matcher = require("impl/destination_matcher")
 local modelSlotStyles = require("definitions/model_slot_styles")
-local HotkeyBadge = require("impl/ui/hotkey_badge")
 local translations = require("impl/translations")
 
-local PvmPortal = ModelSlotMenu.Create(PvmPortalMenu, "pvmPortal")
-local portalLabels = { "L", "R", "M" }
+local PvmPortal = PortalSlotMenu.Create(PvmPortalMenu, "pvmPortal")
 
 function PvmPortal:RefreshAvailability(snapshot)
     PvmPortalMenu.RefreshAvailability(self, snapshot)
@@ -33,37 +31,6 @@ function PvmPortal:GetDescription(row)
     return PvmPortalMenu.GetDescription(self, row)
 end
 
-function PvmPortal:GetSlotStyle(row, hovered)
-    if row.assignedPortal ~= nil then
-        return self.definition.slotStyles.assigned
-    end
-    return ModelSlotMenu.GetSlotStyle(self, row, hovered)
-end
-
-function PvmPortal:UpdateVisuals(layout, hovered)
-    ModelSlotMenu.UpdateVisuals(self, layout, hovered)
-
-    for _, slot in ipairs(self.slots) do
-        local assignment = slot.row.assignedPortal
-        if assignment ~= nil then
-            if slot.portalBadge == nil then
-                slot.portalBadge = HotkeyBadge.New(slot.layer, portalLabels[assignment])
-                slot.portalBadgeOptions = { forceVisible = true, disabled = false, preserveOrder = true }
-            end
-            if slot.portalAssignment ~= assignment then
-                slot.portalBadge.label.content = portalLabels[assignment]
-                slot.portalAssignment = assignment
-            end
-            local options = slot.portalBadgeOptions
-            options.scale, options.inset = layout.scale, math.ceil(6 * layout.scale)
-            slot.portalBadge:Update(slot.layer, options)
-            slot.hotkey:Hide()
-        elseif slot.portalBadge ~= nil then
-            slot.portalBadge:Hide()
-        end
-    end
-end
-
 function PvmPortal:Match(snapshot)
     local entries = self.definition.entries
     local dictionary = translations.Current()
@@ -80,8 +47,6 @@ function PvmPortal:Match(snapshot)
                     placeholderText = "?",
                     placeholderFont = id.Font.NOTOSANS_BOLD_50,
                     nameOverride = name,
-                    description = "",
-                    lockedDescription = "",
                 }
                 knownLabels[name] = true
                 added = true
@@ -172,70 +137,11 @@ function PvmPortal:Define()
         ["Vorago"]                      = npc(id.NPC.LRC2_BOSS, id.Seq.BOSS2_BOSS_IDLE, 3000, 150),
     }
 
-    -- Edit both tooltip descriptions here; <br> adds a line break.
-    -- Empty strings leave title-only tooltips. Assigned portals use "unlocked".
-    local descriptions = {
-        ["Airut peninsula"] = { unlocked = "", locked = "" },
-        ["Amascut"] = { unlocked = "", locked = "" },
-        ["Arch-Glacor"] = { unlocked = "", locked = "" },
-        ["Araxxi"] = { unlocked = "", locked = "" },
-        ["Barrows Brothers"] = { unlocked = "", locked = "" },
-        ["Bork"] = { unlocked = "", locked = "" },
-        ["Commander Zilyana"] = { unlocked = "", locked = "" },
-        ["Corporeal Beast"] = { unlocked = "", locked = "" },
-        ["Croesus"] = { unlocked = "", locked = "" },
-        ["Dagannoth Kings"] = { unlocked = "", locked = "" },
-        ["Dragonkin Laboratory"] = { unlocked = "", locked = "" },
-        ["Flesh-hatcher Mhekarnahz"] = { unlocked = "", locked = "" },
-        ["Fort Forinthry (Zemouregal & Vorkath)"] = { unlocked = "", locked = "" },
-        ["General Graardor"] = { unlocked = "", locked = "" },
-        ["Ghrazi Blood Knights"] = { unlocked = "", locked = "" },
-        ["Giant Mole"] = { unlocked = "", locked = "" },
-        ["Glacor cavern"] = { unlocked = "", locked = "" },
-        ["Gregorovic"] = { unlocked = "", locked = "" },
-        ["Har-Aken"] = { unlocked = "", locked = "" },
-        ["Helwyr"] = { unlocked = "", locked = "" },
-        ["Ivar"] = { unlocked = "", locked = "" },
-        ["Kalphite King"] = { unlocked = "", locked = "" },
-        ["Kalphite Queen"] = { unlocked = "", locked = "" },
-        ["Kerapac"] = { unlocked = "", locked = "" },
-        ["King Black Dragon"] = { unlocked = "", locked = "" },
-        ["Kree'arra"] = { unlocked = "", locked = "" },
-        ["K'ril Tsutsaroth"] = { unlocked = "", locked = "" },
-        ["Legiones"] = { unlocked = "", locked = "" },
-        ["Mazcab"] = { unlocked = "", locked = "" },
-        ["Nex"] = { unlocked = "", locked = "" },
-        ["Queen Black Dragon"] = { unlocked = "", locked = "" },
-        ["Raksha"] = { unlocked = "", locked = "" },
-        ["Rasial's Citadel"] = { unlocked = "", locked = "" },
-        ["Rex Matriarchs"] = { unlocked = "", locked = "" },
-        ["Sanctum of Rebirth"] = { unlocked = "", locked = "" },
-        ["Shadow Reef"] = { unlocked = "", locked = "" },
-        ["Silverquill"] = { unlocked = "", locked = "" },
-        ["Solak"] = { unlocked = "", locked = "" },
-        ["Telos"] = { unlocked = "", locked = "" },
-        ["Temple of Aminishi"] = { unlocked = "", locked = "" },
-        ["Gate of Elidinis"] = { unlocked = "", locked = "" },
-        ["The Magister"] = { unlocked = "", locked = "" },
-        ["Zamorak"] = { unlocked = "", locked = "" },
-        ["Twin Furies"] = { unlocked = "", locked = "" },
-        ["TzKal-Zuk"] = { unlocked = "", locked = "" },
-        ["TzTok-Jad"] = { unlocked = "", locked = "" },
-        ["Tormented demons"] = { unlocked = "", locked = "" },
-        ["Vindicta & Gorvek"] = { unlocked = "", locked = "" },
-        ["Vorago"] = { unlocked = "", locked = "" },
-    }
-
     entries["Fort Forinthry (Zemouregal & Vorkath)"].nameOverride = "Zemouregal & Vorkath"
 
     -- Keep the configured boss name on cards and tooltips when a native alias matches.
     for name, entry in pairs(entries) do
         entry.nameOverride = entry.nameOverride or name
-        local description = descriptions[name]
-        if description ~= nil then
-            entry.description = description.unlocked
-            entry.lockedDescription = description.locked
-        end
     end
 
     -- Some versions of the picker use the encounter name instead of its arrival
@@ -268,6 +174,7 @@ function PvmPortal:Define()
 
     return {
         title = "Boss Portal Destination",
+        portalLabels = { "L", "R", "M" },
         columns = 5,
         rows = 3,
         scrollable = true,

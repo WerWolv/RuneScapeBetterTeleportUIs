@@ -18,10 +18,8 @@ SailingTransportMenu.nativeInterface = {
     close = "CLOSE_BUTTON",
     frame = {},
     lastStaticID = 37,
+    tooltipOwner = "click",
 }
-
-local tooltipHookID = "teleportMapsSailingTooltip"
-local tooltipHooks = { ui.Hook.ONMOUSEOVER, ui.Hook.ONMOUSEREPEAT }
 
 local function component(name)
     return ui.Interfaces:GetComponent(id.Component["SAILING_TRANSPORT_WORLD_MAP__" .. name])
@@ -235,20 +233,6 @@ function SailingTransportMenu:GetUIToggleWindow()
     return self.session and self.session.sailingWindow and self.session.sailingWindow.root
 end
 
-function SailingTransportMenu:AttachTooltip(entry, target)
-    ModalChoiceMenu.AttachTooltip(self, entry, target)
-
-    local controls = self.session.nativeTooltipControls or {}
-    self.session.nativeTooltipControls = controls
-    controls[#controls + 1] = target
-
-    for _, hook in ipairs(tooltipHooks) do
-        target:Subscribe(hook, tooltipHookID, function()
-            return false
-        end)
-    end
-end
-
 function SailingTransportMenu:LayoutRowContainers()
     -- GO layers are already direct children of the shared content. Expanding
     -- their ancestors as nested choice rows would overwrite the modal frame.
@@ -347,15 +331,6 @@ function SailingTransportMenu:ReleaseInterface()
         return
     end
 
-    for _, control in ipairs(self.session.nativeTooltipControls or {}) do
-        for _, hook in ipairs(tooltipHooks) do
-            cleanup.Try("restore sailing hover tooltip", function()
-                control:Unsubscribe(hook, tooltipHookID)
-            end)
-        end
-    end
-
-    self.session.nativeTooltipControls = nil
     cleanup.Release(self.session, "inputShield")
     cleanup.Release(self.session, "sailingWindow")
     cleanup.Release(self.session, "windowMount")

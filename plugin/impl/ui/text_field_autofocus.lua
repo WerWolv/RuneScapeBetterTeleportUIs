@@ -5,23 +5,6 @@ local TextFieldAutoFocus = {}
 local cleanup = require("impl/cleanup")
 TextFieldAutoFocus.__index = TextFieldAutoFocus
 
-local function encodeCharacter(code)
-    if code < 0x80 then
-        return string.char(code)
-    elseif code < 0x800 then
-        return string.char(0xC0 + code // 64, 0x80 + code % 64)
-    elseif code < 0x10000 then
-        return string.char(0xE0 + code // 4096, 0x80 + code // 64 % 64, 0x80 + code % 64)
-    end
-
-    return string.char(
-        0xF0 + code // 262144,
-        0x80 + code // 4096 % 64,
-        0x80 + code // 64 % 64,
-        0x80 + code % 64
-    )
-end
-
 -- The caller retains the field's original parent and chooses which keys keep native behavior.
 function TextFieldAutoFocus:New(field, listener, options)
     return setmetatable({
@@ -174,7 +157,7 @@ function TextFieldAutoFocus:OnKey(key, character)
         local _, length = value:gsub("[^\128-\191]", "")
 
         if length < self.field.root.maxLength then
-            value = value .. encodeCharacter(character)
+            value = value .. utf8.char(character)
         end
     else
         return true

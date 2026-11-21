@@ -13,6 +13,19 @@ function components.IsCollection(control)
     return collections[control.type] == true
 end
 
+-- Include the root itself, matching native row/action-owner hierarchy checks.
+function components.IsWithin(control, parent)
+    while control ~= nil do
+        if control == parent then
+            return true
+        end
+
+        control = control.parent
+    end
+
+    return false
+end
+
 -- Native wrappers may refer to the same component through multiple collection paths.
 function components.Key(control)
     return string.format("%s:%s:%s:%s", control.interfaceID, control.staticID, control.categoryID, control.dynamicID)
