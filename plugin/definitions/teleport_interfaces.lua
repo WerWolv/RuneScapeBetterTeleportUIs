@@ -1,5 +1,7 @@
 -- Representative items are shared by the Interfaces settings and debug item spawning.
 -- World-object interfaces use their furniture or portable item equivalent.
+local L = require("impl/translations").Localize
+
 return {
     {
         name = "PvM Portals",
@@ -57,7 +59,7 @@ return {
         item = id.Obj.MYQ5_DRAKAN_PENDANT,
     },
     {
-        name = "Ring of Duelling",
+        name = L("Ring of Duelling"),
         module = "maps/ring_of_duelling",
         item = id.Obj.RING_OF_DUELING_8,
     },
@@ -117,7 +119,7 @@ return {
         item = id.Obj.MAGIC_ENCHANTED_STRUNG_LYRE_FULL_CHARGE,
     },
     {
-        name = "Amulet of Glory",
+        name = L("Amulet of Glory"),
         module = "maps/amulet_of_glory",
         item = id.Obj.AMULET_OF_GLORY_4,
     },

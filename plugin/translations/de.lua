@@ -11,5 +11,8 @@ return {
         ["4. Fist of Guthix"] = "4. Faust des Guthix",
         ["5. Nowhere"] = "5. Nirgendwohin",
     },
-    localization = {},
+    localization = {
+        ["Amulet of Glory"] = "Amulett des Ruhms",
+        ["Ring of Duelling"] = "Duell-Ring",
+    },
 }

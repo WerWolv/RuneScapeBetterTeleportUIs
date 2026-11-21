@@ -2,11 +2,12 @@ local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local L = require("impl/translations").Localize
 local RingOfDuelling = MapMenu.Create(ModalChoiceMenu, "ringOfDuelling")
 
 function RingOfDuelling:Define()
     return {
-        title = "Ring of Duelling",
+        title = L("Ring of Duelling"),
         background = backgrounds.runescapeSurface,
         icons = teleportIcons.jewellery.goldEmerald,
         entries = {

@@ -2,11 +2,12 @@ local ModalChoiceMenu = require("impl/interfaces/native/modal_choice_menu")
 local MapMenu = require("impl/interfaces/presentations/map_menu")
 local backgrounds = require("definitions/backgrounds")
 local teleportIcons = require("definitions/teleport_icons")
+local L = require("impl/translations").Localize
 local AmuletOfGlory = MapMenu.Create(ModalChoiceMenu, "amuletOfGlory")
 
 function AmuletOfGlory:Define()
     return {
-        title = "Amulet of Glory",
+        title = L("Amulet of Glory"),
         background = backgrounds.runescapeSurface,
         icons = teleportIcons.jewellery.goldDragonstone,
         entries = {
