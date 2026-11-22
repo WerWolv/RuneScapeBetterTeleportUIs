@@ -106,7 +106,7 @@ function TeleportNexus:Define()
         showTeleportNames = false,
         background = backgrounds.runescapeSurfaceFull,
         noBackgroundCrop = true,
-        sizeMultiplier = 2.25,
+        sizeMultiplier = 2,
 
         icons = {
             size = 32,

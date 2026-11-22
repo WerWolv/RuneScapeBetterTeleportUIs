@@ -106,7 +106,7 @@ function JewelleryBox:Define()
         showTeleportNames = false,
         background = backgrounds.runescapeSurface,
         noBackgroundCrop = true,
-        sizeMultiplier = 1.75,
+        sizeMultiplier = 1.85,
         entries = entries,
     }
 end
