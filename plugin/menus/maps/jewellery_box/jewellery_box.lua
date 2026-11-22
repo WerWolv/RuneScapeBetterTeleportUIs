@@ -105,7 +105,7 @@ function JewelleryBox:Define()
         title = "Jewellery Box",
         background = backgrounds.runescapeSurface,
         noBackgroundCrop = true,
-        sizeMultiplier = 1.75,
+        sizeMultiplier = 1.85,
         entries = entries,
     }
 end
