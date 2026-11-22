@@ -11,21 +11,25 @@ function UnderworldGrimoire:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Teleport to Um Smithy"] = {
+                id = "smithy",
                 nameOverride = "Um Smithy",
                 point = {x = 616, y = 377},
                 icons = teleportIcons.umSmithyTeleport,
             },
             ["2. Teleport to Um Ritual Site"] = {
+                id = "ritualsite",
                 nameOverride = "Um Ritual Site",
                 point = {x = 96, y = 590},
                 icons = teleportIcons.underworldTeleport,
             },
             ["3. Teleport to Ungael Ritual Site"] = {
+                id = "ungael",
                 nameOverride = "Ungael Ritual Site",
                 point = {x = 170, y = 165},
                 icons = teleportIcons.ungaelTeleport,
             },
             ["4. Teleport to Lupe"] = {
+                id = "lupe",
                 nameOverride = "Lupe",
                 possiblyMissing = true,
                 point = {x = 371, y = 417},

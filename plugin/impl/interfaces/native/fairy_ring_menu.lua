@@ -119,6 +119,7 @@ function FairyRingMenu:Define()
 
     for _, name in ipairs(wheelControls) do
         entries[name] = {
+            id = name:lower(),
             cursor = name:sub(-3) == "ACW" and id.Cursor.CURSOR_ROTATE_ANTICLOCKWISE
                 or id.Cursor.CURSOR_ROTATE_CLOCKWISE,
         }

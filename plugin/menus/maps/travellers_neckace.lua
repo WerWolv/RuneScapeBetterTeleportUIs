@@ -11,12 +11,15 @@ function TravellersNecklace:Define()
         icons = teleportIcons.jewellery.silverJade,
         entries = {
             ["1. Wizards' Tower"] = {
+                id = "wizardstower",
                 point = {x = 310, y = 170},
             },
             ["2. The Outpost"] = {
+                id = "outpost",
                 point = {x = 130, y = 130},
             },
             ["3. South of the Desert Eagle's Eyrie"] = {
+                id = "deserteagle",
                 nameOverride = "Desert Eagle's Eyrie",
                 point = {x = 400, y = 190},
             },

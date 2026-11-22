@@ -12,10 +12,12 @@ function DesertAmulet:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Nardah"] = {
+                id = "nardah",
                 icons = teleportIcons.magicCarpet.port,
                 point = {x = 263, y = 163},
             },
             ["2. Uzer"] = {
+                id = "uzer",
                 icons = teleportIcons.magicCarpet.worker,
                 point = {x = 294, y = 30},
             },

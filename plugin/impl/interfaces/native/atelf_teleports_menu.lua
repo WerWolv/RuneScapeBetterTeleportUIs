@@ -5,6 +5,16 @@ local AtelfTeleportsMenu = TeleportMenu:Extend()
 AtelfTeleportsMenu.interface = AtelfTeleportsMenu
 AtelfTeleportsMenu.cacheNativeSnapshot = true
 AtelfTeleportsMenu.interfaceName = "ATELF_TELEPORTS (" .. id.Interface.ATELF_TELEPORTS .. ")"
+AtelfTeleportsMenu.buttons = {
+    "ELFCITY_TELE_LLETYA",
+    "ELFCITY_TELE_ELUNED",
+    "ELFCITY_TELE_TYRAS",
+    "ELFCITY_TELE_POISON",
+    "ELFCITY_TELE_DEATH",
+    "ELFCITY_TELE_ELFCAMP",
+    "ELFCITY_TELE_MUSHROOM",
+    "ELFCITY_TELE_RESOURCE",
+}
 
 -- Discover the native quiver button by component identity rather than its changing display label.
 function AtelfTeleportsMenu:ReadInterface()
@@ -21,18 +31,24 @@ function AtelfTeleportsMenu:ReadInterface()
         return nil
     end
 
+    local rows = {}
+    for index, name in ipairs(self.buttons) do
+        local control = ui.Interfaces:GetComponent(id.Component["ATELF_TELEPORTS__" .. name])
+        if control ~= nil then
+            rows[#rows + 1] = {
+                index = index,
+                labels = { [name] = true },
+                row = control,
+                click = control,
+                disabled = not control.visibleGlobal,
+            }
+        end
+    end
+
     return {
         window = window,
         content = content,
-        nativeRows = {
-            {
-                index = 1,
-                labels = { ELFCITY_TELE_ELUNED = true },
-                row = button,
-                click = button,
-                disabled = not button.visibleGlobal,
-            }
-        },
+        nativeRows = rows,
     }
 end
 

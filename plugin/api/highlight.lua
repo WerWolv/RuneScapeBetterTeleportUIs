@@ -20,7 +20,7 @@ local highlight = {}
 
 -- Example Code: Amulet of Glory
 --
--- local handle, reason = api.Highlight.Create("amuletOfGlory", "Edgeville") -- Also accepts 1 or "1".
+-- local handle, reason = api.Highlight.Create("amuletOfGlory", "edgeville")
 -- if handle == nil then
 --     print(reason)
 --     return
@@ -34,17 +34,19 @@ local highlight = {}
 
 ---Create a highlight that persists across openings until Release() or plugin shutdown.
 ---Exclusive interfaces remain locked while closed. Unavailable targets wait until they can be shown.
----Maps accept destination text or shortcuts; Fairy Rings accept codes.
+---Button IDs use ClueTrainer spots.id where available, lowercased except Fairy Ring codes.
+---IDs are case-sensitive. GetTargets() returns the exact accepted IDs.
+---Names and hotkeys are not accepted. Numeric IDs such as obelisk "13" are strings.
 ---Returns nil and a reason if the request is invalid or the interface is locked.
 ---@param interfaceKey string
----@param buttonKey string|number
+---@param buttonID string
 ---@return TeleportHighlight?, string?
-function highlight.Create(interfaceKey, buttonKey)
-    return teleportMaps.CreateHighlight(interfaceKey, buttonKey)
+function highlight.Create(interfaceKey, buttonID)
+    return teleportMaps.CreateHighlight(interfaceKey, buttonID)
 end
 
 ---Return a copy of the open interface's targets: { key, name, disabled }.
----Use these keys for menus with their own destination identifiers.
+---Each key is a stable button ID accepted by Create().
 ---@param interfaceKey string
 ---@return table?, string?
 function highlight.GetTargets(interfaceKey)

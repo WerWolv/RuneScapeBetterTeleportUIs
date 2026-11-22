@@ -17,36 +17,42 @@ function MenaphosJournal:Define()
         noBackgroundCrop = true,
         entries = {
             ["^1%. Imperial district %((%d+)%)$"] = {
+                id = "imperial",
                 point = {x = 402, y = 409},
                 icons = teleportIcons.menaphosFactions.imperial,
                 nameOverride = "Imperial District",
                 description = chargesRemaining,
             },
             ["^2%. Merchant district %((%d+)%)$"] = {
+                id = "merchant",
                 point = {x = 573, y = 213},
                 icons = teleportIcons.menaphosFactions.merchant,
                 nameOverride = "Merchant District",
                 description = chargesRemaining,
             },
             ["^3%. Port district %((%d+)%)$"] = {
+                id = "port",
                 point = {x = 544, y = 778},
                 icons = teleportIcons.menaphosFactions.port,
                 nameOverride = "Port District",
                 description = chargesRemaining,
             },
             ["^4%. Worker district %((%d+)%)$"] = {
+                id = "worker",
                 point = {x = 336, y = 168},
                 icons = teleportIcons.menaphosFactions.worker,
                 nameOverride = "Worker District",
                 description = chargesRemaining,
             },
             ["^5%. Sophanem Slayer Dungeon %((%d+)%)$"] = {
+                id = "sophanem",
                 point = {x = 825, y = 494},
                 icons = teleportIcons.sophanemSlayerDungeon,
                 nameOverride = "Sophanem Slayer Dungeon",
                 description = chargesRemaining,
             },
             ["^6%. Menaphos shifting tombs %((%d+)%)$"] = {
+                id = "shiftingtombs",
                 point = {x = 597, y = 409},
                 icons = teleportIcons.shiftingTombs,
                 nameOverride = "Shifting Tombs",

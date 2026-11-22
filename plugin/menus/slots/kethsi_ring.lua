@@ -10,6 +10,7 @@ function KethsiRing:Define()
         rows = 1,
         entries = {
             ["1. Adamant dragons"] = {
+                id = "adamant",
                 nameOverride = "Adamant",
                 npcID = id.NPC.ADAMANT_DRAGON,
                 animID = id.Seq.DRAGON_UPDATE_09_READY,
@@ -20,6 +21,7 @@ function KethsiRing:Define()
                 },
             },
             ["2. Rune dragons"] = {
+                id = "rune",
                 nameOverride = "Rune",
                 npcID = id.NPC.RUNE_DRAGON,
                 animID = id.Seq.DRAGON_UPDATE_09_READY,

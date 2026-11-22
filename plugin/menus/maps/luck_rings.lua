@@ -36,24 +36,29 @@ function LuckRings:Define()
         background = backgrounds.runescapeSurface,
         entries = {
             ["1. Miscellania"] = {
+                id = "miscellania",
                 icons = teleportIcons.jewellery.darkGoldOnyx,
                 point = {x = 113, y = 17},
             },
             ["2. Grand Exchange"] = {
+                id = "grandexchange",
                 icons = teleportIcons.jewellery.darkGoldOnyx,
                 point = {x = 329, y = 93},
             },
             ["3. Keldagrim"] = {
+                id = "keldagrim",
                 icons = teleportIcons.jewellery.goldOnyx,
                 point = {x = 204, y = 29},
                 possiblyMissing = true
             },
             ["4. Hazelmere's Statue"] = {
+                id = "hazelmere",
                 icons = teleportIcons.jewellery.goldDiamond,
                 point = {x = 120, y = 115},
                 possiblyMissing = true
             },
             ["^%d%. Dwarven Outpost$"] = {
+                id = "outpost",
                 nameOverride = "Dwarven Outpost",
                 disabledDescription = descriptions.Text(descriptions.Sprite(id.Sprite.RS3_ICON_TAB_UNLOCK) .. " Unlocked by <col=ffffff>Dark Facet of Luck</col>"),
                 icons = teleportIcons.jewellery.goldOnyx,

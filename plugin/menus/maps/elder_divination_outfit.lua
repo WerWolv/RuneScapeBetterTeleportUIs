@@ -52,8 +52,9 @@ local function wisp(npcID)
     }
 end
 
-local function colony(name, level, location, npcID, x, y)
+local function colony(buttonID, name, level, location, npcID, x, y)
     return {
+        id = buttonID,
         nameOverride = name .. " wisps",
         description = descriptions.LevelRequirement(level, descriptions.SKILL.DIVINATION)
             .. descriptions.Location(location),
@@ -71,24 +72,26 @@ function ElderDivinationOutfitPage1:Define()
         sizeMultiplier = 1.25,
         entries = {
             ["1. Optimum colony"] = {
+                id = "optimum",
                 description = descriptions.Text("The highest-level colony you can access."),
                 anchor = "topLeft",
                 icons = { sprite = id.Sprite.BP3_MISSION_ICON_SKILL_DIVINATION, size = 36 },
                 hotkeyOffset = { x = 15, y = -15 },
             },
             ["2. Incandescent wisps, south of the Poison Waste (lvl 95+)"] = colony(
-                "Incandescent", 95, "South of the Poison Waste", id.NPC.DIV_WISP12, 80, 200
+                "incandescent", "Incandescent", 95, "South of the Poison Waste", id.NPC.DIV_WISP12, 80, 200
             ),
             ["3. Luminous wisps, south of Sophanem (lvl 90+)"] = colony(
-                "Luminous", 90, "South of Sophanem", id.NPC.DIV_WISP11, 380, 290
+                "luminous", "Luminous", 90, "South of Sophanem", id.NPC.DIV_WISP11, 380, 290
             ),
             ["4. Radiant wisps, on Dragontooth Island (lvl 85+)"] = colony(
-                "Radiant", 85, "Dragontooth Island", id.NPC.DIV_WISP10, 500, 75
+                "radiant", "Radiant", 85, "Dragontooth Island", id.NPC.DIV_WISP10, 500, 75
             ),
             ["5. Brilliant wisps, east of the Mage Training Area (lvl 80+)"] = colony(
-                "Brilliant", 80, "East of the Mage Training Area", id.NPC.DIV_WISP9, 400, 140
+                "brilliant", "Brilliant", 80, "East of the Mage Training Area", id.NPC.DIV_WISP9, 400, 140
             ),
             ["6. Elder wisps, in Freneskae (lvl 75+)"] = {
+                id = "elder",
                 nameOverride = "Elder wisps",
                 description = descriptions.LevelRequirement(75, descriptions.SKILL.DIVINATION)
                     .. descriptions.Location("Freneskae"),
@@ -97,15 +100,16 @@ function ElderDivinationOutfitPage1:Define()
                 hotkeyOffset = { x = 10, y = -20 }
             },
             ["7. Lustrous wisps, north of Canifis (lvl 70+)"] = colony(
-                "Lustrous", 70, "North of Canifis", id.NPC.DIV_WISP8, 420, 71
+                "lustrous", "Lustrous", 70, "North of Canifis", id.NPC.DIV_WISP8, 420, 71
             ),
             ["8. Vibrant wisps, north of South Feldip Hills (lvl 60+)"] = colony(
-                "Vibrant", 60, "North of South Feldip Hills", id.NPC.DIV_WISP7, 128, 265
+                "vibrant", "Vibrant", 60, "North of South Feldip Hills", id.NPC.DIV_WISP7, 128, 265
             ),
             ["9. Gleaming wisps, in the Karamja Jungle (50+)"] = colony(
-                "Gleaming", 50, "Karamja jungle", id.NPC.DIV_WISP6, 235, 210
+                "gleaming", "Gleaming", 50, "Karamja jungle", id.NPC.DIV_WISP6, 235, 210
             ),
             ["0. [More options]"] = {
+                id = "next",
                 nameOverride = "Next",
                 anchor = "bottomRight",
                 icons = teleportIcons.nextArrow,
@@ -122,22 +126,23 @@ function ElderDivinationOutfitPage2:Define()
         sizeMultiplier = 1.25,
         entries = {
             ["1. Sparkling wisps, south-east of Rellekka (lvl 40+)"] = colony(
-                "Sparkling", 40, "South-east of Rellekka", id.NPC.DIV_WISP5, 210, 40
+                "sparkling", "Sparkling", 40, "South-east of Rellekka", id.NPC.DIV_WISP5, 210, 40
             ),
             ["2. Glowing wisps, south-east of Seers' Village (lvl 30+)"] = colony(
-                "Glowing", 30, "South-east of Seers' Village", id.NPC.DIV_WISP4, 200, 120
+                "glowing", "Glowing", 30, "South-east of Seers' Village", id.NPC.DIV_WISP4, 200, 120
             ),
             ["3. Bright wisps, east of Varrock (lvl 20+)"] = colony(
-                "Bright", 20, "East of Varrock", id.NPC.DIV_WISP3, 371, 90
+                "bright", "Bright", 20, "East of Varrock", id.NPC.DIV_WISP3, 371, 90
             ),
             ["4. Flickering wisps, north of Falador (lvl 10+)"] = colony(
-                "Flickering", 10, "North of Falador", id.NPC.DIV_WISP2, 283, 104
+                "flickering", "Flickering", 10, "North of Falador", id.NPC.DIV_WISP2, 283, 104
             ),
             ["5. Pale wisps, west of Lumbridge forest (lvl 1+)"] = colony(
-                "Pale", 1, "West of Lumbridge forest", id.NPC.DIV_WISP1, 328, 171
+                "pale", "Pale", 1, "West of Lumbridge forest", id.NPC.DIV_WISP1, 328, 171
             ),
             ["6. Cancel"] = { hidden = true },
             ["7. [More options]"] = {
+                id = "back",
                 nameOverride = "Back",
                 anchor = "bottomLeft",
                 icons = teleportIcons.prevArrow,

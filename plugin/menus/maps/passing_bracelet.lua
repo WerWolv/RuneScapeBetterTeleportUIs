@@ -12,14 +12,17 @@ function PassingBracelet:Define()
         icons = teleportIcons.jewellery.ensouledMoonstone,
         entries = {
             ["1. City of Um: Hanging Gardens"] = {
+                id = "gardens",
                 nameOverride = "Hanging Gardens",
                 point = {x = 737, y = 464},
             },
             ["2. City of Um: Haunt on the Hill"] = {
+                id = "haunt",
                 nameOverride = "Haunt on the Hill",
                 point = {x = 709, y = 223},
             },
             ["3. City of Um: Reflection Pool"] = {
+                id = "reflection",
                 nameOverride = "Reflection Pool",
                 point = {x = 555, y = 800},
             },

@@ -15,6 +15,7 @@ function ChromaticDragonTrinkets:Define()
         showTitle = false,
         entries = {
             ["1. Green Dragons - Chaos Tunnels"] = {
+                id = "green",
                 nameOverride = "Green Dragon",
                 description = description("Chaos Tunnels"),
                 npcID = id.NPC.GREEN_DRAGON5,
@@ -26,6 +27,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["2. Brutal Green Dragons - Baxtorian Falls"] = {
+                id = "brutalgreen",
                 nameOverride = "Brutal Green Dragon",
                 description = description("Baxtorian Falls"),
                 npcID = id.NPC.BRUT_GREEN_DRAGON,
@@ -37,6 +39,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["3. Blue Dragons - Taverley Dungeon"] = {
+                id = "blue",
                 nameOverride = "Blue Dragon",
                 description = description("Taverley Dungeon"),
                 npcID = id.NPC.BLUE_DRAGON4,
@@ -48,6 +51,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["4. Red Dragons - Brimhaven Dungeon"] = {
+                id = "red",
                 nameOverride = "Red Dragon",
                 description = description("Brimhaven Dungeon"),
                 npcID = id.NPC.RED_DRAGON3,
@@ -59,6 +63,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["5. Black Dragons - Evil Chicken's Lair"] = {
+                id = "black",
                 nameOverride = "Black Dragon",
                 description = description("Evil Chicken's Lair Dungeon"),
                 npcID = id.NPC.BLACK_DRAGON2,
@@ -70,6 +75,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["6. King Black Dragon - Edgeville"] = {
+                id = "kbd",
                 nameOverride = "King Black Dragon",
                 description = description("Edgeville"),
                 npcID = id.NPC.KING_DRAGON,
@@ -81,6 +87,7 @@ function ChromaticDragonTrinkets:Define()
                 },
             },
             ["7. Queen Black Dragon - Grotworm Lair"] = {
+                id = "qbd",
                 nameOverride = "Queen Black Dragon",
                 description = description("Grotworm Lair"),
                 npcID = id.NPC.QBD2_BOSS,
@@ -104,6 +111,7 @@ function MetallicDragonTrinkets:Define()
         showTitle = false,
         entries = {
             ["1. Bronze Dragons - Brimhaven Dungeon"] = {
+                id = "bronze",
                 nameOverride = "Bronze Dragon",
                 description = description("Brimhaven Dungeon"),
                 npcID = id.NPC.BRONZE_DRAGON,
@@ -115,6 +123,7 @@ function MetallicDragonTrinkets:Define()
                 },
             },
             ["2. Iron Dragons - Brimhaven Dungeon"] = {
+                id = "iron",
                 nameOverride = "Iron Dragon",
                 description = description("Brimhaven Dungeon"),
                 npcID = id.NPC.IRON_DRAGON,
@@ -126,6 +135,7 @@ function MetallicDragonTrinkets:Define()
                 },
             },
             ["3. Steel Dragons - Brimhaven Dungeon"] = {
+                id = "steel",
                 nameOverride = "Steel Dragon",
                 description = description("Brimhaven Dungeon"),
                 npcID = id.NPC.STEEL_DRAGON,
@@ -137,6 +147,7 @@ function MetallicDragonTrinkets:Define()
                 },
             },
             ["4. Mithril Dragons - Ancient Cavern"] = {
+                id = "mithril",
                 nameOverride = "Mithril Dragon",
                 description = description("Ancient Cavern"),
                 npcID = id.NPC.BRUT_MITHRIL_DRAGON,
@@ -148,6 +159,7 @@ function MetallicDragonTrinkets:Define()
                 },
             },
             ["5. Adamant Dragons - Brimhaven Adamant Dungeon"] = {
+                id = "adamant",
                 nameOverride = "Adamant Dragon",
                 description = description("Bimhaven Adamant Dungeon"),
                 npcID = id.NPC.ADAMANT_DRAGON,
@@ -159,6 +171,7 @@ function MetallicDragonTrinkets:Define()
                 },
             },
             ["6. Rune Dragons - World Gate"] = {
+                id = "rune",
                 nameOverride = "Rune Dragon",
                 description = description("World Gate"),
                 npcID = id.NPC.RUNE_DRAGON,

@@ -22,42 +22,52 @@ function ArchaeologyOutfit:Define()
         sizeMultiplier = 1.2,
         entries = {
             ["1. Archaeology Campus"] = {
+                id = "campus",
                 icons = teleportIcons.digsite.guild,
                 point = {x = 379, y = 128},
             },
             ["2. Kharid-et"] = {
+                id = "kharidet",
                 icons = teleportIcons.digsite.kharidEt,
                 point = {x = 385, y = 165},
             },
             ["3. Infernal Source"] = {
+                id = "infernal",
                 icons = teleportIcons.digsite.infernalSource,
                 point = {x = 355, y = 78},
             },
             ["4. Everlight"] = {
+                id = "everlight",
                 icons = teleportIcons.digsite.everlight,
                 point = {x = 490, y = 165},
             },
             ["5. Moonrise"] = {
+                id = "moonrise",
                 icons = teleportIcons.digsite.moonrise,
                 point = {x = 605, y = 85},
             },
             ["6. Senntisten"] = {
+                id = "senntisten",
                 icons = teleportIcons.digsite.senntisten,
                 point = {x = 390, y = 90},
             },
             ["7. Stormguard Citadel"] = {
+                id = "stormguard",
                 icons = teleportIcons.digsite.stormguard,
                 point = {x = 190, y = 110},
             },
             ["8. Daemonheim"] = {
+                id = "daemonheim",
                 icons = teleportIcons.digsite.daemonheim,
                 point = {x = 410, y = 30},
             },
             ["9. Warforge"] = {
+                id = "warforge",
                 icons = teleportIcons.digsite.warforge,
                 point = {x = 112, y = 276},
             },
             ["0. Orthen"] = {
+                id = "orthen",
                 icons = teleportIcons.digsite.orthen,
                 point = {x = 510, y = 24},
             }
@@ -72,6 +82,7 @@ function ArchaeologyCollectorsPage1:Define()
         sizeMultiplier = 1.25,
         entries = {
             ["1. Art Critic Jacques"] = {
+                id = "jacques",
                 icons = teleportIcons.digsite.guild,
                 description = collections(
                     "Anarchic Abstraction",
@@ -81,16 +92,19 @@ function ArchaeologyCollectorsPage1:Define()
                 point = {x = 361, y = 92},
             },
             ["2. Artiefax"] = {
+                id = "artiefax",
                 icons = teleportIcons.digsite.moonrise,
                 description = collections("Guthixian I", "Guthixian II"),
                 point = {x = 252, y = 77},
             },
             ["3. Chief Tess"] = {
+                id = "tess",
                 icons = teleportIcons.digsite.guild,
                 description = collections("Blingy Fings", "Smoky Fings", "Hitty Fings", "Showy Fings"),
                 point = {x = 166, y = 273},
             },
             ["4. Generals Bentnoze & Wartface"] = {
+                id = "generals",
                 icons = teleportIcons.digsite.warforge,
                 description = "General Bentnoze<br>" .. collections(
                     "Red Rum Relics I", "Red Rum Relics II", "Red Rum Relics III"
@@ -100,16 +114,19 @@ function ArchaeologyCollectorsPage1:Define()
                 point = {x = 280, y = 70},
             },
             ["5. Isaura"] = {
+                id = "isaura",
                 icons = teleportIcons.digsite.infernalSource,
                 description = collections("Zamorakian I", "Zamorakian II", "Zamorakian III", "Zamorakian IV"),
                 point = {x = 242, y = 123},
             },
             ["6. Lowse"] = {
+                id = "lowse",
                 icons = teleportIcons.digsite.stormguard,
                 description = collections("Armadylean I", "Armadylean II", "Armadylean III"),
                 point = {x = 265, y = 165},
             },
             ["7. Sharrigan"] = {
+                id = "sharrigan",
                 icons = teleportIcons.digsite.orthen,
                 description = collections(
                     "Dragonkin I", "Dragonkin II", "Dragonkin III", "Dragonkin IV",
@@ -118,16 +135,19 @@ function ArchaeologyCollectorsPage1:Define()
                 point = {x = 510, y = 24},
             },
             ["8. Sir Atcha"] = {
+                id = "atcha",
                 icons = teleportIcons.digsite.everlight,
                 description = collections("Saradominist I", "Saradominist II", "Saradominist III", "Saradominist IV"),
                 point = {x = 278, y = 132},
             },
             ["9. Soran (Emissary of Zaros)"] = {
+                id = "soran",
                 icons = teleportIcons.digsite.kharidEt,
                 description = collections("Zarosian I", "Zarosian II", "Zarosian III", "Zarosian IV"),
                 point = {x = 335, y = 105},
             },
             ["0. More options"] = {
+                id = "next",
                 nameOverride = "Next",
                 anchor = "bottomRight",
                 icons = collectorNextArrow,
@@ -143,6 +163,7 @@ function ArchaeologyCollectorsPage2:Define()
         sizeMultiplier = 1.5,
         entries = {
             ["1. Velucia"] = {
+                id = "velucia",
                 icons = teleportIcons.digsite.guild,
                 description = collections(
                     "Museum - Training Weapons",
@@ -180,6 +201,7 @@ function ArchaeologyCollectorsPage2:Define()
                 point = {x = 379, y = 128},
             },
             ["2. Wise Old Man"] = {
+                id = "wiseoldman",
                 icons = teleportIcons.digsite.guild,
                 description = collections(
                     "Wise Am the Music Man",
@@ -191,6 +213,7 @@ function ArchaeologyCollectorsPage2:Define()
                 point = {x = 308, y = 151},
             },
             ["3. Eblis"] = {
+                id = "eblis",
                 icons = teleportIcons.digsite.kharidEt,
                 description = collections(
                     "Finery of the Inquisition",

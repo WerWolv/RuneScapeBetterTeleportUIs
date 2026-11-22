@@ -17,36 +17,42 @@ function DavesSpellbook:Define()
         background = backgrounds.runescapeSurface,
         entries = {
             ["^1%. Watchtower %((%d+)%)$"] = {
+                id = "watchtower",
                 nameOverride = "Observatory",
                 description = tabletsRemaining,
                 point = {x = 123, y = 176},
                 icons = teleportIcons.chippedTeleportTablets.watchtower,
             },
             ["^2%. Camelot %((%d+)%)$"] = {
+                id = "camelot",
                 nameOverride = "Catherby docks",
                 description = tabletsRemaining,
                 point = {x = 224, y = 104},
                 icons = teleportIcons.chippedTeleportTablets.camelot,
             },
             ["^3%. Falador %((%d+)%)$"] = {
+                id = "falador",
                 nameOverride = "Southern Falador gate",
                 description = tabletsRemaining,
                 point = {x = 286, y = 142},
                 icons = teleportIcons.chippedTeleportTablets.falador,
             },
             ["^4%. Ardougne %((%d+)%)$"] = {
+                id = "ardougne",
                 nameOverride = "West Ardougne",
                 description = tabletsRemaining,
                 point = {x = 147, y = 141},
                 icons = teleportIcons.chippedTeleportTablets.ardougne,
             },
             ["^5%. Lumbridge %((%d+)%)$"] = {
+                id = "lumbridge",
                 nameOverride = "Lumbridge Swamp",
                 description = tabletsRemaining,
                 point = {x = 338, y = 182},
                 icons = teleportIcons.chippedTeleportTablets.lumbridge,
             },
             ["^6%. Varrock %((%d+)%)$"] = {
+                id = "varrock",
                 nameOverride = "Varrock Museum",
                 description = tabletsRemaining,
                 point = {x = 355, y = 92},

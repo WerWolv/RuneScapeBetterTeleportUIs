@@ -11,12 +11,15 @@ function DelversAnklet:Define()
         icons = teleportIcons.jewellery.platinumDragonstone,
         entries = {
             ["1. Brimhaven Dungeon"] = {
+                id = "brimhavendungeon",
                 point = {x = 209, y = 172},
             },
             ["2. Fremennik Slayer Dungeon"] = {
+                id = "fremennikslayerdungeon",
                 point = {x = 200, y = 30},
             },
             ["3. Polypore Dungeon"] = {
+                id = "polyporedungeon",
                 point = {x = 398, y = 144},
             },
             ["4. Nowhere"] = {hidden = true},

@@ -20,56 +20,68 @@ function SpiritTrees:Define()
         icons = treeIcon(),
         entries = {
             ["Tree Gnome Village"] = {
+                id = "village",
                 icons = treeIcon("village", 65),
                 point = { x = 136, y = 175 },
             },
             ["Tree Gnome Stronghold"] = {
+                id = "stronghold",
                 icons = treeIcon("stronghold", 65),
                 disabledDescription = descriptions.QuestRequirement("The Grand Tree"),
                 point = { x = 105, y = 80 },
             },
             ["Battlefield"] = {
+                id = "battlefield",
                 point = { x = 145, y = 134 },
             },
             ["Grand Exchange"] = {
+                id = "grandexchange",
                 icons = treeIcon("grand_exchange"),
                 point = { x = 335, y = 79 },
             },
             ["South Feldip Hills"] = {
+                id = "feldiphills",
                 icons = treeIcon("feldip"),
                 point = { x = 119, y = 260 },
             },
             ["Port Sarim"] = {
+                id = "sarim",
                 icons = treeIcon("port_sarim"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 286, y = 147 },
             },
             ["Etceteria"] = {
+                id = "etceteria",
                 icons = treeIcon("etceteria"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 126, y = 25 },
             },
             ["Brimhaven"] = {
+                id = "brimhaven",
                 icons = treeIcon("brimhaven"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 212, y = 154 },
             },
             ["Poison Waste"] = {
+                id = "poisonwaste",
                 icons = treeIcon("poison_waste"),
                 disabledDescription = descriptions.QuestRequirement("The Path of Glouphrie"),
                 point = { x = 80, y = 181 },
             },
             ["Prifddinas"] = {
+                id = "prifddinas",
                 icons = treeIcon("prifddinas"),
                 disabledDescription = descriptions.QuestRequirement("Plague's End"),
                 point = { x = 72, y = 125 },
             },
             ["Manor Farm"] = {
+                id = "manorfarm",
                 icons = treeIcon("manor_farm"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 180, y = 113 },
             },
             ["Player-owned house"] = {
+                id = "house",
                 disabledDescription = descriptions.Text("Needs to be built first")
                     .. descriptions.LevelRequirement(83, descriptions.SKILL.FARMING)
                     .. descriptions.LevelRequirement(75, descriptions.SKILL.CONSTRUCTION),

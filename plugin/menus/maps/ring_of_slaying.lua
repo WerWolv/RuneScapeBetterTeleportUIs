@@ -83,19 +83,25 @@ function RingOfSlaying:Define()
         icons = teleportIcons.jewellery.goldEnchantedGem,
         entries = {
             ["1. Sumona in Pollnivneach."] = {
+                id = "sumona",
                 nameOverride = "Pollnivneach",
                 point = {x = 374, y = 234},
             },
             ["2. Morytania Slayer Tower."] = {
+                id = "slayertower",
                 point = {x = 404, y = 76},
             },
             ["3. Fremennik Slayer Dungeon."] = {
+
+                id = "slayerdungeon",
                 point = {x = 220, y = 50},
             },
             ["4. Tarn's Lair."] = {
+                id = "tarnslair",
                 point = {x = 416, y = 157},
             },
             ["5. Nowhere. Give me Slayer options."] = {
+                id = "slayeroptions",
                 nameOverride = slayerOptionsName,
                 point = {x = 0, y = 0}
             },

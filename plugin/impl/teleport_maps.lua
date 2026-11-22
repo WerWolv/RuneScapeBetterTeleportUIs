@@ -438,8 +438,8 @@ local function applyHighlightRequest(request, presentation)
 end
 
 function teleportMaps.CreateHighlight(interfaceKey, buttonKey)
-    if type(buttonKey) ~= "string" and type(buttonKey) ~= "number" then
-        return nil, "Button key must be a string or number"
+    if type(buttonKey) ~= "string" or buttonKey == "" then
+        return nil, "Button ID must be a nonempty string"
     end
 
     local request

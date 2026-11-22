@@ -14,21 +14,25 @@ function DorgeshKaanSphere:Define()
         icons = teleportIcons.dorgeshKaanSphere,
         entries = {
             ["1. Dorgesh-kaan North"] = {
+                id = "north",
                 nameOverride = "North",
                 point = {x = 220, y = 115},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["2. Dorgesh-kaan South"] = {
+                id = "south",
                 nameOverride = "South",
                 point = {x = 223, y = 539},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["3. Dorgesh-kaan East"] = {
+                id = "east",
                 nameOverride = "East",
                 point = {x = 241, y = 311},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["4. Dorgesh-kaan West"] = {
+                id = "west",
                 nameOverride = "West",
                 point = {x = 116, y = 349},
                 hotkeyOffset = { x = 13, y = -18 },

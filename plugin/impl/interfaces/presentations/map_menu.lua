@@ -14,22 +14,6 @@ local labelSettings = require("impl/map_label_settings")
 local MapMenu = {}
 local hitboxScale = 0.75
 
-function MapMenu:GetHighlightKey(row)
-    return row.destination.highlightKey
-        or (text.Clean(self:GetDisplayName(row)):gsub("^%d+%.%s*", ""):gsub("%.$", ""))
-end
-
-function MapMenu:MatchesHighlightKey(row, key)
-    if self:GetHighlightKey(row) == key or row.entryKey == key then return true end
-    if type(key) ~= "string" and type(key) ~= "number" then return false end
-
-    local requested = text.Trim(tostring(key)):lower()
-    local name = text.Clean(self:GetDisplayName(row)):gsub("^%d+%.%s*", ""):gsub("%.$", "")
-    local shortcut = row.destination.hotkey or (row.native and row.native.shortcut) or text.Hotkey(row.name)
-    return requested == name:lower()
-        or (not row.locked and shortcut ~= nil and requested == text.Trim(tostring(shortcut)):lower())
-end
-
 function MapMenu:BeginHighlight(key)
     local row, reason = self:FindHighlightTarget(key)
     if row == nil then return nil, reason end

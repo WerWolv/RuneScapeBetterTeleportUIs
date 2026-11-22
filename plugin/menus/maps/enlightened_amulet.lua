@@ -11,13 +11,16 @@ function EnlightenedAmulet:Define()
         icons = teleportIcons.jewellery.silverTopaz,
         entries = {
             ["1. Lumbridge Swamp"] = {
+                id = "nexus",
                 point = {x = 338, y = 181},
             },
             ["2. South of the Graveyard of Shadows"] = {
+                id = "graveyard",
                 nameOverride = "Graveyard of Shadows",
                 point = {x = 348, y = 45},
             },
             ["3. Desert bandit camp entrance"] = {
+                id = "banditcamp",
                 nameOverride = "Bandit camp",
                 point = {x = 336, y = 224},
             },

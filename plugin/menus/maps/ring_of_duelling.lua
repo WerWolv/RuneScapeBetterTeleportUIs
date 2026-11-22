@@ -12,18 +12,22 @@ function RingOfDuelling:Define()
         icons = teleportIcons.jewellery.goldEmerald,
         entries = {
             ["1. Het's Oasis"] = {
+                id = "hetsoasis",
                 --icons = teleportIcons.relicOfHet,
                 point = {x = 369, y = 161},
             },
             ["2. Castle Wars Arena"] = {
+                id = "castlewars",
                 --icons = teleportIcons.castleWarsCape,
                 point = {x = 110, y = 199},
             },
             ["3. The Warforge"] = {
+                id = "warforge",
                 --icons = teleportIcons.warForgeShield,
                 point = {x = 112, y = 276},
             },
             ["4. Fist of Guthix"] = {
+                id = "fistofguthix",
                 --icons = teleportIcons.fistOfGuthixOrb,
                 point = {x = 283, y = 111},
             },

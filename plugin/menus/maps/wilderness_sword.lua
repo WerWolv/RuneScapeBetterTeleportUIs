@@ -11,19 +11,23 @@ function WildernessSword:Define()
         icons = teleportIcons.lodestone.wilderness,
         entries = {
             ["1. Teleport to Edgeville"] = {
+                id = "edgeville",
                 nameOverride = "Edgeville",
                 point = {x = 263, y = 805},
             },
             ["2. Teleport to Herb patch"] = {
+                id = "herbpatch",
                 nameOverride = "Herb patch",
                 point = {x = 359, y = 355},
             },
             ["3. Teleport to Forinthry Dungeon"] = {
+                id = "forinthry",
                 nameOverride = "Forinthry Dungeon",
                 possiblyMissing = true,
                 point = {x = 237, y = 667},
             },
             ["4. Teleport to Wilderness Agility course"] = {
+                id = "agility",
                 nameOverride = "Wilderness Agility course",
                 possiblyMissing = true,
                 point = {x = 106, y = 192},

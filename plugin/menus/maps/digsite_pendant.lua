@@ -12,12 +12,15 @@ function DigsitePendant:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Varrock Dig Site."] = {
+                id = "digsite",
                 point = {x = 220, y = 260},
             },
             ["2. Senntisten Temple."] = {
+                id = "senntisten",
                 point = {x = 322, y = 44},
             },
             ["3. Exam Centre."] = {
+                id = "exam",
                 point = {x = 255, y = 508},
             }
         },

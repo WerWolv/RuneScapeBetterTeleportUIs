@@ -13,19 +13,23 @@ function PirateSpellSheet:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Braindeath Island."] = {
+                id = "braindeath",
                 point = {x = 765, y = 512},
                 icons = teleportIcons.pirateSpellSheet,
             },
             ["2. Mos Le'Harmless."] = {
+                id = "mosleharmless",
                 point = {x = 145, y = 451},
                 icons = teleportIcons.pirateSpellSheet,
             },
             ["3. Dragontooth Isle."] = {
+                id = "dragontooth",
                 point = {x = 575, y = 83},
                 possiblyMissing = true,
                 icons = teleportIcons.bigBookOPiracy,
             },
             ["4. Harmony Island."] = {
+                id = "harmony",
                 point = {x = 402, y = 753},
                 possiblyMissing = true,
                 icons = teleportIcons.bigBookOPiracy,
@@ -42,15 +46,19 @@ function BigBookOPiracy:Define()
         icons = teleportIcons.bigBookOPiracy,
         entries = {
             ["1. Mos Le'Harmless."] = {
+                id = "mosleharmless",
                 point = {x = 145, y = 451},
             },
             ["2. Braindeath Island."] = {
+                id = "braindeath",
                 point = {x = 765, y = 512},
             },
             ["3. Dragontooth Isle."] = {
+                id = "dragontooth",
                 point = {x = 575, y = 83},
             },
             ["4. Harmony Island."] = {
+                id = "harmony",
                 point = {x = 402, y = 753},
             },
         },

@@ -211,14 +211,17 @@ local function matches(row, query, codeQuery, exactCode)
     if query == "" then
         return true
     end
+    if exactCode then
+        return table.concat(row.codes) == codeQuery
+    end
 
     for _, code in ipairs(row.codes) do
-        if code == codeQuery or not exactCode and code:sub(1, #codeQuery) == codeQuery then
+        if code:sub(1, #codeQuery) == codeQuery then
             return true
         end
     end
 
-    return not exactCode and text.FuzzyScore(row.text, query, settings.Get("fuzzyFairyRingSearch")) ~= nil
+    return text.FuzzyScore(row.text, query, settings.Get("fuzzyFairyRingSearch")) ~= nil
 end
 
 function View:LayoutMarker(item, showCodes)
@@ -358,10 +361,8 @@ function View:Update(rows, selectedName)
     local exactCode = false
 
     for _, row in ipairs(rows) do
-        for _, code in ipairs(row.codes) do
-            if code == codeQuery then
-                exactCode = true
-            end
+        if table.concat(row.codes) == codeQuery then
+            exactCode = true
         end
     end
 

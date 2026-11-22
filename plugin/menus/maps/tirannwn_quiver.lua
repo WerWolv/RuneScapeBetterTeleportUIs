@@ -5,24 +5,20 @@ local HotkeyBadge = require("impl/ui/hotkey_badge")
 local NativeLayout = require("impl/interfaces/native/native_layout")
 local cleanup = require("impl/cleanup")
 local settings = require("impl/settings")
+local TargetHighlight = require("impl/ui/target_highlight")
 local TirannwnQuiver = AtelfTeleportsMenu:Extend("tirannwnQuiver")
-
--- Native shortcut order differs from the component order in the interface.
-local hotkeyButtons = {
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_LLETYA,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_ELUNED,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_TYRAS,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_POISON,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_DEATH,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_ELFCAMP,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_MUSHROOM,
-    id.Component.ATELF_TELEPORTS__ELFCITY_TELE_RESOURCE,
-}
 
 function TirannwnQuiver:Define()
     return {
         entries = {
-            ELFCITY_TELE_ELUNED = {},
+            ELFCITY_TELE_LLETYA = { id = "lletya", nameOverride = "Lletya" },
+            ELFCITY_TELE_ELUNED = { id = "islwyn", nameOverride = "Islwyn" },
+            ELFCITY_TELE_TYRAS = { id = "tyras", nameOverride = "Tyras Camp" },
+            ELFCITY_TELE_POISON = { id = "poisonwaste", nameOverride = "Poison Waste" },
+            ELFCITY_TELE_DEATH = { id = "deathaltar", nameOverride = "Death Altar" },
+            ELFCITY_TELE_ELFCAMP = { id = "elfcamp", nameOverride = "Elf Camp" },
+            ELFCITY_TELE_MUSHROOM = { id = "mushroompatch", nameOverride = "Mushroom Patch" },
+            ELFCITY_TELE_RESOURCE = { id = "harmonypillars", nameOverride = "Harmony Pillars" },
         },
     }
 end
@@ -54,8 +50,8 @@ function TirannwnQuiver:BeginVisuals()
 
     session.hotkeys = {}
 
-    for hotkey, componentID in ipairs(hotkeyButtons) do
-        local button = components:GetComponent(componentID)
+    for hotkey, name in ipairs(self.buttons) do
+        local button = components:GetComponent(id.Component["ATELF_TELEPORTS__" .. name])
         if button ~= nil then
             session.hotkeys[#session.hotkeys + 1] = {
                 button = button,
@@ -177,6 +173,27 @@ function TirannwnQuiver:UpdateCharges()
     )
 
     text:MoveToFront()
+end
+
+function TirannwnQuiver:BeginHighlight(key)
+    local row, reason = self:FindHighlightTarget(key)
+    if row == nil then
+        return nil, reason
+    end
+    return { row = row, parent = row.click.parent }
+end
+
+function TirannwnQuiver:UpdateHighlight(state)
+    local button = state.row.click
+    if button == self.session.deathButton and self.session.deathDisabledIcon ~= nil
+        and not self.session.deathDisabledIcon.hidden then
+        button = self.session.deathDisabledIcon
+    end
+    TargetHighlight.Update(state, state.parent, button.width, button.height, true)
+    local root = state.highlightVisual.root
+    local position, parentPosition = button.xyGlobal, state.parent.xyGlobal
+    root:SetPos(position.x - parentPosition.x, position.y - parentPosition.y)
+    root.hidden = not button.visibleGlobal
 end
 
 function TirannwnQuiver:ReleaseVisuals()

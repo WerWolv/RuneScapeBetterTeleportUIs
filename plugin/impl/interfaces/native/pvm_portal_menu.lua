@@ -63,7 +63,10 @@ function PvmPortalMenu:ConfigureDestinations(entries)
             -- Aliases share the same definition, so encounter/location names agree.
             entry.portalDestinationID = destination.id
             entry.maxGuildOnly = destination.maxGuildOnly
+            entry.id = entry.id or ("portal-" .. destination.id)
         end
+        -- Uncatalogued labels without DB data still keep their identity when sorted.
+        entry.id = entry.id or ("unknown-" .. name:lower())
     end
 end
 

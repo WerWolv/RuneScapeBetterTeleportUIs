@@ -137,9 +137,10 @@ function TeleportMenu:GetDescription(row)
     return row.destination.description
 end
 
--- Highlight keys are independent of native translations, shortcuts and display overrides.
+-- IDs use ClueTrainer spots.id where available (lowercase except Fairy Ring codes).
+-- Keep these explicit and stable when changing labels, shortcuts or artwork.
 function TeleportMenu:GetHighlightKey(row)
-    return row.destination.highlightKey or row.entryKey
+    return row.destination.id
 end
 
 function TeleportMenu:GetHighlightTargets()
@@ -159,7 +160,15 @@ function TeleportMenu:GetHighlightTargets()
 end
 
 function TeleportMenu:MatchesHighlightKey(row, key)
-    return self:GetHighlightKey(row) == key
+    if self:GetHighlightKey(row) == key then
+        return true
+    end
+    for _, alternate in ipairs(row.destination.alternateIDs or {}) do
+        if alternate == key then
+            return true
+        end
+    end
+    return false
 end
 
 function TeleportMenu:FindHighlightTarget(key)

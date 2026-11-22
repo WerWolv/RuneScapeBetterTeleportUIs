@@ -26,6 +26,7 @@ function PassageOfTheAbyss:Define()
         title = "Passage of the Abyss",
         items = {
             ["amulet of glory"] = {
+                id = "amuletofglory",
                 item = id.Obj.AMULET_OF_GLORY_4,
                 description = destinations({
                     "Edgeville",
@@ -35,6 +36,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["combat bracelet"] = {
+                id = "combatbracelet",
                 item = id.Obj.JEWL_BRACELET_OF_COMBAT_4,
                 description = destinations({
                     "Warriors' Guild",
@@ -44,6 +46,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["delver's anklet"] = {
+                id = "delversanklet",
                 item = id.Obj.PLATINUM_DELVERS_ANKLET,
                 description = destinations({
                     "Brimhaven Dungeon",
@@ -52,6 +55,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["dig site pendant"] = {
+                id = "digsitependant",
                 item = id.Obj.NECKLACE_OF_DIGSITE_5,
                 description = destinations({
                     "Varrock Dig Site",
@@ -60,6 +64,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["enlightened amulet"] = {
+                id = "enlightenedamulet",
                 item = id.Obj.ENCHANTED_TOPAZ_AMULET_NEW,
                 description = destinations({
                     "Lumbridge Swamp",
@@ -68,6 +73,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["ferocious ring"] = {
+                id = "ferociousring",
                 item = id.Obj.SLAYGUILD_RING_5,
                 description = destinations({
                     "Kuradal",
@@ -75,6 +81,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["games necklace"] = {
+                id = "gamesnecklace",
                 item = id.Obj.NECKLACE_OF_MINIGAMES_8,
                 description = destinations({
                     "Troll Invasion",
@@ -87,6 +94,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["ring of duelling"] = {
+                id = "ringofduelling",
                 item = id.Obj.RING_OF_DUELING_8,
                 description = destinations({
                     "Het's Oasis",
@@ -96,6 +104,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["ring of respawn"] = {
+                id = "ringofrespawn",
                 item = id.Obj.ENCHANTED_JADE_RING_NEW,
                 description = destinations({
                     "Lumbridge",
@@ -106,6 +115,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["ring of slaying"] = {
+                id = "ringofslaying",
                 item = id.Obj.SMKI_RING_OF_SLAYING_8,
                 description = destinations({
                     "Pollnivneach (Sumona)",
@@ -115,6 +125,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["ring of wealth"] = {
+                id = "ringofwealth",
                 item = id.Obj.RING_OF_WEALTH_4,
                 description = destinations({
                     "Miscellania throne room",
@@ -122,6 +133,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["skills necklace"] = {
+                id = "skillsnecklace",
                 item = id.Obj.JEWL_NECKLACE_OF_SKILLS_4,
                 description = destinations({
                     "Fishing Guild",
@@ -134,6 +146,7 @@ function PassageOfTheAbyss:Define()
                 }),
             },
             ["traveller's necklace"] = {
+                id = "travellersnecklace",
                 item = id.Obj.ENCHANTED_JADE_NECKLACE_NEW,
                 description = destinations({
                     "Wizards' Tower",
@@ -194,6 +207,7 @@ function PassageOfTheAbyss:Match(snapshot)
             end
 
             group.entries[name] = {
+                id = item.id,
                 objectID = item.item,
                 nameOverride = itemName,
                 description = item.description,

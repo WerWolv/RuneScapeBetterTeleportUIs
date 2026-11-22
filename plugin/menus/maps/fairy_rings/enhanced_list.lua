@@ -327,24 +327,22 @@ function FairyRings:FilterLog()
 
     -- A complete native code selects only that code; names and aliases stay separate.
     for _, row in ipairs(rows) do
-        for _, code in ipairs(row.codes) do
-            if code == codeQuery then
-                exactCode = true
-            end
+        if table.concat(row.codes) == codeQuery then
+            exactCode = true
         end
     end
 
     for order, row in ipairs(rows) do
         row.order = order
 
-        if not exactCode then
+        if exactCode then
+            row.score = table.concat(row.codes) == codeQuery and math.huge or nil
+        else
             row.score = text.FuzzyScore(row.text, query, allowTypos)
-        end
-
-        for _, code in ipairs(row.codes) do
-            if code == codeQuery
-                or not exactCode and codeQuery ~= "" and code:sub(1, #codeQuery) == codeQuery then
-                row.score = math.huge
+            for _, code in ipairs(row.codes) do
+                if codeQuery ~= "" and code:sub(1, #codeQuery) == codeQuery then
+                    row.score = math.huge
+                end
             end
         end
     end

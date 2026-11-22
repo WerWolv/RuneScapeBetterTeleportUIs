@@ -13,24 +13,28 @@ function PharaohsSceptre:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Jalsavrah (Pyramid Plunder)"] = {
+                id = "pyramidpain",
                 nameOverride = "Jalsavrah",
                 description = descriptions.Location("Pyramid Plunder"),
                 icons = teleportIcons.magicCarpet.port,
                 point = {x = 176, y = 258},
             },
             ["2. Jaleustrophos (Agility Pyramid)"] = {
+                id = "agility",
                 nameOverride = "Jaleustrophos",
                 description = descriptions.Location("Agility Pyramid"),
                 icons = teleportIcons.magicCarpet.worker,
                 point = {x = 227, y = 239},
             },
             ["3. Jaldraocht (Azzanadra's Pyramid)"] = {
+                id = "ancient",
                 nameOverride = "Jaldraocht",
                 description = descriptions.Location("Azzanadra's Pyramid"),
                 icons = teleportIcons.magicCarpet.merchant,
                 point = {x = 100, y = 190},
             },
             ["4. Jalkabir (Menaphos Golden Palace)"] = {
+                id = "palace",
                 -- Only available in the Sceptre of the Gods
                 nameOverride = "Jalkabir",
                 description = descriptions.Location("Menaphos Golden Palace"),

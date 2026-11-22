@@ -19,29 +19,35 @@ function HavenhytheCanoes:Define()
         icons = teleportIcons.canoe,
         entries = {
             ["1. Wendlewick (Burnt Lobster Tavern)"] = {
+                id = "wendlewick-tavern",
                 nameOverride = "Wendlewick",
                 icons = canoe(90),
                 point = {x = 165, y = 447},
             },
             ["2. Wendlewick (Farm)"] = {
+                id = "wendlewick-farm",
                 nameOverride = "Blighted Cave",
                 icons = canoe(150),
                 point = {x = 371, y = 378},
             },
             ["3. Wendlewick (Grotto)"] = {
+                id = "wendlewick-grotto",
                 nameOverride = "Grotto",
                 icons = canoe(45),
                 point = {x = 309, y = 632},
             },
             ["4. Amberfell"] = {
+                id = "amberfell",
                 icons = canoe(270),
                 point = {x = 510, y = 353},
             },
             ["5. Heathervein"] = {
+                id = "heathervein",
                 icons = canoe(180),
                 point = {x = 677, y = 280},
             },
             ["6. Linbog"] = {
+                id = "linbog",
                 icons = canoe(315),
                 point = {x = 661, y = 462},
             },

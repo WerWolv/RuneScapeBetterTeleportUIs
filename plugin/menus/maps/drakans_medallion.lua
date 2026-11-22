@@ -12,22 +12,27 @@ function DrakansMedallion:Define()
         icons = teleportIcons.drakansMedallion,
         entries = {
             ["1. Barrows"] = {
+                id = "barrows",
                 point = {x = 408, y = 284},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["2. Burgh de Rott"] = {
+                id = "burghderott",
                 point = {x = 249, y = 566},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["3. Meiyerditch"] = {
+                id = "meiyerditch",
                 point = {x = 586, y = 445},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["4. Darkmeyer"] = {
+                id = "darkmeyer",
                 point = {x = 552, y = 168},
                 hotkeyOffset = { x = 13, y = -18 },
             },
             ["5. Meiyerditch Laboratories"] = {
+                id = "laboratories",
                 point = {x = 595, y = 312},
                 hotkeyOffset = { x = 13, y = -18 },
             },

@@ -12,10 +12,12 @@ function ClanVexillum:Define()
         noBackgroundCrop = true,
         entries = {
             ["1. Teleport to the clan camp at the Grand Exchange."] = {
+                id = "grandexchange",
                 nameOverride = "Grand Exchange",
                 point = {x = 335, y = 97},
             },
             ["2. Teleport to the clan portal in Prifddinas."] = {
+                id = "prifddinas",
                 nameOverride = "Prifddinas",
                 point = {x = 55, y = 123},
             },

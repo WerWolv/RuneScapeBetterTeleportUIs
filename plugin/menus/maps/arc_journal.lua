@@ -78,11 +78,13 @@ function ArcJournal:Define()
         },
         entries = {
             ["1. Port Sarim."] = {
+                id = "sarim",
                 point = {x = 580, y = 270},
                 icons = teleportIcons.arcIslands.ship,
                 hotkeyOffset = { x = 70, y = -50 },
             },
             ["^2%. Waiko%. %((%d+)%)$"] = {
+                id = "waiko",
                 nameOverride = "Waiko",
                 description = teleportsRemaining,
                 point = {x = 210, y = 210},
@@ -90,6 +92,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 28, y = -24 },
             },
             ["^3%. Whale's Maw%. %((%d+)%)$"] = {
+                id = "whalesmaw",
                 nameOverride = "Whale's Maw",
                 description = teleportsRemaining,
                 point = {x = 270, y = 120},
@@ -97,6 +100,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 24, y = -8 },
             },
             ["^4%. Aminishi%. %((%d+)%)$"] = {
+                id = "aminishi",
                 nameOverride = "Aminishi",
                 description = teleportsRemaining,
                 point = {x = 330, y = 330},
@@ -104,6 +108,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 40, y = -40 },
             },
             ["^5%. Cyclosis%. %((%d+)%)$"] = {
+                id = "cyclosis",
                 nameOverride = "Cyclosis",
                 description = teleportsRemaining,
                 point = {x =  420, y = 360},
@@ -111,6 +116,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 24, y = -18 },
             },
             ["^6%. Tuai Leit%. %((%d+)%)$"] = {
+                id = "tuaileit",
                 nameOverride = "Tuai Leit",
                 description = teleportsRemaining,
                 point = {x = 150, y = 70},
@@ -118,6 +124,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 30, y = -30 },
             },
             ["^7%. The Islands That Once Were Turtles%. %((%d+)%)$"] = {
+                id = "turtleislands",
                 nameOverride = "The Islands That Once Were Turtles",
                 description = teleportsRemaining,
                 point = {x = 370, y = 240},
@@ -125,6 +132,7 @@ function ArcJournal:Define()
                 hotkeyOffset = { x = 75, y = -30 },
             },
             ["^8%. Goshima%. %((%d+)%)$"] = {
+                id = "goshima",
                 nameOverride = "Goshima",
                 description = teleportsRemaining,
                 point = {x = 530, y = 180},

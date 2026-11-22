@@ -11,6 +11,7 @@ function EliteDungeonChest:Define()
         rows = 1,
         entries = {
             ["^%d%. Temple of Aminishi"] = {
+                id = "ed1",
                 nameOverride = "Temple of Aminishi",
                 position = 1,
                 possiblyMissing = true,
@@ -23,6 +24,7 @@ function EliteDungeonChest:Define()
                 },
             },
             ["^%d%. Dragonkin Laboratory"] = {
+                id = "ed2",
                 nameOverride = "Dragonkin Laboratory",
                 position = 2,
                 possiblyMissing = true,
@@ -35,6 +37,7 @@ function EliteDungeonChest:Define()
                 },
             },
             ["^%d%. The Shadow Reef"] = {
+                id = "ed3",
                 nameOverride = "Shadow Reef",
                 position = 3,
                 possiblyMissing = true,
@@ -47,6 +50,7 @@ function EliteDungeonChest:Define()
                 },
             },
             ["^%d%. The Zamorakian Undercity"] = {
+                id = "ed4",
                 nameOverride = "Zamorakian Undercity",
                 position = 4,
                 possiblyMissing = true,
