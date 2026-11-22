@@ -271,7 +271,7 @@ function CategoryMap:UpdateVisuals(layout, hovered)
         local marker = self.iconView.markers[entry.name]
 
         if marker ~= nil then
-            local alpha = entry.destination.searchMatch == false and 0.2 or 1.0
+            local alpha = (entry.destination.searchMatch == false and 0.2 or 1.0) * (marker.focusAlpha or 1)
 
             -- Set opacity on drawable controls; native layers do not fade their children.
             local iconAlpha = (marker.dimmed and 0.4 or 1.0) * alpha

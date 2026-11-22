@@ -14,6 +14,33 @@ local labelSettings = require("impl/map_label_settings")
 local MapMenu = {}
 local hitboxScale = 0.75
 
+function MapMenu:GetHighlightKey(row)
+    return row.destination.highlightKey
+        or (text.Clean(self:GetDisplayName(row)):gsub("^%d+%.%s*", ""):gsub("%.$", ""))
+end
+
+function MapMenu:MatchesHighlightKey(row, key)
+    if self:GetHighlightKey(row) == key or row.entryKey == key then return true end
+    if type(key) ~= "string" and type(key) ~= "number" then return false end
+
+    local requested = text.Trim(tostring(key)):lower()
+    local name = text.Clean(self:GetDisplayName(row)):gsub("^%d+%.%s*", ""):gsub("%.$", "")
+    local shortcut = row.destination.hotkey or (row.native and row.native.shortcut) or text.Hotkey(row.name)
+    return requested == name:lower()
+        or (not row.locked and shortcut ~= nil and requested == text.Trim(tostring(shortcut)):lower())
+end
+
+function MapMenu:BeginHighlight(key)
+    local row, reason = self:FindHighlightTarget(key)
+    if row == nil then return nil, reason end
+    row.highlightCount = (row.highlightCount or 0) + 1
+    return { target = row }
+end
+
+function MapMenu:EndHighlight(state)
+    state.target.highlightCount = state.target.highlightCount - 1
+end
+
 function MapMenu:ValidateDestination(definition, background)
     local entryBackground = definition.background or self.definition.background
     local icons = definition.icons or self.definition.icons
@@ -320,8 +347,8 @@ function MapMenu:NameLabelItems(layout, background, visibleOnly)
         if x ~= nil then
             local width, height = ButtonIcon.Dimensions(destination.icons)
             local normalWidth, normalHeight = width, height
-            local hoverWidth, hoverHeight = ButtonIcon.Dimensions(destination.icons, true)
-            -- Reserve maximum artwork bounds so hovering/pressing never moves names.
+            local hoverWidth, hoverHeight = ButtonIcon.Dimensions(destination.icons, true, true)
+            -- Reserve maximum artwork bounds so hover, press and API highlights never move names.
             width, height = math.max(width, hoverWidth), math.max(height, hoverHeight)
             local bounds = { x = x - width / 2, y = y - height / 2, width = width, height = height }
             if destination.icons.showName == false then
@@ -330,7 +357,8 @@ function MapMenu:NameLabelItems(layout, background, visibleOnly)
                 items[#items + 1] = {
                     key = row.name, name = self:GetDisplayName(row),
                     anchor = bounds,
-                    alpha = (marker and marker.dimmed and 0.4 or 1) * (destination.searchMatch == false and 0.2 or 1),
+                    alpha = (marker and marker.dimmed and 0.4 or 1)
+                        * (destination.searchMatch == false and 0.2 or 1) * (marker and marker.focusAlpha or 1),
                 }
             end
             local key = destination.hotkey or text.Hotkey(row.name)

@@ -137,6 +137,126 @@ function TeleportMenu:GetDescription(row)
     return row.destination.description
 end
 
+-- Highlight keys are independent of native translations, shortcuts and display overrides.
+function TeleportMenu:GetHighlightKey(row)
+    return row.destination.highlightKey or row.entryKey
+end
+
+function TeleportMenu:GetHighlightTargets()
+    local targets = {}
+
+    for _, row in ipairs(self.session.menu.rows) do
+        if not row.destination.hidden then
+            targets[#targets + 1] = {
+                key = self:GetHighlightKey(row),
+                name = self:GetDisplayName(row),
+                disabled = row.disabled == true or row.locked == true,
+            }
+        end
+    end
+
+    return targets
+end
+
+function TeleportMenu:MatchesHighlightKey(row, key)
+    return self:GetHighlightKey(row) == key
+end
+
+function TeleportMenu:FindHighlightTarget(key)
+    local found
+
+    for _, row in ipairs(self.session.menu.rows) do
+        if not row.destination.hidden and self:MatchesHighlightKey(row, key) then
+            if found ~= nil then
+                return nil, "Button key is ambiguous"
+            end
+            found = row
+        end
+    end
+
+    if found == nil then
+        return nil, "Button is not visible in this menu"
+    end
+
+    return found
+end
+
+-- Ownership is shared; presentations override Begin/End/UpdateHighlight and may
+-- set exclusiveHighlights = true when their UI can only represent one request.
+function TeleportMenu:CreateHighlight(key)
+    local session = self.session
+    if session == nil or session.releasingHighlights then
+        return nil, "Presentation is not showing"
+    end
+
+    session.highlights = session.highlights or {}
+    if self.exclusiveHighlights and (session.creatingHighlight or next(session.highlights) ~= nil) then
+        return nil, "Interface already has an active highlight"
+    end
+
+    session.creatingHighlight = true
+    local ok, state, reason = pcall(self.BeginHighlight, self, key)
+    session.creatingHighlight = nil
+    if not ok then
+        error(state, 0)
+    end
+    if state == nil then
+        return nil, reason
+    end
+
+    if self.session ~= session or session.releasingHighlights then
+        cleanup.Try("release interrupted highlight for " .. tostring(self.key), function()
+            self:EndHighlight(state)
+        end)
+        return nil, "Presentation is not showing"
+    end
+
+    local handle = {}
+    local release = function()
+        local released = cleanup.Try("release highlight for " .. tostring(self.key), function()
+            self:EndHighlight(state)
+        end)
+        session.highlights[handle] = nil
+        return released
+    end
+
+    function handle.Release()
+        local callback = release
+        release = nil
+
+        return callback == nil or callback()
+    end
+
+    session.highlights[handle] = state
+    return handle
+end
+
+function TeleportMenu:ClearHighlights()
+    if self.session ~= nil then
+        self.session.releasingHighlights = true
+        for handle in pairs(self.session.highlights or {}) do
+            handle:Release()
+        end
+    end
+end
+
+function TeleportMenu:BeginHighlight(key)
+    return nil, "Presentation does not support highlighting"
+end
+
+function TeleportMenu:EndHighlight(state)
+    cleanup.Release(state, "highlightVisual")
+end
+
+function TeleportMenu:UpdateHighlight(state, layout)
+end
+
+function TeleportMenu:UpdateHighlights(layout)
+    for _, state in pairs(self.session.highlights or {}) do
+        self:UpdateHighlight(state, layout)
+    end
+end
+
 -- Refresh availability independently from cached definitions and display callbacks.
 function TeleportMenu:RefreshAvailability(snapshot)
     for index, row in ipairs(self.session.menu.rows) do
@@ -169,10 +289,14 @@ function TeleportMenu:Update(snapshot)
 
     self:ApplyLayout(layout)
     self:UpdateVisuals(layout, self:GetHovered())
+    self:UpdateHighlights(layout)
 end
 
 -- Release both resource categories even when the client has already destroyed native controls.
 function TeleportMenu:Release()
+    cleanup.Try("clear highlights for " .. tostring(self.key), function()
+        self:ClearHighlights()
+    end)
     cleanup.Try("release visuals for " .. tostring(self.key), function()
         self:ReleaseVisuals()
     end)

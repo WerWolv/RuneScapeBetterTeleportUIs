@@ -1,4 +1,6 @@
 local ModelSlotStyle = {}
+local highlightBrightness = 1.75
+local unfocusedBrightness = 0.2
 
 local properties = {
     { "model", "alpha", "modelAlpha" },
@@ -14,7 +16,10 @@ local properties = {
 -- native layer opacity does not propagate to child artwork.
 function ModelSlotStyle.Apply(slot, style)
     local previous = slot.appliedStyle
-    if previous == style then
+    local highlighted = slot.highlightLighting == true
+    local previouslyHighlighted = slot.appliedHighlight == true
+    local unfocused = slot.unfocusedLighting == true
+    if previous == style and highlighted == previouslyHighlighted and unfocused == (slot.appliedUnfocused == true) then
         return
     end
 
@@ -27,25 +32,50 @@ function ModelSlotStyle.Apply(slot, style)
     end
 
     local brightness = style.modelBrightness or 1
-    local previousBrightness = previous and previous.modelBrightness or 1
-    if slot.model ~= nil and brightness ~= previousBrightness then
+    if highlighted then
+        brightness = math.max(1, brightness) * highlightBrightness
+    elseif unfocused and brightness > 0 then
+        brightness = brightness * unfocusedBrightness
+    end
+    local previousBrightness = slot.appliedBrightness or 1
+    if slot.model ~= nil and (brightness ~= previousBrightness or highlighted ~= previouslyHighlighted) then
         local environment = slot.model.environment
-        slot.modelLighting = slot.modelLighting or {
-            ambient = environment.ambient,
-            contrast = environment.contrast,
-            bloomScale = environment.bloomScale,
-        }
-        for property, value in pairs(slot.modelLighting) do
-            environment[property] = value * brightness
+        if slot.modelLighting == nil then
+            local sun = environment.sunRGB
+            -- Native vectors can be views into the temporary environment wrapper.
+            -- Keep only scalar values so restoration never depends on its lifetime.
+            slot.modelLighting = {
+                ambient = environment.ambient,
+                contrast = environment.contrast,
+                bloomScale = environment.bloomScale,
+                sunRGB = { x = sun.x, y = sun.y, z = sun.z },
+            }
         end
+        for _, property in ipairs({ "ambient", "contrast", "bloomScale" }) do
+            environment[property] = slot.modelLighting[property] * brightness
+        end
+        local sun = slot.modelLighting.sunRGB
+        environment.sunRGB = highlighted and Vector3.new(1, 0.8, 0.65) or Vector3.new(sun.x, sun.y, sun.z)
         slot.model.environment = environment
     end
 
-    slot.appliedStyle = style
+    slot.appliedStyle, slot.appliedHighlight, slot.appliedBrightness = style, highlighted, brightness
+    slot.appliedUnfocused = unfocused
     if slot.modelParts ~= nil then
         for _, part in ipairs(slot.modelParts) do
+            part.highlightLighting = highlighted
+            part.unfocusedLighting = unfocused
             ModelSlotStyle.Apply(part, style)
         end
+    end
+end
+
+-- Reapply only the lighting when API ownership changes, even if the style is cached.
+function ModelSlotStyle.SetHighlighted(slot, highlighted, unfocused)
+    slot.highlightLighting = highlighted
+    slot.unfocusedLighting = unfocused == true
+    if slot.appliedStyle ~= nil then
+        ModelSlotStyle.Apply(slot, slot.appliedStyle)
     end
 end
 

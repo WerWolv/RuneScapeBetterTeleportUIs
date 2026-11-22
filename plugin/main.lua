@@ -8,3 +8,6 @@ end
 
 settings.Start()
 teleportMaps.Start()
+
+-- Expose API to other plugins
+return require("api")

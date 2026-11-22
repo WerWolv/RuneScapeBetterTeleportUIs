@@ -8,6 +8,7 @@ local backgrounds = require("definitions/backgrounds")
 local destinations = require("menus/maps/fairy_rings/fairy_ring_destinations")
 local cleanup = require("impl/cleanup")
 local text = require("impl/text")
+local FairyRingHighlight = require("menus/maps/fairy_rings/highlight")
 
 local FairyRings = ModalChoiceMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
@@ -26,6 +27,14 @@ FairyRings.nativeInterface = {
 }
 
 local component = FairyRingMenu.Component
+
+FairyRings.GetHighlightTargets = FairyRingHighlight.GetTargets
+FairyRings.EndHighlight = FairyRingHighlight.End
+FairyRings.exclusiveHighlights = true
+
+function FairyRings:BeginHighlight(key)
+    return FairyRingHighlight.Begin(self, self.view and self.view.search, key)
+end
 
 function FairyRings:Define()
     local definition = FairyRingMenu.Define(self)
@@ -137,6 +146,7 @@ end
 function FairyRings:ApplyLayout(layout)
     local session = self.session
     local rows = self.mapLayout:ReadRows()
+    session.highlightRows = rows
 
     for _, row in ipairs(rows) do
         if row.code == nil then

@@ -5,6 +5,7 @@ local cleanup = require("impl/cleanup")
 local TextFieldAutofocus = require("impl/ui/text_field_autofocus")
 local text = require("impl/text")
 local userSettings = require("impl/settings")
+local FairyRingHighlight = require("menus/maps/fairy_rings/highlight")
 local FairyRings = FairyRingMenu:Extend("fairyRings")
 FairyRings.interface = FairyRings
 
@@ -18,6 +19,14 @@ local logColumns = FairyRingMenu.logColumns
 local component = FairyRingMenu.Component
 local plainText = FairyRingMenu.PlainText
 local logRows = FairyRingMenu.ReadLogRows
+
+FairyRings.GetHighlightTargets = FairyRingHighlight.GetTargets
+FairyRings.EndHighlight = FairyRingHighlight.End
+FairyRings.exclusiveHighlights = true
+
+function FairyRings:BeginHighlight(key)
+    return FairyRingHighlight.Begin(self, self.search, key)
+end
 
 local function availableRingCount()
     local count, seen = 0, {}
@@ -212,14 +221,14 @@ function FairyRings:FilterLog()
     local query = text.Trim(plainText(self.search:GetText()))
     local snapshot = session.menu.snapshot
     local content = snapshot.logContent
+    local rows = logRows()
+    session.highlightRows = rows
 
     if query == "" then
         restoreScroll(session)
         session.query = query
         return
     end
-
-    local rows = logRows()
 
     -- Leave unfamiliar or temporarily empty client builds alone rather than hiding the entire log.
     if #rows == 0 then

@@ -17,16 +17,21 @@ local anchors = {
 }
 local anchorPadding = 12
 local hoverScale = 1.1
+local highlightScale = 1.1
+local unfocusedAlpha = 0.35
 local pressHookID = "teleportMapsIconPress"
 local pressHooks = { "ONCLICK", "ONHOLD", "ONRELEASE", "ONMOUSELEAVE" }
 
 -- Explicit dimensions take precedence; size specifies width when source proportions are known.
-function buttonIcon.Dimensions(icons, highlighted)
+function buttonIcon.Dimensions(icons, highlighted, apiHighlighted)
     local source = icons.normal or icons
     local normalWidth = math.max(1, math.floor(icons.width or icons.size or 48))
     local width = normalWidth
     if highlighted then
         width = math.max(1, math.floor((icons.hoveredSize or normalWidth * hoverScale) + 0.5))
+    end
+    if apiHighlighted then
+        width = math.max(1, math.floor(width * highlightScale + 0.5))
     end
     local height = icons.height
     local sourceWidth = source.imageWidth or icons.imageWidth
@@ -41,6 +46,10 @@ function buttonIcon.Dimensions(icons, highlighted)
     return width, math.max(1, math.floor((height or width) + 0.5))
 end
 
+function buttonIcon.HighlightPadding(width, height)
+    return math.max(4, math.ceil(math.max(width, height) * 0.2))
+end
+
 function buttonIcon.IsAnchor(anchor)
     return anchors[anchor] ~= nil
 end
@@ -53,7 +62,9 @@ function buttonIcon.Position(background, destination, width, height)
         if anchor == nil then return nil end
 
         local iconWidth, iconHeight = buttonIcon.Dimensions(destination.icons)
-        local hoverWidth, hoverHeight = buttonIcon.Dimensions(destination.icons, true)
+        local hoverWidth, hoverHeight = buttonIcon.Dimensions(destination.icons, true, true)
+        local padding = buttonIcon.HighlightPadding(hoverWidth, hoverHeight)
+        hoverWidth, hoverHeight = hoverWidth + padding * 2, hoverHeight + padding * 2
         local insetX = math.min(width / 2, anchorPadding + math.max(iconWidth, hoverWidth) / 2)
         local insetY = math.min(height / 2, anchorPadding + math.max(iconHeight, hoverHeight) / 2)
         return anchor.x == 0 and insetX or width - insetX,
@@ -141,9 +152,10 @@ local function updateSpriteShadow(marker, image, icons, highlighted, disabled)
 end
 
 -- Optional icons.backdrop = { sprite = id } or { image = resource } follows the icon's bounds.
-local function updateBackdrop(marker, icons, dimmed)
+local function updateBackdrop(marker, icons, dimmed, apiHighlighted)
     local definition = icons.backdrop
-    local image = definition and (definition.sprite or definition.image)
+    local image = apiHighlighted and Plugin.resources.icons.backdrop_highlight
+        or definition and (definition.sprite or definition.image)
     if image == nil or not SpriteLayers.LoadImages(image) then
         if marker.backdrop ~= nil then
             marker.backdrop.root.hidden = true
@@ -162,11 +174,17 @@ local function updateBackdrop(marker, icons, dimmed)
     marker.backdropImage = image
     marker.backdrop.root.hidden = false
 
-    if marker.backdropWidth ~= marker.width or marker.backdropHeight ~= marker.height then
-        marker.backdrop.root:SetSize(marker.width, marker.height)
-        marker.backdropWidth, marker.backdropHeight = marker.width, marker.height
+    local width, height = marker.width + marker.inset * 2, marker.height + marker.inset * 2
+    if marker.backdropWidth ~= width or marker.backdropHeight ~= height then
+        marker.backdrop.root:SetSize(width, height)
+        marker.backdropWidth, marker.backdropHeight = width, height
     end
-    marker.backdrop:SetAlpha(dimmed and 0.4 or 1)
+    local tint = apiHighlighted and 0xFFFF00FF or 0xFFFFFFFF
+    if marker.backdropTint ~= tint then
+        marker.backdrop:SetRGBA(tint)
+        marker.backdropTint = tint
+    end
+    marker.backdrop:SetAlpha(not apiHighlighted and dimmed and 0.4 or 1)
 end
 
 -- Overlay a small lock on missing destinations or explicitly marked disabled ones.
@@ -175,7 +193,7 @@ local function updateLock(marker, width, height, locked)
         local lock = prettyui.NewComponent(ui.Sprite, marker.layer)
         local lockSize = math.max(1, math.min(50, width, height))
         lock:SetSize(lockSize, lockSize)
-        lock:SetPos(width - lockSize / 1.3, height - lockSize / 1.3)
+        lock:SetPos(marker.inset + width - lockSize / 1.3, marker.inset + height - lockSize / 1.3)
         lock.spriteID = id.Sprite.RS_MOBILE_ICON_LOCK_ABILITY_BOOK
         lock.clickthrough = true
         lock.shadowRGBA = 0x000000FF
@@ -275,12 +293,13 @@ function buttonIcon.Source(icons, highlighted, disabled, locked)
 end
 
 -- Create or reuse a destination marker and apply its image, hover and disabled states.
-function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey, pressed)
+function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLockWhenDisabled, hotkey, pressed, apiHighlighted)
     disabled = disabled or locked == true
     highlighted = highlighted and not disabled
 
     local marker = self.markers[name]
-    local width, height = buttonIcon.Dimensions(icons, highlighted and not pressed)
+    local width, height = buttonIcon.Dimensions(icons, highlighted and not pressed, apiHighlighted)
+    local inset = apiHighlighted and buttonIcon.HighlightPadding(width, height) or 0
     local source, dimmed = buttonIcon.Source(icons, highlighted, disabled, locked)
     local objectID = source.objectID
     local objectCount = source.objectCount or icons.objectCount or 1
@@ -309,10 +328,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         -- Shadows extend right and down; grow clipping containers rather than shrinking artwork.
         local padding = shadowPadding(icons, kind)
         local layer = prettyui.NewComponent(ui.Layer, self.parent, { categoryID = "auto" })
-        layer:SetSize(width + padding, height + padding)
+        layer:SetSize(width + padding + inset * 2, height + padding + inset * 2)
         layer.clickthrough = true
 
         local artwork = prettyui.NewComponent(ui.Layer, layer)
+        artwork:SetPos(inset, inset)
         artwork:SetSize(width + padding, height + padding)
         artwork.clickthrough = true
 
@@ -322,6 +342,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
             kind = kind,
             width = width,
             height = height,
+            inset = inset,
         }
 
         if kind == "model" then
@@ -352,10 +373,11 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
     end
 
     -- Hover enlargement reuses the same controls instead of consuming dynamic IDs.
-    if marker.width ~= width or marker.height ~= height then
+    if marker.width ~= width or marker.height ~= height or marker.inset ~= inset then
         local padding = shadowPadding(icons, kind)
 
-        marker.layer:SetSize(width + padding, height + padding)
+        marker.layer:SetSize(width + padding + inset * 2, height + padding + inset * 2)
+        marker.artwork:SetPos(inset, inset)
         marker.artwork:SetSize(width + padding, height + padding)
 
         if marker.model ~= nil then
@@ -371,7 +393,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
             end
         end
 
-        marker.width, marker.height = width, height
+        marker.width, marker.height, marker.inset = width, height, inset
 
         if marker.lock ~= nil then
             marker.lock:Destroy()
@@ -408,7 +430,7 @@ function buttonIcon:GetMarker(name, icons, highlighted, disabled, locked, showLo
         updateSpriteShadow(marker, image, icons, highlighted, disabled)
     end
 
-    updateBackdrop(marker, icons, dimmed)
+    updateBackdrop(marker, icons, dimmed, apiHighlighted)
 
     if marker.dimmed ~= dimmed then
         if marker.model ~= nil then
@@ -441,6 +463,14 @@ function buttonIcon:Update(menu, hovered)
         self.pressedName = nil
     end
 
+    local hasHighlights = false
+    for _, row in ipairs(menu.rows) do
+        if not row.destination.hidden and (row.highlightCount or 0) > 0 then
+            hasHighlights = true
+            break
+        end
+    end
+
     for _, row in ipairs(menu.rows) do
         local destination = row.destination
         local icons = destination.icons
@@ -451,7 +481,8 @@ function buttonIcon:Update(menu, hovered)
 
         if x ~= nil then
             local marker = self:GetMarker(row.name, icons, row.name == hovered, row.disabled, row.locked,
-                destination.showLockWhenDisabled, destination.hotkey, self.pressedName == row.name)
+                destination.showLockWhenDisabled, destination.hotkey, self.pressedName == row.name,
+                (row.highlightCount or 0) > 0)
 
             if marker ~= nil then
                 -- Let native layout keep the centre fixed during size changes.
@@ -485,6 +516,26 @@ function buttonIcon:Update(menu, hovered)
                 options.offset, options.disabled = destination.hotkeyOffset, row.disabled
                 options.hidden = row.locked or (icons.hotkeyOnHover and row.name ~= hovered)
                 marker.hotkey:Update(anchor, options)
+
+                -- Native layers do not propagate opacity to their drawable children.
+                local apiHighlighted = (row.highlightCount or 0) > 0
+                local alpha = hasHighlights and not apiHighlighted and unfocusedAlpha or 1
+                marker.focusAlpha = alpha
+                if marker.model ~= nil then
+                    marker.model:SetAlpha((marker.dimmed and 0.4 or 1) * alpha)
+                elseif marker.itemSprite ~= nil then
+                    marker.itemSprite.alpha = alpha
+                else
+                    marker.sprite:SetAlpha((marker.dimmed and 0.4 or 1) * alpha)
+                end
+                if marker.shadow ~= nil then
+                    marker.shadow:SetAlpha((marker.shadowTint & 0xFF) / 255 * alpha)
+                end
+                if marker.backdrop ~= nil then
+                    marker.backdrop:SetAlpha((not apiHighlighted and marker.dimmed and 0.4 or 1) * alpha)
+                end
+                if marker.lock ~= nil then marker.lock.alpha = alpha end
+                marker.hotkey:SetAlpha((row.disabled and 0.6 or 1) * alpha)
             end
         end
     end
