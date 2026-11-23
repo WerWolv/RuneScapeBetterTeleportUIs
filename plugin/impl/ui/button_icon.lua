@@ -344,7 +344,8 @@ function buttonIcon:Update(menu, hovered)
                 local normalWidth, normalHeight = buttonIcon.Dimensions(icons)
                 local anchor = marker.hotkeyAnchor or { parent = self.parent }
                 marker.hotkeyAnchor = anchor
-                anchor.x, anchor.y = x - padding / 2 - normalWidth / 2, y - padding / 2 - normalHeight / 2
+                anchor.x = x + (marker.width - normalWidth) / 2
+                anchor.y = y + (marker.height - normalHeight) / 2
                 anchor.width, anchor.height = normalWidth, normalHeight
                 anchor.visibleGlobal = marker.layer.visibleGlobal
 
