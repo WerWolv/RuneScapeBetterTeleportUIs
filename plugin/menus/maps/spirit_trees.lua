@@ -5,20 +5,26 @@ local descriptions = require("definitions/descriptions")
 
 local SpiritTrees = MapMenu.Create(SpiritTreeMenu, "spiritTrees")
 
+local function treeIcon(variant, size)
+    return {
+        image = Plugin.resources.icons.spirit_tree[variant or "normal"],
+        size = size or 58,
+    }
+end
+
 function SpiritTrees:Define()
     return {
         title = "Spirit Trees",
         background = backgrounds.runescapeSurfaceFull,
-        sizeMultiplier = 1.25,
-        icons = {
-            image = Plugin.resources.icons.spirit_tree.normal,
-            size = 36,
-        },
+        sizeMultiplier = 1.7,
+        icons = treeIcon(),
         entries = {
             ["Tree Gnome Village"] = {
+                icons = treeIcon("village", 65),
                 point = { x = 136, y = 175 },
             },
             ["Tree Gnome Stronghold"] = {
+                icons = treeIcon("stronghold", 65),
                 disabledDescription = descriptions.QuestRequirement("The Grand Tree"),
                 point = { x = 105, y = 80 },
             },
@@ -26,32 +32,40 @@ function SpiritTrees:Define()
                 point = { x = 145, y = 134 },
             },
             ["Grand Exchange"] = {
-                point = { x = 329, y = 89 },
+                icons = treeIcon("grand_exchange"),
+                point = { x = 335, y = 79 },
             },
             ["South Feldip Hills"] = {
-                point = { x = 119, y = 276 },
+                icons = treeIcon("feldip"),
+                point = { x = 119, y = 260 },
             },
             ["Port Sarim"] = {
+                icons = treeIcon("port_sarim"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
-                point = { x = 286, y = 157 },
+                point = { x = 286, y = 147 },
             },
             ["Etceteria"] = {
+                icons = treeIcon("etceteria"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 126, y = 25 },
             },
             ["Brimhaven"] = {
+                icons = treeIcon("brimhaven"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 212, y = 154 },
             },
             ["Poison Waste"] = {
+                icons = treeIcon("poison_waste"),
                 disabledDescription = descriptions.QuestRequirement("The Path of Glouphrie"),
-                point = { x = 80, y = 191 },
+                point = { x = 80, y = 181 },
             },
             ["Prifddinas"] = {
+                icons = treeIcon("prifddinas"),
                 disabledDescription = descriptions.QuestRequirement("Plague's End"),
-                point = { x = 72, y = 135 },
+                point = { x = 72, y = 125 },
             },
             ["Manor Farm"] = {
+                icons = treeIcon("manor_farm"),
                 disabledDescription = descriptions.LevelRequirement(83, descriptions.SKILL.FARMING),
                 point = { x = 180, y = 113 },
             },
@@ -73,31 +87,12 @@ function SpiritTrees:GetDescription(row)
     return SpiritTreeMenu.GetDescription(self, row)
 end
 
-local function updateIcon(row)
-    local icons = row.destination.icons
-    local images = Plugin.resources.icons.spirit_tree
-
-    icons.sprite = row.currentLocation and images.current or images.normal
-    icons.disabled.sprite = row.currentLocation and images.current or images.disabled
-end
-
 function SpiritTrees:BeginVisuals()
     for _, row in ipairs(self.session.menu.rows) do
         row.destination.hotkey = row.native.shortcut
-        row.destination.icons = { disabled = {}, size = self.definition.icons.size }
-        updateIcon(row)
     end
 
     MapMenu.BeginVisuals(self)
-end
-
-function SpiritTrees:UpdateVisuals(layout, hovered)
-    -- Refresh artwork from the adapter's current-location and availability state.
-    for _, row in ipairs(self.session.menu.rows) do
-        updateIcon(row)
-    end
-
-    MapMenu.UpdateVisuals(self, layout, hovered)
 end
 
 return SpiritTrees
