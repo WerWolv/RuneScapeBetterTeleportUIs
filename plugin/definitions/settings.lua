@@ -140,7 +140,7 @@ return {
                 type = "boolean",
                 label = "Zoom Maps to content",
                 description = "When enabled, tries to crop off empty space of maps to focus the view on the buttons",
-                default = false,
+                default = true,
             },
             {
                 key = "showOriginalUIToggle",
