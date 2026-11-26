@@ -1,5 +1,6 @@
 -- Other planes, caves, quest sequences and locations outside this crop stay in
 -- the native-action side list rather than being assigned a misleading map point.
+-- Optional size sets the resting icon size in pixels (default 40).
 return {
     AIQ = { x = 279, y = 195 }, -- Mudskipper Point
     AIR = { x = 191, y = 169 }, -- Island south of Witchaven
@@ -8,7 +9,7 @@ return {
     AJS = { x = 100, y = 18  }, -- Penguin island
     AKQ = { x = 87,  y = 50  }, -- Piscatoris
     AKS = { x = 155, y = 241 }, -- Feldip Hills
-    AKP = { x = 450, y = 280 }, -- Your House
+    AKP = { x = 575, y = 275, spritePrefix = "fairy_ring_poh_", size = 80 }, -- Your House
     ALP = { x = 130, y = 215 }, -- Gu'Tanoth
     ALR = { x = 314, y = 50  }, -- Abyss
     ALQ = { x = 455, y = 90  }, -- Haunted Woods

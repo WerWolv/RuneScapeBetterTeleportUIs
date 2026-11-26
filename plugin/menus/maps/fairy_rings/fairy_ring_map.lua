@@ -16,14 +16,9 @@ local View = {}
 View.__index = View
 
 local iconSize, hoveredIconSize = 40, 42
-local markerWidth, markerHeight = 44, iconSize + 17
+local markerWidth, codeHeight = 44, 17
 local favouriteColour = 0xFFD700FF
 local markerTopPadding = 3 + (hoveredIconSize - iconSize) / 2
--- Anchor badges to the normal icon's top-right corner within the fixed marker.
-local markerHotkeyOffset = {
-    x = iconSize / 2,
-    y = markerTopPadding - (markerHeight + markerTopPadding) / 2,
-}
 local listRowHeight, compactListRowHeight, listRowGap = 44, 26, 2
 
 function View.New(parent, tooltipLayer)
@@ -229,20 +224,30 @@ end
 function View:LayoutMarker(item, showCodes)
     local row = item.row
     local x, y = geometry.Project(backgrounds.runescapeSurfaceFull, row.point, self.layout.width, self.layout.mapHeight)
+    local scale = (row.point.size or iconSize) / iconSize
 
-    if item.markerX == x and item.markerY == y and item.showCodes == showCodes then
+    if item.markerX == x and item.markerY == y and item.showCodes == showCodes and item.markerScale == scale then
         return
     end
 
     item.markerX, item.markerY, item.showCodes = x, y, showCodes
+    item.markerScale = scale
+    local width = markerWidth * scale
+    local top = (iconSize + markerTopPadding) * scale
 
     -- The destination is the pin tip; reserve the marker above it and the code below.
-    item.target:SetPos(math.floor(x - markerWidth / 2), math.floor(y - iconSize - markerTopPadding))
-    item.target:SetSize(markerWidth, markerHeight + markerTopPadding)
-    item.label:SetPos(0, iconSize + markerTopPadding)
-    item.label:SetSize(markerWidth, 17)
+    item.target:SetPos(math.floor(x - width / 2), math.floor(y - top))
+    item.target:SetSize(width, top + codeHeight)
+    item.label:SetPos(0, top)
+    item.label:SetSize(width, codeHeight)
     item.label.content = row.code
     item.label.hidden = not showCodes
+
+    -- Anchor badges to the resting icon, independently of hover enlargement.
+    item.hotkeyOffset = {
+        x = iconSize * scale / 2,
+        y = markerTopPadding * scale - (top + codeHeight) / 2,
+    }
 end
 
 function View:LayoutListRow(item, index, showCodes, showFavourites)
@@ -287,8 +292,9 @@ function View:UpdateItem(item, selectedName, showFavourites)
     local favourite = showFavourites == true and shortcut ~= ""
     if item.icon ~= nil then
         local images = Plugin.resources.icons.fairy_ring
-        local image = favourite and images.fairy_ring_favorite
-            or selected and images.fairy_ring_selected or images.fairy_ring_regular
+        local prefix = row.point.spritePrefix or "fairy_ring_"
+        local state = favourite and "favorite" or selected and "selected" or "regular"
+        local image = images[prefix .. state]
         if item.image ~= image then
             setRingSprite(item.icon, image)
             setRingSprite(item.shadow, image)
@@ -393,10 +399,12 @@ function View:Update(rows, selectedName)
     for _, item in ipairs(ordered) do
         if item.mapped then
             -- Grow upward from the pin tip; hitboxes, codes and badges stay stationary.
-            local size = (item == hovered or item.selected) and hoveredIconSize or iconSize
+            local scale = item.markerScale
+            local size = ((item == hovered or item.selected) and hoveredIconSize or iconSize) * scale
             -- Anchor every state to the pin itself, not the selected/favourite outline.
             local tip = 146 / 160
-            local x, y = (markerWidth - size) / 2, markerTopPadding + iconSize - size * tip
+            local x = (markerWidth * scale - size) / 2
+            local y = (markerTopPadding + iconSize) * scale - size * tip
 
             if item.iconSize ~= size or item.iconY ~= y then
                 item.shadow:SetPos(x + 1, y + 1)
@@ -414,7 +422,7 @@ function View:Update(rows, selectedName)
             disabled = false,
             forceVisible = item.favouriteHighlighted,
             inset = not item.mapped and 4 or nil,
-            offset = item.mapped and markerHotkeyOffset or nil,
+            offset = item.hotkeyOffset,
         })
         item.hotkey:SetAlpha(item.matches and 1 or 0.2)
 
