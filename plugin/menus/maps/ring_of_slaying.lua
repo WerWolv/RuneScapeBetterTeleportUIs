@@ -90,7 +90,7 @@ function RingOfSlaying:Define()
                 point = {x = 404, y = 76},
             },
             ["3. Fremennik Slayer Dungeon."] = {
-                point = {x = 199, y = 28},
+                point = {x = 220, y = 50},
             },
             ["4. Tarn's Lair."] = {
                 point = {x = 416, y = 157},
