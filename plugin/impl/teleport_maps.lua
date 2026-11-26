@@ -124,8 +124,22 @@ local function selectMenu(entry, snapshot)
     return winner, match
 end
 
--- Each native interface owns a session; one open interface must not starve another.
-local function updateInterface(entry)
+local function failInterface(entry, snapshot, message)
+    if snapshot ~= nil then
+        entry.failedWindow = snapshot.window
+    else
+        entry.retryDelay = math.min(600, (entry.retryDelay or 30) * 2)
+        entry.retryFrames = entry.retryDelay
+    end
+
+    releaseInterface(entry)
+    log.Once("Unable to embed teleport map: " .. tostring(message))
+end
+
+-- Restore outgoing layouts before any replacement measures a shared native host.
+local function prepareInterface(entry)
+    entry.pending = nil
+
     -- Discovery can fail before a window is available to quarantine. Back off
     -- those reads as well, without blocking unrelated interfaces.
     if (entry.retryFrames or 0) > 0 then
@@ -190,29 +204,56 @@ local function updateInterface(entry)
             entry.toggle = MenuUIToggle:New(winner, snapshot)
         end
 
+        local active = entry.active
+        local transition
+
         if entry.toggle ~= nil and entry.toggle.original then
             releaseActive(entry)
-            updateOriginal(entry, winner)
-            entry.toggle:Update(snapshot)
-
-            return
-        end
-
-        local active = entry.active
-
-        if active ~= winner or active.session == nil or active.session.menu ~= match then
-            local transition = active and active:GetTransitionState(winner, match)
-
+        elseif active ~= winner or active.session == nil or active.session.menu ~= match then
+            transition = active and active:GetTransitionState(winner, match)
             releaseActive(entry)
-            entry.active = winner
-            if winner:Begin(match, transition) == false then
-                entry.active = nil
-
-                return
-            end
         end
 
-        winner:Update(snapshot)
+        entry.pending = {
+            snapshot = snapshot,
+            winner = winner,
+            match = match,
+            transition = transition,
+        }
+    end)
+
+    if not ok then
+        failInterface(entry, snapshot, message)
+    else
+        entry.retryDelay = nil
+    end
+end
+
+-- Each native interface owns a session; one open interface must not starve another.
+local function updateInterface(entry)
+    local pending = entry.pending
+    entry.pending = nil
+
+    if pending == nil then
+        return
+    end
+
+    local snapshot, winner = pending.snapshot, pending.winner
+    local ok, message = pcall(function()
+        if entry.toggle ~= nil and entry.toggle.original then
+            updateOriginal(entry, winner)
+        else
+            if entry.active == nil then
+                entry.active = winner
+                if winner:Begin(pending.match, pending.transition) == false then
+                    entry.active = nil
+
+                    return
+                end
+            end
+
+            winner:Update(snapshot)
+        end
 
         if entry.toggle ~= nil then
             entry.toggle:Update(snapshot)
@@ -220,21 +261,15 @@ local function updateInterface(entry)
     end)
 
     if not ok then
-        if snapshot ~= nil then
-            entry.failedWindow = snapshot.window
-        else
-            entry.retryDelay = math.min(600, (entry.retryDelay or 30) * 2)
-            entry.retryFrames = entry.retryDelay
-        end
-
-        releaseInterface(entry)
-        log.Once("Unable to embed teleport map: " .. tostring(message))
-    else
-        entry.retryDelay = nil
+        failInterface(entry, snapshot, message)
     end
 end
 
 local function draw()
+    for _, entry in ipairs(interfaces) do
+        prepareInterface(entry)
+    end
+
     for _, entry in ipairs(interfaces) do
         updateInterface(entry)
     end
