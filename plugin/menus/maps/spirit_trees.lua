@@ -32,7 +32,8 @@ function SpiritTrees:Define()
             },
             ["Battlefield"] = {
                 id = "battlefield",
-                point = { x = 145, y = 134 },
+                icons = treeIcon("battlefield"),
+                point = { x = 145, y = 130 },
             },
             ["Grand Exchange"] = {
                 id = "grandexchange",
@@ -82,10 +83,11 @@ function SpiritTrees:Define()
             },
             ["Player-owned house"] = {
                 id = "house",
+                icons = treeIcon("poh", 100),
                 disabledDescription = descriptions.Text("Needs to be built first")
                     .. descriptions.LevelRequirement(83, descriptions.SKILL.FARMING)
                     .. descriptions.LevelRequirement(75, descriptions.SKILL.CONSTRUCTION),
-                point = { x = 60, y = 290 },
+                point = { x = 40, y = 270 },
             },
         },
     }
