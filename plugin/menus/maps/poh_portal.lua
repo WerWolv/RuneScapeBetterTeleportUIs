@@ -16,26 +16,33 @@ function POHPortal:Define()
             ["2. Taverley"] = {
                 point = {x = 239, y = 98},
             },
-            ["3. Pollnivneach"] = {
+            ["^%d%. Pollnivneach"] = {
                 point = {x = 374, y = 233},
+                possiblyMissing = true,
             },
-            ["4. Relleka"] = {
+            ["^%d%. Relleka"] = {
                 point = {x = 178, y = 45},
+                possiblyMissing = true,
             },
-            ["5. Brimhaven"] = {
+            ["^%d%. Brimhaven"] = {
                 point = {x = 209, y = 177},
+                possiblyMissing = true,
             },
-            ["6. Yanille"] = {
+            ["^%d%. Yanille"] = {
                 point = {x = 158, y = 204},
+                possiblyMissing = true,
             },
-            ["7. Menaphos"] = {
+            ["^%d%. Menaphos"] = {
                 point = {x = 334, y = 290},
+                possiblyMissing = true,
             },
-            ["8. Mazcab"] = {
+            ["^%d%. Mazcab"] = {
                 point = {x = 306, y = 264},
+                possiblyMissing = true,
             },
-            ["9. Prifddinas"] = {
+            ["^%d%. Prifddinas"] = {
                 point = {x = 44, y = 126},
+                possiblyMissing = true,
             }
         },
     }

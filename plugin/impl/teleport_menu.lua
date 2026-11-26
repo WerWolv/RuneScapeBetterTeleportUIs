@@ -111,7 +111,23 @@ end
 
 -- Display labels omit native shortcuts and trailing sentence punctuation.
 function TeleportMenu:GetDisplayName(row)
-    return row.destination.nameOverride or (row.name:gsub("^%d+%.%s*", ""):gsub("%.$", ""))
+    if row.destination.nameOverride ~= nil then
+        return row.destination.nameOverride
+    end
+
+    local name = row.name
+
+    -- Missing options have only their pattern key, not a matched native label.
+    if row.locked and name:sub(1, 1) == "^" then
+        local shortcutEnd = name:find("%.", 1, true)
+
+        if shortcutEnd ~= nil then
+            name = name:sub(shortcutEnd + 2):gsub("^%s*", "")
+            name = name:gsub("%%%..*$", ""):gsub("%$$", "")
+        end
+    end
+
+    return (name:gsub("^%d+%.%s*", ""):gsub("%.$", ""))
 end
 
 function TeleportMenu:GetDescription(row)
