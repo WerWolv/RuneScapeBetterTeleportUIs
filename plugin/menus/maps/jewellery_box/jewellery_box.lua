@@ -66,7 +66,7 @@ function JewelleryBox:Define()
         ["Grand Exchange"]         = destination(329, 87,  "wealth"),
         ["Sumona in Pollnivneach"] = destination(374, 234, "slaying"),
         ["Morytania Slayer Tower"] = destination(404, 76,  "slaying"),
-        ["Fremennik Dungeon"]      = destination(199, 28,  "slaying"),
+        ["Fremennik Dungeon"]      = destination(220, 50,  "slaying"),
         ["Tarn's Lair"]            = destination(413, 157, "slaying"),
     }
 
