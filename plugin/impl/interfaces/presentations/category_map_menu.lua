@@ -56,13 +56,13 @@ function Filters:Build(rows)
     self.view = prettyui.SimpleView.new(self.root, {
         width = sidebarWidth,
         height = 240,
+        scrollable = false,
         layout = {
             padding = 12,
             startY = 12,
             rowGap = 10,
         },
     })
-    self.onScrollWheel = ScrollInput.For(self.view)
 
     self.search = self.view:AddTextField({
         placeholder = "Search...",
@@ -85,14 +85,17 @@ function Filters:Build(rows)
 
     self.categories:Update(settings.Get(self.definition.setting))
 
-    self.categoryPanel = TitledFrame.New(self.view.content, "Settings")
+    self.categoryPanel = TitledFrame.New(self.view.content, "Categories")
     -- This panel sits outside PrettyUI's flow, so apply the divider's bottom margin explicitly.
     self.categoryPanel:SetPos(12,
         self.separator.root.y + self.separator.root.height + separatorOptions.marginBottom + 4)
-    self.categoryHeading = prettyui.Text.title(self.categoryPanel, {
-        text = "Categories", x = 12, y = 40, width = -24, widthAnchor = 1, height = 10,
+    -- Content containers need a managed content parent, not the decorative frame's auto-category layer.
+    self.categoryView = prettyui.SimpleView.new(self.view.content, {
+        width = -48, widthAnchor = 1, height = 1,
+        layout = { padding = 0, startY = 0 },
     })
-    ScrollInput.Bind(self.categoryHeading, self.onScrollWheel)
+    self.onScrollWheel = ScrollInput.For(self.categoryView, 22)
+    ScrollInput.Bind(self.categoryView.root, self.onScrollWheel)
     self:BuildCategoryButtons()
 
     for _, row in ipairs(rows) do
@@ -113,10 +116,10 @@ function Filters:BuildCategoryButtons()
         self.categoryButtons:Destroy()
     end
 
-    self.categoryButtons = prettyui.RadioButton.new(self.categoryPanel, self.categories.choices, {
-        x = 12,
-        y = self.categoryHeading.y + self.categoryHeading.height + 8,
-        width = -24,
+    self.categoryButtons = prettyui.RadioButton.new(self.categoryView.content, self.categories.choices, {
+        x = 0,
+        y = 0,
+        width = 0,
         widthAnchor = 1,
         selectedValue = self.categories.selected,
         onChange = function(_, key)
@@ -133,10 +136,14 @@ function Filters:BuildCategoryButtons()
 end
 
 function Filters:LayoutCategories()
-    local panelHeight = math.max(self.categoryButtons.root.y + self.categoryButtons.root.height + 12,
-        self.view.root.height - self.categoryPanel.y - 12)
+    local panelHeight = math.max(53, self.view.root.height - self.categoryPanel.y - 12)
     self.categoryPanel:SetSize(-24, panelHeight, 1.0, 0)
-    self.view:SetContentHeight(self.categoryPanel.y + panelHeight + 12)
+    self.categoryView.root:SetPos(self.categoryPanel.x + 12, self.categoryPanel.y + 40)
+    self.categoryView:SetSize(math.max(1, self.categoryPanel.width - 24), panelHeight - 52)
+    self.categoryView:SetContentHeight(self.categoryButtons.root.height)
+    -- Managed content containers and auto-category artwork need explicit sibling ordering.
+    self.categoryPanel:MoveToBack()
+    self.categoryView.root:MoveToFront()
 end
 
 -- Filtering changes presentation only; native rows and their shortcut bindings stay intact.
@@ -181,6 +188,7 @@ end
 
 function Filters:Destroy()
     cleanup.Release(self, "categoryButtons")
+    cleanup.Release(self, "categoryView")
     cleanup.Release(self, "view")
     cleanup.Release(self, "mount")
     self.root = nil
