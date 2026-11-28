@@ -1,15 +1,17 @@
 -- Other planes, caves, quest sequences and locations outside this crop stay in
 -- the native-action side list rather than being assigned a misleading map point.
 -- Optional size sets the resting icon size in pixels (default 40).
+-- Optional hotkeyOffset = { x = 10, y = -20 } (the default) positions the orb relative to
+-- the marker's centre in UI pixels; positive x moves right, positive y moves down.
 return {
     AIQ = { x = 279, y = 195 }, -- Mudskipper Point
     AIR = { x = 191, y = 169 }, -- Island south of Witchaven
     AJR = { x = 222, y = 43  }, -- Fremennik Slayer Dungeon
     AJQ = { x = 335, y = 175 }, -- Dorgesh-Kaan
-    AJS = { x = 100, y = 18  }, -- Penguin island
+    AJS = { x = 100, y = 18, hotkeyOffset = { x = -20, y = -10 } }, -- Penguin island
     AKQ = { x = 87,  y = 50  }, -- Piscatoris
     AKS = { x = 155, y = 241 }, -- Feldip Hills
-    AKP = { x = 575, y = 275, spritePrefix = "fairy_ring_poh_", size = 80 }, -- Your House
+    AKP = { x = 575, y = 275, spritePrefix = "fairy_ring_poh_", size = 80, hotkeyOffset = { x = 25, y = -25 } }, -- Your House
     ALP = { x = 130, y = 215 }, -- Gu'Tanoth
     ALR = { x = 314, y = 50  }, -- Abyss
     ALQ = { x = 455, y = 90  }, -- Haunted Woods
@@ -28,7 +30,7 @@ return {
     CIQ = { x = 147, y = 186 }, -- South of Tree Gnome Village
     CJR = { x = 208, y = 64  }, -- Sinclair Mansion
     CJS = { x = 250, y = 250 }, -- Kharazi Jungle
-    CIP = { x = 120, y = 20  }, -- Miscellania
+    CIP = { x = 120, y = 20, hotkeyOffset = { x = 20, y = -10 } }, -- Miscellania
     CKQ = { x = 330, y = 295 }, -- Menaphos
     CKR = { x = 231, y = 210 }, -- South of Tai Bwo Wannai
     CKS = { x = 409, y = 90  }, -- West of Canifis
@@ -46,7 +48,7 @@ return {
     DKQ = { x = 255, y = 20  }, -- Glacor Cave
     DLQ = { x = 408, y = 227 }, -- North of Nardah
     DLR = { x = 55,  y = 203 }, -- Poison Waste
-    DLP = { x = 616, y = 115 }, -- Havenhythe, Amberfell
+    DLP = { x = 616, y = 115, hotkeyOffset = { x = -10, y = -20 } }, -- Havenhythe, Amberfell
     DLS = { x = 437, y = 95  }, -- Myreque Hideout,
-    DIQ = { x = 615, y = 160 }, -- Fenmoor
+    DIQ = { x = 615, y = 160, hotkeyOffset = { x = -10, y = -20 } }, -- Fenmoor
 }

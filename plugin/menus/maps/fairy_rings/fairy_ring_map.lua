@@ -243,10 +243,10 @@ function View:LayoutMarker(item, showCodes)
     item.label.content = row.code
     item.label.hidden = not showCodes
 
-    -- Anchor badges to the resting icon, independently of hover enlargement.
+    -- Keep badge offsets fixed in UI pixels, independently of icon size or hover enlargement.
     item.hotkeyOffset = {
-        x = iconSize * scale / 2,
-        y = markerTopPadding * scale - (top + codeHeight) / 2,
+        x = 10,
+        y = -20,
     }
 end
 
@@ -422,7 +422,7 @@ function View:Update(rows, selectedName)
             disabled = false,
             forceVisible = item.favouriteHighlighted,
             inset = not item.mapped and 4 or nil,
-            offset = item.hotkeyOffset,
+            offset = item.mapped and item.row.point.hotkeyOffset or item.hotkeyOffset,
         })
         item.hotkey:SetAlpha(item.matches and 1 or 0.2)
 
