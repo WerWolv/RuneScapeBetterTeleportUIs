@@ -11,12 +11,24 @@ function MenuUIToggle.HeaderInset()
 end
 
 function MenuUIToggle:New(menu, snapshot)
+    local settingKey = menu.enabledSetting or menu.key
+    local original
+
+    if settings.Get("rememberOriginalUIToggle") then
+        original = settings.GetOriginalUIState(settingKey)
+    end
+
+    if original == nil then
+        original = menu.UseOriginalUIByDefault ~= nil and menu:UseOriginalUIByDefault() or false
+    end
+
     return setmetatable({
         menu = menu,
         window = snapshot.window,
         content = snapshot.content,
         scope = menu.pageGroup or menu,
-        original = menu.UseOriginalUIByDefault ~= nil and menu:UseOriginalUIByDefault() or false,
+        settingKey = settingKey,
+        original = original,
     }, self)
 end
 
@@ -34,11 +46,22 @@ function MenuUIToggle:Attach()
     self.button = prettyui.SpriteButton.new(self.root, "EYE", function(_, enabled)
         -- Let the controller restore the menu on its next update.
         self.original = not enabled
+        if settings.Get("rememberOriginalUIToggle") then
+            settings.SetOriginalUIState(self.settingKey, self.original)
+        end
     end, {
         size = buttonSize,
         toggleable = true,
         disabled = self.original,
     })
+
+    -- The off state is still clickable; give it hover feedback without changing the shared sprite set.
+    local sprites = {}
+    for key, value in pairs(self.button.sprites) do
+        sprites[key] = value
+    end
+    sprites.disabledHovered = sprites.disabledHovered or sprites.active
+    self.button.sprites = sprites
 end
 
 function MenuUIToggle:Update(snapshot)

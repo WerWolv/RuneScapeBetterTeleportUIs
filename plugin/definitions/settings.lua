@@ -2,6 +2,7 @@
 -- Built-in types: boolean, number (min/max/step), string, label. Custom types use a module path.
 -- A group's widget can replace the standard group renderer with a custom module.
 -- Interface rows can declare details = { groups... } to open a cog-wheel subpage.
+-- dependsOn = "<boolean key>" indents a setting and disables it while its parent is off.
 local interfaceSettings = {
     ["maps/tirannwn_quiver"] = {
         {
@@ -146,8 +147,16 @@ return {
                 key = "showOriginalUIToggle",
                 type = "boolean",
                 label = "Show original UI toggle",
-                description = "Displays a button to temporarily switch between the original and enhanced menus",
+                description = "Displays a button to switch between the original and enhanced menus",
                 default = true,
+            },
+            {
+                key = "rememberOriginalUIToggle",
+                dependsOn = "showOriginalUIToggle",
+                type = "boolean",
+                label = "Remember last interface toggle state",
+                description = "When enabled, remembers the toggle's state next time you open the interface",
+                default = false,
             },
         },
     },
