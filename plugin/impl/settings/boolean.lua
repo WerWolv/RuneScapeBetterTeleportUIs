@@ -13,12 +13,12 @@ end
 function BooleanSetting:CreateControl(host)
     local control = host:AddCheckboxButton({
         { text = self.definition.label, value = self.definition.key, selected = self.value },
-    }, {
+    }, self:ControlOptions({
         marginBottom = self:ControlMargin(),
         onChange = function(_, _, _, selected)
             self:Set(selected)
         end,
-    })
+    }))
     self:AddDescription(host)
     return control
 end

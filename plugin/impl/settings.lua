@@ -51,12 +51,55 @@ end
 
 local groups = registerGroups(definitions)
 
+-- Resolve after registration so dependencies can refer to settings in any group.
+for _, instance in ipairs(instances) do
+    local key = instance.definition.dependsOn
+    if key ~= nil then
+        local dependency = assert(byKey[key], "Unknown setting dependency: " .. tostring(key))
+        assert(dependency.definition.type == "boolean", "Setting dependencies must be boolean: " .. key)
+        instance.dependency = dependency
+        dependency.dependents = dependency.dependents or {}
+        dependency.dependents[#dependency.dependents + 1] = instance
+    end
+end
+
+for _, instance in ipairs(instances) do
+    local visited, depth, dependency = { [instance] = true }, 0, instance.dependency
+    while dependency ~= nil do
+        assert(not visited[dependency], "Cyclic setting dependency: " .. instance.definition.key)
+        visited[dependency] = true
+        depth, dependency = depth + 1, dependency.dependency
+    end
+    instance.dependencyDepth = depth
+end
+
 function settings.Get(key)
     return assert(byKey[key], "Unknown setting: " .. tostring(key)):Get()
 end
 
 function settings.Set(key, value)
     assert(byKey[key], "Unknown setting: " .. tostring(key)):Set(value)
+end
+
+-- Module keys share the eye-toggle preference across pages of the same interface.
+function settings.GetOriginalUIState(key)
+    if key == nil then
+        return nil
+    end
+
+    local saved = PersistentDB:GetBool("originalUI/" .. key)
+    if type(saved) == "boolean" then
+        return saved
+    end
+end
+
+function settings.SetOriginalUIState(key, original)
+    if key == nil then
+        return
+    end
+
+    assert(type(original) == "boolean", "Invalid original UI state for: " .. key)
+    PersistentDB:SetBool("originalUI/" .. key, original)
 end
 
 local function validPosition(position)

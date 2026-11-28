@@ -12,14 +12,14 @@ end
 
 function StringSetting:CreateControl(host)
     self:AddLabel(host)
-    local control = host:AddTextField({
+    local control = host:AddTextField(self:ControlOptions({
         text = self.value,
         placeholder = self.definition.placeholder,
         marginBottom = self:ControlMargin(),
         onChange = function(_, _, value)
             self:Set(value)
         end,
-    })
+    }))
     self:AddDescription(host)
     return control
 end

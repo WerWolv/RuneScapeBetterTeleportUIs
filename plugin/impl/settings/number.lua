@@ -17,7 +17,7 @@ end
 
 function NumberSetting:CreateControl(host)
     self:AddLabel(host)
-    local control = host:AddSlider({
+    local control = host:AddSlider(self:ControlOptions({
         min = self.definition.min or 0,
         max = self.definition.max or 100,
         step = self.definition.step or 1,
@@ -26,7 +26,7 @@ function NumberSetting:CreateControl(host)
         onChange = function(_, value)
             self:Set(value)
         end,
-    })
+    }))
     self:AddDescription(host)
     return control
 end
